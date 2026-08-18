@@ -23,16 +23,16 @@ bun run types:check
 bun run build
 ```
 
-The production build is a static export in `out/`. A Cloudflare Pages project
-uses the **Next.js (Static HTML Export)** preset with:
+The production build is a static export in `out/` and is deployed by an
+assets-only Cloudflare Worker:
 
 ```text
-Build command:    bun run build
-Build directory:  out
-Production branch: main
-BUN_VERSION:      1.3.14
+Build command:       bun run build
+Deploy command:      bun run deploy
+Production branch:   main
+BUN_VERSION:         1.3.14
+NEXT_PUBLIC_SITE_URL: the canonical documentation origin
 ```
 
-Cloudflare supplies `CF_PAGES_URL` during the build. Set
-`NEXT_PUBLIC_SITE_URL` only when a custom public origin should replace it in
-generated metadata.
+`NEXT_PUBLIC_SITE_URL` is a build variable used for generated metadata; it is
+not a Worker runtime variable.
