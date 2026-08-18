@@ -17,7 +17,6 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "start": "next start",
     "types:check": "next typegen && tsc --noEmit"
   },
   "dependencies": {

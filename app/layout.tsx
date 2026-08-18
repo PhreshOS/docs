@@ -4,7 +4,9 @@ import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? process.env.CF_PAGES_URL ?? 'http://localhost:3000',
+  ),
   title: {
     default: 'PhreshOS Documentation',
     template: '%s · PhreshOS',
@@ -20,7 +22,7 @@ export default function Layout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning>
       <body className="flex flex-col min-h-screen">
-        <RootProvider>{children}</RootProvider>
+        <RootProvider search={{ options: { type: 'static' } }}>{children}</RootProvider>
       </body>
     </html>
   );
