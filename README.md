@@ -30,6 +30,7 @@ uses the **Next.js (Static HTML Export)** preset with:
 Build command:    bun run build
 Build directory:  out
 Production branch: main
+BUN_VERSION:      1.3.14
 ```
 
 Cloudflare supplies `CF_PAGES_URL` during the build. Set
