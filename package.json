@@ -4,6 +4,7 @@
   "description": "Practical documentation for building and operating PhreshOS Programs.",
   "private": true,
   "author": "Zohayr SLILEH",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/PhreshOS/docs.git"
