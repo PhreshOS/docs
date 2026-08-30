@@ -2,6 +2,19 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
+@theme inline {
+  --default-font-family: var(--font-sans);
+  --default-mono-font-family: var(--font-mono);
+}
+
+:root {
+  --color-fd-primary: hsl(164, 82%, 34%);
+}
+
+.dark {
+  --color-fd-primary: hsl(154, 72%, 63%);
+}
+
 html {
   scrollbar-gutter: stable;
 }
@@ -9,4 +22,8 @@ html {
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+body {
+  background-color: var(--color-fd-background);
 }

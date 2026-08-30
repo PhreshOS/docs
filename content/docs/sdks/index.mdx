@@ -1,0 +1,45 @@
+---
+title: SDKs
+description: One domain model adapted to each PhreshOS environment.
+icon: Braces
+---
+
+PhreshOS separates SDKs by responsibility. An environment can expose fewer
+capabilities, but it uses the same domain objects and constructors.
+
+<Cards>
+  <Card title="Core" description="Shared contracts, schemas, and runtime classes." />
+  <Card
+    title="Client and Server"
+    description="Environment-specific access to one System model."
+    href="/sdks/client-and-server"
+  />
+  <Card
+    title="React"
+    description="Explicit Client reads and subscriptions adapted to React."
+    href="/sdks/react"
+  />
+  <Card
+    title="Node"
+    description="Connect external tools and compose local Program projects."
+    href="/sdks/node"
+  />
+  <Card
+    title="CLI"
+    description="Operate the same model from a terminal."
+    href="/sdks/cli"
+  />
+</Cards>
+
+## Shared handle identity
+
+Every SDK imports Core's domain constructors rather than redefining private
+handle contracts. Repeated navigation to one live entity in the same SDK
+context returns the same canonical handle.
+
+```ts
+import { Program } from "@phreshos/node"
+
+const [program] = await system.program.list()
+console.log(program instanceof Program) // true
+```

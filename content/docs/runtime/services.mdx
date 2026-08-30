@@ -1,0 +1,39 @@
+---
+title: Services
+description: Stable exact names for capabilities exposed by live Endpoints.
+icon: Waypoints
+---
+
+A Service is one live Endpoint binding under an exact key:
+
+```ts
+const browser = system.service({
+  program: "flambo",
+  endpoint: "server",
+  name: "browser",
+})
+```
+
+An Endpoint explicitly enables or disables its Service. Ending the Endpoint
+removes the live binding.
+
+`system.service(key)` creates or reuses the exact local handle synchronously. It
+does not discover providers, list Services, start a Process, or imply that the
+Service is ready. The handle can inspect readiness, wait for the binding,
+observe lifecycle changes, and communicate through its Channel.
+
+## Service classes
+
+The public hierarchy is:
+
+- `Service`
+- `ServerService`
+- `ClientService`
+
+These constructors are exported by the relevant SDKs and preserve reference
+identity in one context. They do not use a `Handler` suffix.
+
+<Callout>
+  Service discovery and Program agent documentation are independent. A document
+  does not create a Service, and a Service does not require a document.
+</Callout>

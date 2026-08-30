@@ -1,0 +1,39 @@
+---
+title: Appearance
+description: Resolve one System appearance for each desktop and Client.
+icon: Palette
+---
+
+The System owns one complete unresolved `Appearance`. Properties with distinct
+dark values hold explicit light and dark branches. Shared properties need only
+the light branch.
+
+Each desktop owns its effective preferences:
+
+- `theme`: light, dark, or the native default;
+- `animations`: enabled, disabled, or the native default.
+
+A consumer combines Appearance with the effective Theme and resolves only the
+visual property it needs.
+
+## Client color scheme
+
+The System sets the effective `color-scheme` on each Client iframe when it is
+created. The Client HTML document declares that it supports both schemes:
+
+```html
+<meta name="color-scheme" content="light dark" />
+```
+
+This lets the browser choose built-in controls and the initial canvas correctly
+before React mounts; no hook needs to race the first paint.
+
+## React UI
+
+`@phreshos/react-ui` is the visual language used inside the desktop and
+available to Programs. `AppearanceProvider` supplies Appearance and Theme
+without adding a rendered container.
+
+Its design direction is **freshlism**: simple, clear, responsive, and free from
+unjustified visual or DOM hierarchy. A container must frame real behavior or
+geometry; grouping children alone does not justify one.

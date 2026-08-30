@@ -1,0 +1,39 @@
+---
+title: React
+description: Adapt explicit Client state and subscriptions to React.
+icon: Atom
+---
+
+`@phreshos/react` adapts the Client SDK without becoming another state authority.
+
+## Providers
+
+- `CurrentProvider` resolves explicitly selected contextual values.
+- `SystemProvider` resolves explicitly selected System values.
+
+Selections are non-empty and deliberate. Mounting a provider does not fetch the
+entire System into a Client.
+
+## State hooks
+
+- `useProgramState`
+- `useProcessState`
+- `useServiceState`
+- `useWindowState`
+
+These hooks subscribe before performing their initial explicit read, preventing
+a stale read from overwriting a newer event.
+
+## Event hooks
+
+- `useSubscribe`
+- `useObserve`
+- `useObserveAsks`
+- `useObserveAnswers`
+
+They own their mounted registration and clean it up on unmount.
+
+<Callout>
+  `undefined` means that an explicit initial read is still pending. React
+  adapters do not invent fallback domain state.
+</Callout>

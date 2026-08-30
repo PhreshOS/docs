@@ -1,0 +1,46 @@
+---
+title: Programs
+description: Stable software identities owned by the System.
+icon: Package
+---
+
+A Program is the stable application or service known by the System. It has a
+kebab-case identity and may describe its name, version, icon, Server, Client,
+agent documentation, and Program-owned resources.
+
+A Program declares a Server, a Client, or both.
+
+## Installed and attached Programs
+
+<Tabs items={["Installed", "Attached"]}>
+  <Tab value="Installed">
+    Production files live under System storage. The Program can be reconstructed
+    after a System restart and may keep one startup launch.
+  </Tab>
+  <Tab value="Attached">
+    Development or production files run directly from a local project. The
+    Program remains tethered to the connection that started it.
+  </Tab>
+</Tabs>
+
+Only one current runtime Program occupies an identity. Replacing a runtime
+Program does not silently uninstall files or erase storage.
+
+## Project shortcuts
+
+```ts
+const system = await System.connect()
+
+for await (const event of await project.dev(system, { signal })) {
+  console.log(event)
+}
+
+await system.disconnect()
+```
+
+`project.dev()`, `project.start()`, and `project.install()` return the original
+generators from the underlying Program operations. They are shortcuts, not a
+parallel execution abstraction.
+
+For custom composition, use `developmentDefinition()` or
+`productionDefinition()` to obtain the derived concrete Program definition.

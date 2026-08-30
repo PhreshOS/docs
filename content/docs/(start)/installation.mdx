@@ -1,0 +1,59 @@
+---
+title: Installation
+description: Install, inspect, and control the PhreshOS System.
+icon: Download
+---
+
+The CLI installs the official release and delegates lifecycle management to the
+host operating system.
+
+```sh
+npm install --global @phreshos/cli
+phresh system install
+```
+
+Installation verifies the official archive checksum, installs production
+dependencies into an immutable version directory, selects that release, and
+configures a native per-user service.
+
+## Control the service
+
+```sh
+phresh system status
+phresh system start
+phresh system stop
+phresh system enable
+phresh system disable
+```
+
+Starting and stopping control current execution. Enabling and disabling control
+automatic startup.
+
+<Tabs items={["macOS", "Linux", "Windows"]}>
+  <Tab value="macOS">
+    PhreshOS uses a per-user `launchd` service.
+  </Tab>
+  <Tab value="Linux">
+    PhreshOS uses `systemd --user` when a real user manager is available. A
+    container without an init manager uses a detached owner process and reports
+    that automatic startup is unavailable.
+  </Tab>
+  <Tab value="Windows">
+    PhreshOS uses a least-privilege per-user scheduled task.
+  </Tab>
+</Tabs>
+
+## Select another System home
+
+State lives in `~/.phreshos` by default. Set `PHRESHOS_HOME` to an absolute path
+before invoking the CLI when you intentionally operate another System home.
+
+```sh
+export PHRESHOS_HOME=/absolute/path/to/system-state
+phresh system status
+```
+
+<Callout type="warn" title="One home, one gateway">
+  The CLI and the running System must use the same System home. Otherwise, the
+  CLI correctly reports that no local gateway is listening.
+</Callout>

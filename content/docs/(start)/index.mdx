@@ -1,0 +1,127 @@
+---
+title: Quick start
+description: Install PhreshOS and run your first Program.
+icon: Rocket
+---
+
+import {
+  BracesIcon,
+  CpuIcon,
+  PackageIcon,
+  PanelsTopLeftIcon,
+} from "lucide-react"
+
+## Introduction
+
+PhreshOS is a self-hosted operating system for the server it runs on, represented
+through a remotely accessible web desktop. It consists of four principal parts:
+
+<Cards>
+  <Card
+    icon={<CpuIcon className="text-purple-300" />}
+    title="System"
+    href="/system"
+  >
+    Owns Programs, Processes, authentication, persistence, routing, and access
+    to host resources.
+  </Card>
+  <Card
+    icon={<PackageIcon className="text-amber-300" />}
+    title="Programs"
+    href="/runtime/programs"
+  >
+    Applications, background services, tools, and agents that run inside the
+    System.
+  </Card>
+  <Card
+    icon={<BracesIcon className="text-emerald-300" />}
+    title="SDKs"
+    href="/sdks"
+  >
+    One shared domain model adapted to Client, Server, React, Node, and terminal
+    environments.
+  </Card>
+  <Card
+    icon={<PanelsTopLeftIcon className="text-blue-300" />}
+    title="Web desktop"
+    href="/system/desktop"
+  >
+    The remotely accessible display that represents authoritative System state
+    as Windows and direct interactions.
+  </Card>
+</Cards>
+
+<Callout title="Want to understand the model first?">
+  Read the complete [What is PhreshOS?](/what-is-phreshos) introduction.
+</Callout>
+
+## Install PhreshOS
+
+You need a supported Node.js installation and a machine on which you can run a
+per-user service. PhreshOS stores its state on that machine and adds no telemetry.
+
+<Steps>
+
+<Step>
+
+### Install the CLI
+
+```sh
+npm install --global @phreshos/cli
+```
+
+</Step>
+
+<Step>
+
+### Install the System
+
+```sh
+phresh system install
+```
+
+The command installs the official System release, configures its native per-user
+service, starts it, and reports the desktop address.
+
+</Step>
+
+<Step>
+
+### Create a Program
+
+```sh
+phresh create
+cd my-program
+bun dev
+```
+
+The generated project connects its development Process to your local System.
+
+</Step>
+
+</Steps>
+
+## Choose where to go next
+
+<Cards>
+  <Card
+    title="What is PhreshOS?"
+    description="Understand the System, desktop, and Program model."
+    href="/what-is-phreshos"
+  />
+  <Card
+    title="Create your first Program"
+    description="Walk through the generated Server and Client project."
+    href="/first-program"
+  />
+  <Card
+    title="Runtime model"
+    description="Learn Programs, Processes, Endpoints, and communication."
+    href="/runtime"
+  />
+  <Card
+    title="SDKs and CLI"
+    description="Choose the interface for each execution environment."
+    href="/sdks"
+  />
+</Cards>

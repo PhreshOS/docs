@@ -3,8 +3,8 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { source } from '@/lib/source';
 import { baseOptions } from '@/lib/layout.shared';
 import './global.css';
-import { Inter } from 'next/font/google';
-import type { Metadata } from 'next';
+import { Geist, JetBrains_Mono } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -17,14 +17,31 @@ export const metadata: Metadata = {
   description: 'Practical documentation for building and operating PhreshOS Programs.',
 };
 
-const inter = Inter({
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
+};
+
+const geist = Geist({
+  variable: '--font-sans',
+  subsets: ['latin'],
+});
+
+const mono = JetBrains_Mono({
+  variable: '--font-mono',
   subsets: ['latin'],
 });
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className="flex flex-col min-h-screen">
+    <html
+      lang="en"
+      className={`${geist.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="flex min-h-screen flex-col">
         <RootProvider search={{ options: { type: 'static' } }}>
           <DocsLayout tree={source.getPageTree()} {...baseOptions()}>
             {children}

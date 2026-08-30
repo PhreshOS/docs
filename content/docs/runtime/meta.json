@@ -1,0 +1,16 @@
+{
+  "title": "Runtime",
+  "description": "Programs, Processes, Endpoints, and communication",
+  "icon": "Cpu",
+  "root": true,
+  "pages": [
+    "---Model---",
+    "index",
+    "programs",
+    "processes",
+    "endpoints",
+    "---Interaction---",
+    "communication",
+    "services"
+  ]
+}

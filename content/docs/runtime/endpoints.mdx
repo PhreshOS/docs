@@ -1,0 +1,40 @@
+---
+title: Endpoints
+description: Server authority and sandboxed Client representation.
+icon: Unplug
+---
+
+Every Process owns a Server handle and a Client handle. Their capabilities
+differ because their execution environments differ, but both are Endpoints in
+the same domain model.
+
+## Server
+
+A Server executes host-side JavaScript in one of two modes:
+
+<Tabs items={["Command", "Worker"]}>
+  <Tab value="Command">
+    `startCommand` starts and supervises an operating-system process tree.
+  </Tab>
+  <Tab value="Worker">
+    `entryFile` loads an ECMAScript module as a Worker owned by the System.
+  </Tab>
+</Tabs>
+
+Both modes expose the same Server SDK. A Worker is not a security boundary and
+does not have an independent working directory.
+
+## Client
+
+A Client executes in a sandboxed iframe inside the desktop and owns one Window.
+It may access its current Program and Process, paired Server, Window, desktop
+preferences, read-only Appearance, uploads, fetch, Program resources, and exact
+Client Services.
+
+The Client has no general authority over the desktop or foreign Programs.
+Fabricating a handle cannot expand that authority.
+
+<Callout title="Location rules">
+  An HTTP(S) URL is valid for an attached development Client. Installation
+  requires Client files that the System can copy into installed storage.
+</Callout>

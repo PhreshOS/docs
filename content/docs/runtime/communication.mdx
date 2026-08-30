@@ -1,0 +1,46 @@
+---
+title: Communication
+description: Channels, Endpoint handles, questions, events, and traffic.
+icon: MessagesSquare
+---
+
+PhreshOS uses one communication model across its environments.
+
+## Contextual Channels
+
+The contextual `current` object is the executing Endpoint's Channel.
+
+```ts
+current.subscribe("changed", (payload) => {
+  console.log(payload)
+})
+
+current.publish("changed", { value: 1 })
+```
+
+On the Server, `current.answer()` answers questions addressed to that Server.
+
+```ts
+current.answer("counter.read", async () => {
+  return { value: await counter.read() }
+})
+```
+
+## Exact Endpoint handles
+
+Use an Endpoint handle when the destination or source matters.
+
+- `endpoint.publish()` sends directly to that Endpoint.
+- `server.ask()` asks an exact Server.
+- `endpoint.subscribe()` follows destinationless publications from that Endpoint.
+- `endpoint.traffic` observes directed questions, publications, and answers.
+
+Traffic observation is an inspection capability, not the standard messaging
+path.
+
+## Silent by default
+
+Importing an SDK or starting an Endpoint does not push state into it. Requests
+read the present. Subscriptions observe future publications and do not replay an
+initial value. React state hooks compose an explicit read with a subscription
+without changing those semantics.

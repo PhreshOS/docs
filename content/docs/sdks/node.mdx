@@ -1,0 +1,37 @@
+---
+title: Node
+description: Connect external Node.js tools to the System and local projects.
+icon: Box
+---
+
+`@phreshos/node` exposes the Server System model outside a running Program and
+adds only connection lifecycle and local-project tooling.
+
+```ts
+import { System } from "@phreshos/node"
+
+const system = await System.connect()
+const programs = await system.program.list()
+
+await system.disconnect()
+```
+
+The transport is not public API. Code uses the same System, Program, Process,
+Endpoint, Service, Window, storage, and upload handles that Server code uses.
+
+## Project API
+
+```ts
+import { Project, System } from "@phreshos/node"
+
+const project = await Project.open()
+const system = await System.connect()
+
+for await (const event of await project.start(system, { signal })) {
+  console.log(event)
+}
+```
+
+`Project` owns authoring concerns such as builds, development commands,
+production definitions, installation, and packaging. The System receives only
+the resulting runtime or installed Program definition.

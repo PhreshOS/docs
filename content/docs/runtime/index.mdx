@@ -1,0 +1,44 @@
+---
+title: Runtime model
+description: The small set of objects that make up a running PhreshOS System.
+icon: Cpu
+---
+
+The Program is the domain root. Everything live belongs to this hierarchy:
+
+```text
+Program
+└── Process
+    ├── Server
+    └── Client
+        ├── traffic
+        └── window
+```
+
+`Program`, `Process`, `Endpoint`, `Server`, and `Client` are shared runtime
+classes. `Endpoint` is the common base of `Server` and `Client`; it is not an
+additional ownership level.
+
+<Cards>
+  <Card title="Program" href="/runtime/programs">
+    Stable application identity, installation, and resources.
+  </Card>
+  <Card title="Process" href="/runtime/processes">
+    A live execution aggregate with immutable launch intent.
+  </Card>
+  <Card title="Endpoints" href="/runtime/endpoints">
+    Host-side Server and sandboxed Client execution.
+  </Card>
+  <Card title="Communication" href="/runtime/communication">
+    Channels, exact destinations, questions, and subscriptions.
+  </Card>
+  <Card title="Services" href="/runtime/services">
+    Stable names for live Endpoint capabilities.
+  </Card>
+</Cards>
+
+## One model in every SDK
+
+SDKs adapt access and authority, but they do not redefine the domain. Repeated
+lookup of one live object within an SDK context returns its canonical handle,
+so reference equality and `instanceof` remain meaningful.

@@ -1,0 +1,47 @@
+---
+title: CLI
+description: Create Programs and operate a running System from the terminal.
+icon: Terminal
+---
+
+The `phresh` CLI uses the same public System interface as the Node and Server
+SDKs. It adds command parsing, terminal presentation, project workflows,
+packaging, and native service management.
+
+## Project workflow
+
+```sh
+phresh create
+phresh init
+phresh dev
+phresh start
+phresh install
+phresh uninstall
+phresh pack
+```
+
+## Inspect the runtime
+
+```sh
+phresh program list
+phresh process list --program my-program
+phresh endpoint inspect \
+  --program my-program \
+  --process main \
+  --endpoint server
+phresh window inspect --program my-program --process main
+```
+
+The command hierarchy follows the runtime ownership hierarchy. Unknown
+commands, flags, and malformed values reject rather than being guessed.
+
+## Discover the command contract
+
+```sh
+phresh describe
+phresh describe program
+phresh describe process list
+```
+
+`describe` emits the command tree and exact options as machine-readable data,
+which makes the CLI usable by people and agents without a separate command API.

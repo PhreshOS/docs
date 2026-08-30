@@ -1,0 +1,56 @@
+---
+title: What is PhreshOS?
+description: The System, the web desktop, and the model they share.
+icon: CircleQuestionMark
+---
+
+PhreshOS is an operating system for the server it runs on, with a remotely
+accessible web desktop. It is self-hosted and single-user: one owner runs it on
+a machine they control, and the System keeps its authoritative state there.
+
+The browser is the machine's display, not its authority. The server owns the
+truth about Programs, Processes, authentication, persistence, and access to host
+resources. A desktop connection represents that truth and provides the local
+pointer, keyboard, measurements, iframes, and temporary visual state needed to
+interact with it.
+
+```text
+Host operating system
+└── PhreshOS System
+    ├── Server runtime
+    │   └── Programs → Processes → Server and Client Endpoints
+    └── Web desktop
+        └── Windows, taskbar, dialogs, and Client representations
+```
+
+## Programs are the unit of composition
+
+Applications, background services, tools, and Lemo—the official PhreshOS
+agent—are ordinary Programs. Official Programs do not receive a private
+architectural path. People, agents, and other Programs use the same public
+domain model.
+
+<Cards>
+  <Card
+    title="Programs and Processes"
+    description="See how installed software becomes live execution."
+    href="/runtime/programs"
+  />
+  <Card
+    title="Client and Server SDKs"
+    description="See how authority differs without redefining the model."
+    href="/sdks/client-and-server"
+  />
+  <Card
+    title="Desktop and Windows"
+    description="Understand authoritative Windows and their local representations."
+    href="/system/desktop"
+  />
+</Cards>
+
+## What PhreshOS does not imply
+
+PhreshOS runs inside an existing host operating system as a per-user service on
+macOS, Linux, or Windows. The name does not imply that it replaces the host
+kernel. Its concrete meaning is the runtime and remotely accessible System
+described in these docs.

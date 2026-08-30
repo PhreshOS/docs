@@ -1,0 +1,40 @@
+---
+title: Security and privacy
+description: One owner, structural Client isolation, and no System telemetry.
+icon: ShieldCheck
+---
+
+PhreshOS has one owner rather than a collection of user accounts. Initial setup
+registers that owner and then closes registration. Later desktop sessions sign
+in as the same owner.
+
+The System provides no independent recovery authority above the owner's chosen
+authentication method.
+
+## Client isolation
+
+A Client receives only the handles and capabilities allowed by its boundary. It
+cannot enlarge authority by fabricating an identity or message. An inaccessible
+handle behaves like a nonexistent one, and a hidden sender or destination is
+represented as `null`.
+
+## Permissions
+
+Permissions come from a finite Core registry. Programs cannot invent private
+permission strings. The current registry contains `pointer`.
+
+The permission decision belongs to the Program; the desktop remains the
+enforcement boundary. Pointer position and movement are unavailable until the
+decision is granted.
+
+## Privacy
+
+The System adds no telemetry, cloud account, or remote PhreshOS recovery
+authority. Network behavior initiated by a Program remains that Program's
+behavior rather than System telemetry.
+
+<Callout type="info">
+  Self-hosting means authority and recovery remain with the machine owner. Keep
+  the System home and authentication material backed up according to your own
+  operational policy.
+</Callout>

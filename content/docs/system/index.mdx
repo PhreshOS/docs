@@ -1,0 +1,42 @@
+---
+title: System
+description: The authoritative runtime and the web desktop that represents it.
+icon: MonitorCog
+---
+
+The System owns Program and Process lifecycle, routing, authentication,
+persistence, and the boundaries through which code reaches host resources. The
+web desktop turns that truth into a direct graphical interface.
+
+<Cards>
+  <Card
+    title="Desktop and Windows"
+    description="Authoritative Window state and local browser representation."
+    href="/system/desktop"
+  />
+  <Card
+    title="Appearance"
+    description="Themes, preferences, iframe color schemes, and React UI."
+    href="/system/appearance"
+  />
+  <Card
+    title="Storage"
+    description="System state and Program-owned resource families."
+    href="/system/storage"
+  />
+  <Card
+    title="Security"
+    description="Owner authentication, isolation, permissions, and privacy."
+    href="/system/security"
+  />
+</Cards>
+
+## Owner-local gateway
+
+External Node tools and the CLI reach the running System through an owner-local
+gateway: a Unix-domain socket with owner-only permissions on POSIX systems or an
+owner-created named pipe on Windows. It opens no network port.
+
+The gateway is a connection mechanism, not a separate public model. Consumers
+use ordinary System handles and add only `disconnect()` when they own the
+connection.

@@ -1,0 +1,44 @@
+---
+title: Desktop and Windows
+description: Represent authoritative Client Windows on one or more screens.
+icon: PanelsTopLeft
+---
+
+A live Client owns one authoritative Window. The desktop represents it; the
+Program does not own arbitrary desktop DOM.
+
+Window state includes title, position, size, minimized state, front state,
+layer, and Client location. Geometry can use finite pixels or linear
+workspace-relative expressions such as `"1/2"`, `"50%"`, or `"50% + 10"`.
+
+## Geometry
+
+- `move()` changes position.
+- `resize()` changes size.
+- `setGeometry()` commits position and size atomically.
+
+Filling the workspace is geometry, not a separate maximized domain state. The
+interface that offers restoration owns the temporary geometry to restore.
+
+## Layers
+
+Windows use three layers:
+
+1. `under`
+2. `window`
+3. `over`
+
+Wallpaper is Appearance rather than another Window layer. The taskbar remains
+above all layers.
+
+## Authority and representation
+
+`Window` is authoritative. `LocalWindow` is one desktop's representation.
+Pointer gestures, measurements, snap previews, iframe references, and animation
+state are naturally local. Local representation operations do not publish
+authoritative events.
+
+<Callout>
+  Dragging and resizing are continuous local gestures committed as one System
+  request. Interaction should wait for facts, not arbitrary animation delays.
+</Callout>

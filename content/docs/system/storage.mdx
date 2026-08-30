@@ -1,0 +1,37 @@
+---
+title: Storage
+description: Keep System state and Program resources with their real owner.
+icon: Database
+---
+
+Production System state lives beneath `~/.phreshos` by default. A selected
+`PHRESHOS_HOME` replaces that root.
+
+Persistent state includes owner credentials, the System database, installed
+Program files, Program resources, public uploads, logs, and the local gateway
+address while running.
+
+## Program resources
+
+Every Program owns the same resource families in Client and Server contexts:
+
+| Resource | Purpose |
+| --- | --- |
+| `data` | Durable filesystem-like files |
+| `cache` | Disposable filesystem-like files |
+| `store` | Key-value state |
+| `database` | Writable SQLite application data |
+| `logs` | Read-only structured Program logs |
+
+Server storage can additionally expose safe native filesystem paths. Client
+storage never exposes host paths. Operations reject traversal and symbolic-link
+escape.
+
+## Uploads
+
+The System owns one flat public upload collection. Uploads use opaque generated
+keys rather than filesystem paths and can be read or written as streams, bytes,
+text, JSON, or metadata.
+
+The public contract intentionally exposes no listing, deletion, or clearing
+operation.

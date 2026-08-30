@@ -1,0 +1,39 @@
+---
+title: Client and Server
+description: The same model viewed through different authority boundaries.
+icon: PanelTop
+---
+
+The Client and Server SDKs expose the same concepts without pretending the two
+environments have the same authority.
+
+<Tabs items={["Client", "Server"]}>
+  <Tab value="Client">
+    `@phreshos/client` adapts the sandboxed iframe boundary. It exposes the
+    restricted `system` and contextual `current` available to the Client.
+  </Tab>
+  <Tab value="Server">
+    `@phreshos/server` adapts the child-process or Worker boundary. It exposes
+    the authoritative `system` and contextual `current` available to a Server.
+  </Tab>
+</Tabs>
+
+## Context and System
+
+`current` starts from the executing Endpoint: its Program, Process, paired
+Endpoint, Channel, and environment-specific capabilities.
+
+`system` starts from the running System: Programs, Services, Appearance, owner
+state, and other capabilities allowed by that environment.
+
+<Callout title="The boundary is structural">
+  A Client never receives broad desktop authorization or arbitrary foreign
+  handles. Inaccessible identities are removed rather than hidden behind a
+  runtime convention.
+</Callout>
+
+## Requests and subscriptions
+
+SDKs keep explicit read and observation semantics separate. A request reads the
+current value. A subscription begins with future publications. Mounting code or
+constructing a handle does neither implicitly.

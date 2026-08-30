@@ -1,0 +1,47 @@
+---
+title: Processes
+description: Live execution aggregates created from immutable launch intent.
+icon: Workflow
+---
+
+A Process is one live execution aggregate of a Program. It owns permanent
+Server and Client handles even while one of those Endpoints is stopped.
+
+Its launch intent contains an optional name, which Endpoints should start,
+Client presentation overrides, and Program-defined text options.
+
+## Create or run
+
+```ts
+const process = await program.process.create({
+  name: "main",
+  server: true,
+  client: true,
+})
+```
+
+- `create(launch)` always creates a Process.
+- `findOrCreate(launch)` atomically finds an equivalent named Process or creates
+  it. Reusing the name with a different launch rejects.
+- `run(launch, { signal })` creates one Process and returns its asynchronous
+  lifecycle generator.
+
+```ts
+for await (const event of program.process.run(launch, { signal })) {
+  switch (event.type) {
+    case "started":
+    case "output":
+    case "exited":
+      console.log(event)
+  }
+}
+```
+
+Aborting the signal, returning early from the generator, or losing its owning
+connection exits the Process.
+
+## Parentage
+
+A Process may retain the immediate Process that created it. Parentage records
+creation lineage, not ownership. A Client can traverse parentage only inside its
+own Program; the first cross-Program parent is represented as `null`.
