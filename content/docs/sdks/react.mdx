@@ -27,11 +27,13 @@ a stale read from overwriting a newer event.
 ## Event hooks
 
 - `useSubscribe`
-- `useObserve`
-- `useObserveAsks`
-- `useObserveAnswers`
+- `useSubscribeAsks`
+- `useSubscribeAnswers`
 
 They own their mounted registration and clean it up on unmount.
+`useSubscribe(target, event, project)` follows one event, while
+`useSubscribe(target, project)` follows every event as a correlated capture.
+Async iterators remain imperative SDK APIs and do not gain React hooks.
 
 <Callout>
   `undefined` means that an explicit initial read is still pending. React

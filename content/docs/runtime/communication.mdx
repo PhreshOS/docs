@@ -1,14 +1,15 @@
 ---
 title: Communication
-description: Channels, Endpoint handles, questions, events, and traffic.
+description: Context, Endpoint handles, questions, events, and traffic.
 icon: MessagesSquare
 ---
 
 PhreshOS uses one communication model across its environments.
 
-## Contextual Channels
+## Context
 
-The `context` object is the executing Endpoint's runtime context and Channel.
+The `context` object is the executing Endpoint's communication and runtime
+environment.
 
 ```ts
 context.subscribe("changed", (message) => {
@@ -36,10 +37,16 @@ Use an Endpoint handle when the destination or source matters.
 - `endpoint.publish()` sends directly to that Endpoint.
 - `server.ask()` asks an exact Server.
 - `endpoint.subscribe()` follows destinationless publications from that Endpoint.
-- `endpoint.traffic` observes directed questions, publications, and answers.
+- `endpoint.traffic` inspects directed questions, publications, and answers.
 
-Traffic observation is an inspection capability, not the standard messaging
-path.
+Ordinary traffic supports `subscribe()` and `events()`. Questions use
+`subscribeAsks()` or `asks()`, while Server answers use `subscribeAnswers()` or
+`answers()`. Callback subscriptions return their cleanup; the other forms are
+abortable async iterators.
+
+Every permanent Endpoint also has `endpoint.lifecycle`, a separate subscribable
+surface for its own `start` and `stop` transitions. Application events remain
+on the Endpoint root.
 
 ## Silent by default
 

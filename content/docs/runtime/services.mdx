@@ -19,8 +19,16 @@ removes the live binding.
 
 `system.service(key)` creates or reuses the exact local handle synchronously. It
 does not discover providers, list Services, start a Process, or imply that the
-Service is ready. The handle can inspect readiness, wait for the binding,
-observe lifecycle changes, and communicate through its Channel.
+Service is ready. Application events are subscribed to directly on the handle;
+a Server Service can also be published to or asked directly. `service.lifecycle`
+separately exposes `enable` and `disable`, while `enabled()` and `waitReady()`
+remain root operations.
+
+```ts
+service.subscribe("changed", message => console.log(message))
+service.lifecycle.subscribe("disable", () => console.log("unavailable"))
+await service.ask("value") // Server Service only
+```
 
 ## Service classes
 
