@@ -7,8 +7,51 @@ icon: Download
 The CLI installs the official release and delegates lifecycle management to the
 host operating system.
 
+## Requirements
+
+- Node.js `24.15.0` or newer.
+- macOS, Linux, or Windows under a normal user account.
+- Permission to configure a native per-user service.
+
+Confirm the active Node.js version before installing:
+
 ```sh
-npm install --global @phreshos/cli
+node --version
+```
+
+<Callout title="Why Node.js 24.15.0?">
+  The CLI can run on Node.js `20.10` or newer, but the current PhreshOS System
+  release requires Node.js `24.15.0` or newer.
+</Callout>
+
+## Install the CLI
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]}>
+  <Tab value="npm">
+    ```sh
+    npm install --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn global add @phreshos/cli
+    ```
+  </Tab>
+</Tabs>
+
+## Install the System
+
+```sh
 phresh system install
 ```
 

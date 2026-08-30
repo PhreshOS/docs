@@ -13,8 +13,9 @@ import {
 
 ## Introduction
 
-PhreshOS is a self-hosted operating system for the server it runs on, represented
-through a remotely accessible web desktop. It consists of four principal parts:
+PhreshOS is an open-source, server-authoritative operating system for running and
+managing web-based programs in a unified web desktop environment, with native
+agent access through shared APIs.
 
 <Cards>
   <Card
@@ -38,8 +39,8 @@ through a remotely accessible web desktop. It consists of four principal parts:
     title="SDKs"
     href="/sdks"
   >
-    One shared domain model adapted to Client, Server, React, Node, and terminal
-    environments.
+    One shared domain model exposed through the Client, Server, React, and Node.js
+    SDKs.
   </Card>
   <Card
     icon={<PanelsTopLeftIcon className="text-blue-300" />}
@@ -57,8 +58,12 @@ through a remotely accessible web desktop. It consists of four principal parts:
 
 ## Install PhreshOS
 
-You need a supported Node.js installation and a machine on which you can run a
-per-user service. PhreshOS stores its state on that machine and adds no telemetry.
+You need Node.js `24.15.0` or newer and a machine on which you can run a per-user
+service. PhreshOS stores its state on that machine.
+
+```sh
+node --version
+```
 
 <Steps>
 
@@ -66,9 +71,28 @@ per-user service. PhreshOS stores its state on that machine and adds no telemetr
 
 ### Install the CLI
 
-```sh
-npm install --global @phreshos/cli
-```
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]}>
+  <Tab value="npm">
+    ```sh
+    npm install --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn global add @phreshos/cli
+    ```
+  </Tab>
+</Tabs>
 
 </Step>
 
@@ -91,8 +115,6 @@ service, starts it, and reports the desktop address.
 
 ```sh
 phresh create
-cd my-program
-bun dev
 ```
 
 The generated project connects its development Process to your local System.
