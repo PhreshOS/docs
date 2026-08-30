@@ -8,20 +8,23 @@ PhreshOS uses one communication model across its environments.
 
 ## Contextual Channels
 
-The contextual `current` object is the executing Endpoint's Channel.
+The `context` object is the executing Endpoint's runtime context and Channel.
 
 ```ts
-current.subscribe("changed", (payload) => {
-  console.log(payload)
+context.subscribe("changed", (message) => {
+  console.log(message.payload)
 })
 
-current.publish("changed", { value: 1 })
+context.publish("changed", { value: 1 })
 ```
 
-On the Server, `current.answer()` answers questions addressed to that Server.
+Subscriptions receive events addressed to this Endpoint. Publishing emits an
+event from this Endpoint; it does not loop back into the same subscription.
+
+On the Server, `context.answer()` answers questions addressed to that Server.
 
 ```ts
-current.answer("counter.read", async () => {
+context.answer("counter.read", async () => {
   return { value: await counter.read() }
 })
 ```

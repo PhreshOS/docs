@@ -10,17 +10,17 @@ environments have the same authority.
 <Tabs items={["Client", "Server"]}>
   <Tab value="Client">
     `@phreshos/client` adapts the sandboxed iframe boundary. It exposes the
-    restricted `system` and contextual `current` available to the Client.
+    restricted `system` and `context` available to the Client.
   </Tab>
   <Tab value="Server">
     `@phreshos/server` adapts the child-process or Worker boundary. It exposes
-    the authoritative `system` and contextual `current` available to a Server.
+    the authoritative `system` and `context` available to a Server.
   </Tab>
 </Tabs>
 
 ## Context and System
 
-`current` starts from the executing Endpoint: its Program, Process, paired
+`context` starts from the executing Endpoint: its Program, Process, paired
 Endpoint, Channel, and environment-specific capabilities.
 
 `system` starts from the running System: Programs, Services, Appearance, owner
