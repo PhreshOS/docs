@@ -15,13 +15,11 @@ host-side Server, a desktop Client, or both.
 
 <Files>
   <File name="phresh.config.ts" />
-  <Folder name="source" defaultOpen>
-    <Folder name="server" defaultOpen>
-      <File name="main.ts" />
-    </Folder>
-    <Folder name="client" defaultOpen>
-      <File name="main.tsx" />
-    </Folder>
+  <Folder name="server" defaultOpen>
+    <File name="main.ts" />
+  </Folder>
+  <Folder name="client" defaultOpen>
+    <File name="main.tsx" />
   </Folder>
   <Folder name="scripts">
     <File name="build.ts" />
@@ -47,7 +45,7 @@ export default defineConfig({
     location: "dist/server",
     startCommand: "node main.js",
     development: {
-      startCommand: "vite-node source/server/main.ts",
+      startCommand: "vite-node server/main.ts",
     },
   },
   client: {
@@ -75,7 +73,7 @@ domain object.
     Learn installation, attachment, identity, and owned resources.
   </Card>
   <Card title="Communication" href="/runtime/communication">
-    Connect the Client and Server with Channels and Endpoint handles.
+    Connect the Client and Server through Context and Endpoint handles.
   </Card>
   <Card title="CLI" href="/sdks/cli">
     Build, run, install, inspect, and package the project.

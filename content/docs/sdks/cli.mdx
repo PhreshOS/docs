@@ -35,6 +35,21 @@ phresh window inspect --program my-program --process main
 The command hierarchy follows the runtime ownership hierarchy. Unknown
 commands, flags, and malformed values reject rather than being guessed.
 
+Endpoint service roles use the same launch contract as the SDKs:
+
+```sh
+phresh process create \
+  --program my-program \
+  --name worker \
+  --server \
+  --server-service \
+  --no-client
+```
+
+`--server-service` and `--client-service` select the Service role for the new
+incarnation. Their `--*-private` counterparts explicitly select `false`, and
+`phresh endpoint start` accepts the corresponding flag for a later incarnation.
+
 ## Discover the command contract
 
 ```sh

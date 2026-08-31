@@ -1,32 +1,69 @@
 ---
 title: Services
-description: Stable exact names for capabilities exposed by live Endpoints.
+description: Stable communication addresses for Endpoint services.
 icon: Waypoints
 ---
 
-A Service is one live Endpoint binding under an exact key:
+A Service is a stable communication address for one Endpoint:
 
 ```ts
 const browser = system.service({
   program: "flambo",
+  process: "browser-server",
   endpoint: "server",
-  name: "browser",
 })
 ```
 
-An Endpoint explicitly enables or disables its Service. Ending the Endpoint
-removes the live binding.
+When `process` is a Program-local name, `program` supplies its namespace and the
+address follows a replacement Process created under the same name. An exact
+globally unique Process identity needs no Program coordinate and remains tied
+to that one Process:
+
+```ts
+const exact = system.service({
+  process: process.identity,
+  endpoint: "server",
+})
+```
+
+A Program may declare the default role:
+
+```ts
+server: {
+  location: "dist/server",
+  service: true,
+}
+```
+
+Omission means `false`. Boolean Endpoint selection uses that declaration
+default. An object launch can override it for one incarnation:
+
+```ts
+await program.process.create({
+  name: "browser-server",
+  server: { service: true },
+  client: false,
+})
+```
+
+Client launches accept `service` in their object form alongside Window options.
+The same `ServerLaunch` and `ClientLaunch` contracts apply to initial Process
+creation and later `server.start()` or `client.start()` calls, so every fresh
+Endpoint incarnation resolves its own role. `context.isService()` and
+`endpoint.isService()` read the current incarnation.
+Only `system.service()` creates a Service handle.
 
 `system.service(key)` creates or reuses the exact local handle synchronously. It
 does not discover providers, list Services, start a Process, or imply that the
-Service is ready. Application events are subscribed to directly on the handle;
-a Server Service can also be published to or asked directly. `service.lifecycle`
-separately exposes `enable` and `disable`, while `enabled()` and `waitReady()`
-remain root operations.
+Service is ready. Application events are published and subscribed to directly
+on the handle. `exists()` reads Endpoint existence, while `service.lifecycle`
+observes the same `start` and `stop` transitions as the Endpoint. A Service has
+no lifecycle controls. A Server Service additionally provides `ask()` and
+`waitReady()`.
 
 ```ts
 service.subscribe("changed", message => console.log(message))
-service.lifecycle.subscribe("disable", () => console.log("unavailable"))
+service.lifecycle.subscribe("stop", () => console.log("unavailable"))
 await service.ask("value") // Server Service only
 ```
 
