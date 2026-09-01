@@ -1,38 +1,57 @@
 # PhreshOS Documentation
 
-The practical documentation application for building and operating PhreshOS
-Programs. Documentation content lives in `content/docs`; the surrounding
-Next.js application renders it with Fumadocs.
+The public documentation for understanding, building, and operating PhreshOS.
+
+The repository contains the canonical user-facing model of the System, runtime,
+SDKs, CLI, and Program authoring workflow. Fumadocs renders the authored MDX
+content as a statically exported documentation application.
+
+## Content
+
+```text
+content/docs/
+├── (start)
+├── system
+├── runtime
+└── sdks
+```
+
+Documentation describes the public model rather than repository history or
+private implementation. API names and examples must match the released
+contracts they teach.
 
 ## Development
 
-Install dependencies and start the local documentation site:
-
 ```sh
-bun install
+bun install --frozen-lockfile
 bun run dev
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` to the deployed origin when building outside local
-development so generated social-image URLs use the public documentation host.
-
-Before committing, verify both types and the production build:
+Verify the type surface and production export:
 
 ```sh
 bun run types:check
 bun run build
 ```
 
-The production build is a static export in `out/` and is deployed by an
-assets-only Cloudflare Worker:
+The static site is emitted to `out/`.
 
-```text
-Build command:       bun run build
-Deploy command:      bun run deploy
-Production branch:   main
-BUN_VERSION:         1.3.14
-NEXT_PUBLIC_SITE_URL: the canonical documentation origin
+## Deployment
+
+```sh
+bun run deploy
 ```
 
-`NEXT_PUBLIC_SITE_URL` is a build variable used for generated metadata; it is
-not a Worker runtime variable.
+Cloudflare Workers serves the static export. Set `NEXT_PUBLIC_SITE_URL` to the
+canonical deployed origin during production builds so generated metadata uses
+the public documentation address.
+
+## Repository boundary
+
+This repository owns public PhreshOS documentation and its presentation. It
+does not own the contracts or runtime behavior described by that documentation;
+those remain in their respective repositories.
+
+## License
+
+Licensed under the [MIT License](LICENSE). Copyright © 2026 Zohayr SLILEH.
