@@ -4,8 +4,8 @@ description: Connect external Node.js tools to the System and local projects.
 icon: Box
 ---
 
-`@phreshos/node` exposes the Server System model outside a running Program and
-adds only connection lifecycle and local-project tooling.
+`@phreshos/node` connects external Node.js code to the same Core System
+contract exposed inside a Server Endpoint.
 
 ```ts
 import { System } from "@phreshos/node"
@@ -16,8 +16,11 @@ const programs = await system.program.list()
 await system.disconnect()
 ```
 
-The transport is not public API. Code uses the same System, Program, Process,
-Endpoint, Service, Window, storage, and upload handles that Server code uses.
+`System.connect()` is the connection factory, not part of the connected System
+interface. The instance adds only `disconnect()` to the shared System contract.
+The transport is not public API. Program, Process, Endpoint, Service, Window,
+storage, permission, startup, and upload handles keep their Server meanings and
+Core runtime identities.
 
 ## Project API
 
