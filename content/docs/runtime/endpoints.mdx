@@ -4,11 +4,11 @@ description: Server authority and Client representation.
 icon: Unplug
 ---
 
-Every Process owns a Server handle and a Client handle. Their capabilities
+Every Process owns a `ServerEndpoint` handle and a `ClientEndpoint` handle. Their capabilities
 differ because their execution environments differ, but both are Endpoints in
 the same domain model.
 
-## Server
+## Server Endpoint
 
 A Server executes host-side JavaScript in one of two modes:
 
@@ -24,7 +24,7 @@ A Server executes host-side JavaScript in one of two modes:
 Both modes expose the same Server SDK. A Worker is not a security boundary and
 does not have an independent working directory.
 
-## Client
+## Client Endpoint
 
 A Client executes in an iframe inside the desktop and owns one Window.
 It may access its current Program and Process, paired Server, Window, desktop

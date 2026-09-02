@@ -9,14 +9,15 @@ The Program is the domain root. Everything live belongs to this hierarchy:
 ```text
 Program
 └── Process
-    ├── Server
-    └── Client
+    ├── ServerEndpoint
+    └── ClientEndpoint
         ├── traffic
         └── window
 ```
 
-`Program`, `Process`, `Endpoint`, `Server`, and `Client` are shared runtime
-classes. `Endpoint` is the common base of `Server` and `Client`; it is not an
+`Program`, `Process`, `Endpoint`, `ServerEndpoint`, and `ClientEndpoint` are
+shared runtime classes. `Endpoint` is the common base of `ServerEndpoint` and
+`ClientEndpoint`; it is not an
 additional ownership level.
 
 <Cards>
@@ -27,7 +28,7 @@ additional ownership level.
     A live execution aggregate with immutable launch intent.
   </Card>
   <Card title="Endpoints" href="/runtime/endpoints">
-    Host-side Server and Client execution.
+    Host-side Server Endpoint and desktop Client Endpoint execution.
   </Card>
   <Card title="Communication" href="/runtime/communication">
     Context, exact destinations, questions, and subscriptions.
