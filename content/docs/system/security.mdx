@@ -20,12 +20,19 @@ represented as `null`.
 
 ## Permissions
 
-Permissions come from a finite Core registry. Programs cannot invent private
-permission strings. The current registry contains `pointer`.
+Permissions come from the System's finite catalog. Programs cannot invent
+private permission strings. The current catalog contains the value-less `all`
+permission, declared as:
 
-The permission decision belongs to the Program; the desktop remains the
-enforcement boundary. Pointer position and movement are unavailable until the
-decision is granted.
+```ts
+permissions: {
+  all: true
+}
+```
+
+`true` resolves to the canonical empty list because `all` has no selectable
+values. When present, it grants every available Client permission, permits
+`program.permissions`, and adds `allow-same-origin` to the Client iframe.
 
 <Callout type="info">
   Self-hosting means authority and recovery remain with the machine owner. Keep

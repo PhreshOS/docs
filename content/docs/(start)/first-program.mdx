@@ -29,8 +29,8 @@ host-side Server, a desktop Client, or both.
 ## Describe the project
 
 `phresh.config.ts` contains authoring metadata, production locations, build
-behavior, and development declarations. The CLI derives concrete development
-and production definitions from it.
+behavior, and development declarations. The Node Project contract derives
+concrete development and production definitions from it.
 
 ```ts title="phresh.config.ts"
 import { defineConfig } from "@phreshos/core"
@@ -51,9 +51,21 @@ export default defineConfig({
   client: {
     location: "dist/client",
     development: {
-      url: "http://localhost:5173",
       startCommand: "vite --config vite.client.ts",
     },
+  },
+})
+```
+
+The Client development tool reads the address selected by Project while keeping
+port 5200 for direct use:
+
+```ts title="vite.client.ts"
+export default defineConfig({
+  base: process.env.PHRESHOS_CLIENT_BASE ?? "./",
+  server: {
+    port: Number(process.env.PHRESHOS_CLIENT_PORT ?? "5200"),
+    strictPort: true,
   },
 })
 ```
@@ -65,8 +77,9 @@ npm run dev
 ```
 
 Development attaches the Program to the System for the lifetime of the CLI
-connection. It is an ordinary runtime Program, not a separate development-only
-domain object.
+connection. The Project assigns an available Client port, starts the declared
+development command, and stops it with the development lifecycle. It is an
+ordinary runtime Program, not a separate development-only domain object.
 
 <Cards>
   <Card title="Programs" href="/runtime/programs">

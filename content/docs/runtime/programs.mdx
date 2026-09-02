@@ -38,9 +38,15 @@ for await (const event of await project.dev(system, { signal })) {
 await system.disconnect()
 ```
 
-`project.dev()`, `project.start()`, and `project.install()` return the original
-generators from the underlying Program operations. They are shortcuts, not a
-parallel execution abstraction.
+`project.dev()`, `project.start()`, and `project.install()` expose the lifecycle
+generators from the corresponding Program operations. They are shortcuts, not
+a parallel execution abstraction. `project.dev()` also owns any declared Client
+development command and binds it to that lifecycle.
+
+When a Client development declaration contains only `startCommand`, the Project
+selects an available local port and provides `PHRESHOS_CLIENT_PORT` and
+`PHRESHOS_CLIENT_BASE` to the command. An explicit `url` instead addresses an
+external or fixed development server.
 
 For custom composition, use `developmentDefinition()` or
 `productionDefinition()` to obtain the derived concrete Program definition.
