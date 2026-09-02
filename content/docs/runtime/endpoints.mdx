@@ -1,6 +1,6 @@
 ---
 title: Endpoints
-description: Server authority and sandboxed Client representation.
+description: Server authority and Client representation.
 icon: Unplug
 ---
 
@@ -26,7 +26,7 @@ does not have an independent working directory.
 
 ## Client
 
-A Client executes in a sandboxed iframe inside the desktop and owns one Window.
+A Client executes in an iframe inside the desktop and owns one Window.
 It may access its current Program and Process, paired Server, Window, desktop
 preferences, read-only Appearance, uploads, fetch, Program resources, and exact
 Client Services.
@@ -34,7 +34,14 @@ Client Services.
 The Client has no general authority over the desktop or foreign Programs.
 Fabricating a handle cannot expand that authority.
 
+The iframe always permits scripts and forms through its sandbox. When the
+Client's effective `system` permission grants `all`, the sandbox also permits
+same-origin access. Changing between these states requires the iframe to reload.
+
 <Callout title="Location rules">
-  An HTTP(S) URL is valid for an attached development Client. Installation
-  requires Client files that the System can copy into installed storage.
+  The browser always loads `/program/&lt;identity&gt;/assets/`. In production the
+  System serves installed Client files there. During development it proxies the
+  declared HTTP(S) Client server, including its WebSocket traffic, through the
+  same address. Installation still requires Client files that the System can
+  copy into installed storage.
 </Callout>
