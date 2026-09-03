@@ -100,3 +100,15 @@ phresh system status
   The CLI and the running System must use the same System home. Otherwise, the
   CLI correctly reports that no local gateway is listening.
 </Callout>
+
+## Select production ports
+
+Production selects the first available port from `4300-4399`. Set
+`PHRESHOS_PORT` to select one port, an inclusive range, or an ordered mixture.
+
+```sh
+export PHRESHOS_PORT=4196,4234,5000-5100
+phresh system start
+```
+
+Development retains Vite's default port selection.
