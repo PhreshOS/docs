@@ -32,7 +32,9 @@ permissions: {
 
 `true` resolves to the canonical empty list because `all` has no selectable
 values. When present, it grants every available Client permission, permits
-`program.permissions`, and adds `allow-same-origin` to the Client iframe.
+`program.permissions`, allows Desktop preference updates, and adds
+`allow-same-origin` to the Client iframe. Without it, Clients may read Desktop
+preferences but cannot change them.
 
 <Callout type="info">
   Self-hosting means authority and recovery remain with the machine owner. Keep
