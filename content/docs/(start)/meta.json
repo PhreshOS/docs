@@ -3,7 +3,6 @@
   "description": "Install PhreshOS and build a Program",
   "icon": "Rocket",
   "pages": [
-    "---Introduction---",
     "index",
     "what-is-phreshos",
     "installation",
