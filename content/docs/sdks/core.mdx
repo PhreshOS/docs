@@ -128,26 +128,6 @@ and `standardAppearance` as immutable contract data.
 `PermissionDefinitions` describes the owner-facing title, description, value
 domain, and default value set for every permission in the catalog.
 
-## Serialized System operations
-
-`systemControl` is the neutral schema catalog used by trusted adapters that
-need serialized System operations. It does not replace the domain handles.
-
-| Capability | Operations |
-| --- | --- |
-| Program | `list`, `inspect`, `agent`, `wait` |
-| Process | `list`, `inspect`, `create`, `findOrCreate`, `exit`, `wait` |
-| Endpoint | `inspect`, `start`, `stop`, `waitReady`, `waitLifecycle`, `ask`, `publish`, `wait` |
-| Window | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `changeTitle`, `raise`, `wait` |
-
-Each operation publishes its `mode`, input schema, and output schema.
-Modes are `read`, `write`, `request`, or `wait`; schemas use the exported
-transport-neutral `SystemControlSchema` contract.
-`systemControlOperation()` performs a safe lookup;
-`systemControlInputIssue()` checks semantic constraints that the schema cannot
-express clearly. The CLI maps human-facing commands to these same domain
-operations rather than making this serialized catalog the public System API.
-
 ## Visual capability traits
 
 The generic `Colorable`, `Sizable`, `Shapeable`, `Variantable`, and `Elevatable`
