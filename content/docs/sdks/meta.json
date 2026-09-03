@@ -2,7 +2,6 @@
   "title": "SDKs",
   "description": "Use PhreshOS from each execution environment",
   "icon": "Braces",
-  "root": true,
   "pages": [
     "---Overview---",
     "index",

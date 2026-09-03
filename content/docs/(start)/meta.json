@@ -2,7 +2,6 @@
   "title": "Start",
   "description": "Install PhreshOS and build a Program",
   "icon": "Rocket",
-  "root": true,
   "pages": [
     "---Introduction---",
     "index",
