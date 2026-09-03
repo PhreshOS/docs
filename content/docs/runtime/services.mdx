@@ -4,8 +4,9 @@ description: Stable communication addresses for Endpoint services.
 icon: Waypoints
 ---
 
-A Service is a stable communication address for an Endpoint that declared a
-service role. It provides communication without controlling the Endpoint.
+A Service is a stable communication address for an Endpoint incarnation that
+declared a Service role. It provides communication without controlling the
+Endpoint.
 
 ## Address
 
@@ -17,10 +18,9 @@ const service = system.service({
 })
 ```
 
-When `process` is a Program-local name, `program` supplies its namespace. The
-Service then follows replacement Processes created under that name. A globally
-unique Process identity needs no Program coordinate and addresses only that
-Process:
+When `process` is a Program-local name, `program` supplies its namespace and
+the Service follows replacement Processes under that name. A globally unique
+Process identity needs no Program coordinate and addresses only that Process:
 
 ```ts
 const exact = system.service({
@@ -29,19 +29,47 @@ const exact = system.service({
 })
 ```
 
+`system.service(key)` synchronously creates or reuses the canonical handle. It
+does not discover providers, list Services, start a Process, or imply readiness.
+
+## Shared contract
+
+| Member | Contract |
+| --- | --- |
+| `lifecycle` | Addressed Endpoint's `start` and `stop` events |
+| `exists()` | Whether a matching Service incarnation exists |
+| `waitReady(timeout?)` | Wait for a usable Client or ready Server |
+| `publish()` | Send an application event to the address |
+| `subscribe()` | Persistently observe an event or every event |
+| `waitFor()` | Wait for the next matching application event |
+| `events()` | Iterate matching or correlated application events |
+
+`ServerService` additionally provides `ask()` and `timeout()`.
+`ClientService` adds no operation to the shared Service contract. A Service has
+no `start()`, `stop()`, `enable()`, or `disable()` operation.
+Lifecycle `start` and `stop` messages are `undefined`, matching Endpoint
+lifecycle.
+
+```ts
+service.subscribe("changed", message => console.log(message))
+service.lifecycle.subscribe("stop", () => console.log("unavailable"))
+await service.ask("value") // available because this is a Server Service
+```
+
 ## Service role
 
-A Program declaration may provide the default role:
+A Program declaration supplies the default role for each Endpoint kind:
 
 ```ts
 server: {
   location: "dist/server",
+  entryFile: "main.js",
   service: true,
 }
 ```
 
-Omission means `false`. Boolean Endpoint selection uses that declaration
-default. An object launch can override it for one incarnation:
+Omission means `false`. An object launch can override the default for one
+incarnation:
 
 ```ts
 await program.process.create({
@@ -51,42 +79,16 @@ await program.process.create({
 })
 ```
 
-Client launches accept `service` alongside Window options. The same
-`ServerLaunch` and `ClientLaunch` contracts apply to Process creation and later
-`server.start()` or `client.start()` calls. Each fresh Endpoint incarnation
-therefore resolves its own role. `context.isService()` and
-`endpoint.isService()` read that role. Only `system.service()` creates a Service
-handle.
+The same `ServerLaunch` and `ClientLaunch` contracts apply to Process creation
+and later `server.start()` or `client.start()` calls. `context.isService()` and
+`endpoint.isService()` read the resolved role.
 
-## Availability
+## Availability and identity
 
-`system.service(key)` creates or reuses the exact local handle synchronously. It
-does not discover providers, list Services, start a Process, or imply readiness.
+A Client Service is ready when its incarnation exists. A Server Service must
+also have announced readiness. Temporary absence remains waitable; permanent
+unavailability rejects. Calls use ten seconds by default.
 
-| Operation | Contract |
-| --- | --- |
-| `exists()` | Read whether the addressed Endpoint incarnation exists |
-| `waitReady()` | Wait up to ten seconds by default for a usable Client or ready Server |
-| `subscribe()` | Observe application events from the service address |
-| `lifecycle` | Observe the Endpoint's `start` and `stop` transitions |
-| `ask()` | Ask a Server Service and await its answer |
-
-A Service has no lifecycle controls.
-
-```ts
-service.subscribe("changed", message => console.log(message))
-service.lifecycle.subscribe("stop", () => console.log("unavailable"))
-await service.ask("value") // Server Service only
-```
-
-## Service classes
-
-The public hierarchy is:
-
-- `Service`
-- `ServerService`
-- `ClientService`
-
-`ServerService` adds `ask()`. `ClientService` adds no operation beyond the
-shared Service contract. All three constructors are exported by the relevant
-SDKs and preserve reference identity within one SDK context.
+`Service`, `ServerService`, and `ClientService` are public classes. Repeated
+lookup of one address within the same SDK context returns the same handle, so
+reference equality and `instanceof` are meaningful.

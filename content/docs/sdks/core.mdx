@@ -4,14 +4,15 @@ description: Use the shared PhreshOS contracts and Program configuration.
 icon: Boxes
 ---
 
-`@phreshos/core` defines the domain contracts shared by every PhreshOS
-environment. It performs no connection, persistence, rendering, or execution.
+`@phreshos/core` is the source of truth for PhreshOS domains and contracts. It
+defines values and pure validation; it does not connect, persist, render, or
+execute them.
 
 ```ts
 import {
-  Program,
-  Process,
   Endpoint,
+  Process,
+  Program,
   Service,
   defineConfig,
 } from "@phreshos/core"
@@ -19,22 +20,43 @@ import {
 
 ## Domain contracts
 
-Core owns the `System`, `Program`, `Process`, `Endpoint`, `Service`, `Context`,
-`Desktop`, `Window`, storage, permission, communication, launch, and appearance
-contracts. Environment SDKs implement those contracts and export the same
-runtime constructors where reference identity matters.
+| Domain | Public contract |
+| --- | --- |
+| System | Global capabilities and Program and Process collections |
+| Program | Stable identity, resources, installation, startup, and Processes |
+| Process | One live execution with Server and Client Endpoints |
+| Endpoint | One permanent Server or Client execution address |
+| Service | Stable communication address for a Service incarnation |
+| Context | Capabilities of the currently executing Endpoint |
+| Desktop | Surface and effective preferences of one graphical environment |
+| Window | Authoritative Client presentation state |
+| Local Window | One Desktop's physical Window representation |
+
+Core exports the runtime constructors `Program`, `Process`, `Endpoint`,
+`ServerEndpoint`, `ClientEndpoint`, `Service`, `ServerService`, and
+`ClientService`. Environment SDKs implement their contracts and reuse those
+constructors so `instanceof` and canonical handle identity remain meaningful.
+
+## Communication contracts
+
+Core owns `Publishable`, `Subscribable`, `Askable`, and `Timeoutable`, together
+with their message, capture, traffic, question, answer, outcome, event-option,
+and cleanup types. These contracts define the single event vocabulary used by
+Context, Endpoint, Service, lifecycle, Window, Desktop, and Appearance.
+
+[Communication](/runtime/communication) defines the observable behavior.
 
 ## Program configuration
 
-`defineConfig()` provides contextual typing for `phresh.config.ts`. It returns
-the supplied authoring declaration unchanged. The Node Project API validates
-and derives that declaration for development, production, and packaging.
+`defineConfig()` adds contextual typing to `phresh.config.ts` and returns the
+same value unchanged. A configuration must declare a Server, a Client, or both.
 
 ```ts
 import { defineConfig } from "@phreshos/core"
 
 export default defineConfig({
   identity: "my-program",
+  name: "My Program",
   server: {
     location: "dist/server",
     entryFile: "main.js",
@@ -42,5 +64,92 @@ export default defineConfig({
 })
 ```
 
-Use Core when code needs the shared contract without choosing a transport or
-execution environment.
+| Program field | Contract |
+| --- | --- |
+| `identity` | Required kebab-case public identity |
+| `name`, `version`, `description` | Optional human-readable metadata |
+| `icon` | PNG source from 128 to 2,048 pixels and at most 5 MiB |
+| `agent` | Program-relative agent Markdown path |
+| `categories`, `keywords`, `website` | Optional catalog metadata |
+| `buildCommand` | Command run before start, install, and pack |
+| `server`, `client` | At least one Endpoint declaration |
+
+Both Endpoint declarations require a production `location`; `start` defaults to
+`true`, and `service` defaults to `false`.
+
+| Server-only field | Contract |
+| --- | --- |
+| `startCommand` | Execute a supervised operating-system process |
+| `entryFile` | Load a System-owned Worker; mutually exclusive with `startCommand` |
+| `installCommand`, `uninstallCommand` | Optional lifecycle preparation commands |
+| `development` | Development `startCommand` or `entryFile` |
+
+| Client-only field | Contract |
+| --- | --- |
+| `title`, `size`, `position`, `layer`, `minimize` | Initial Window defaults |
+| `permissions` | Immutable initial Client permission declaration |
+| `development.url` | Fixed HTTP(S) development address |
+| `development.startCommand` | Optional with a URL; required when Project assigns the port |
+
+## Runtime definitions
+
+`Config` is an authoring contract. `ProgramDefinition` is the resolved runtime
+input accepted by `system.program.create()` and `system.forceCreateProgram()`.
+It requires an absolute `storage` path, resolved Endpoint locations, and a
+Server `startCommand` or `entryFile`. A Client location may instead be an
+HTTP(S) URL. A string source is an absolute directory or `program.json` path.
+
+Project converts authoring configuration into this runtime definition; the
+System does not interpret a project's relative paths or development settings.
+
+## Pure utilities
+
+The package exports guards and parsers for values that cross an untyped
+boundary:
+
+| Operation | Contract |
+| --- | --- |
+| `isServiceKey()` | Test complete Service coordinates |
+| `isUploadFile()` | Test one opaque upload key |
+| `isRelativeValue()` | Test Window geometry grammar |
+| `parseRelativeValue()` | Reduce geometry to relative and pixel coefficients |
+| `isPermissionName()` | Test the closed permission catalog |
+| `parsePermissionName()` | Parse or reject a permission name |
+| `parsePermission()` | Parse one exact permission value |
+| `parsePermissionChange()` | Parse one assignment or request result |
+| `parseClientPermissions()` | Parse immutable declared grants |
+| `parsePermissions()` | Parse stored Program grants |
+| `parseShellEvent()` | Parse one shell generator event |
+| `createAppearanceSnapshot()` | Deeply freeze one Appearance snapshot |
+
+Core also publishes `layers`, `clientPermissionCatalog`, `appearanceLimits`,
+and `standardAppearance` as immutable contract data.
+
+`PermissionDefinitions` describes the owner-facing title, description,
+allowed values, and default value set for every permission in the catalog.
+
+## Serialized System operations
+
+`systemControl` is the neutral schema catalog used by trusted adapters that
+need serialized System operations. It does not replace the domain handles.
+
+| Capability | Operations |
+| --- | --- |
+| Program | `list`, `inspect`, `agent`, `wait` |
+| Process | `list`, `inspect`, `create`, `findOrCreate`, `exit`, `wait` |
+| Endpoint | `inspect`, `start`, `stop`, `waitReady`, `waitLifecycle`, `ask`, `publish`, `wait` |
+| Window | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `changeTitle`, `raise`, `wait` |
+
+Each operation publishes its `mode`, input schema, and output schema.
+Modes are `read`, `write`, `request`, or `wait`; schemas use the exported
+transport-neutral `SystemControlSchema` contract.
+`systemControlOperation()` performs a safe lookup;
+`systemControlInputIssue()` checks semantic constraints that the schema cannot
+express clearly. The CLI maps human-facing commands to these same domain
+operations rather than making this serialized catalog the public System API.
+
+## Visual capability traits
+
+The generic `Colorable`, `Sizable`, `Shapeable`, `Variantable`, and `Elevatable`
+interfaces describe semantic visual choices without defining a component or
+rendering system. Concrete UI components select the value domains they accept.

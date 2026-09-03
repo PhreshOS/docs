@@ -17,8 +17,8 @@ content/docs/
 ```
 
 Documentation describes the public model rather than repository history or
-private implementation. API names and examples must match the released
-contracts they teach.
+private implementation. API names and examples must match the authoritative
+public contracts in Core and the environment contract they teach.
 
 ## Development
 

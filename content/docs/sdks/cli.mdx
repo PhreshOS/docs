@@ -35,6 +35,17 @@ phresh window inspect --program my-program --process main
 The command hierarchy follows the runtime ownership hierarchy. Unknown
 commands, flags, and malformed values reject rather than being guessed.
 
+| Domain | Commands |
+| --- | --- |
+| Program | `list`, `inspect`, `agent`, `wait` |
+| Process | `list`, `inspect`, `create`, `findOrCreate`, `exit`, `wait` |
+| Endpoint | `inspect`, `start`, `stop`, `waitReady`, `waitLifecycle`, `ask`, `publish`, `wait` |
+| Window | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `changeTitle`, `raise`, `wait` |
+
+Program and Process lists support search, pagination, and compact or JSON
+output. Wait commands use the same event vocabularies and deadlines as their
+SDK contracts.
+
 Endpoint service roles use the same launch contract as the SDKs:
 
 ```sh
@@ -61,3 +72,14 @@ phresh describe process list
 
 `describe` emits the command tree and exact options as machine-readable data,
 which makes the CLI usable by people and agents without a separate command API.
+
+## System lifecycle
+
+| Command | Outcome |
+| --- | --- |
+| `phresh system install` | Install or update the System and start its service |
+| `phresh system uninstall` | Remove the installed release and service while keeping persistent data |
+| `phresh system status` | Report version, Desktop address, service, and startup state |
+| `phresh system version` | Report the installed release version |
+| `phresh system start`, `stop` | Change current service execution |
+| `phresh system enable`, `disable` | Change automatic startup |

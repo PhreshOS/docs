@@ -1,73 +1,92 @@
 ---
 title: Communication
-description: Context, Endpoint handles, questions, events, and traffic.
+description: Publications, questions, observation, and traffic envelopes.
 icon: MessagesSquare
 ---
 
-Communication is expressed through Context, Endpoint, and Service contracts;
-the transport used by an SDK does not change their meaning.
+Communication is one contract shared by Context, Endpoint, and Service
+surfaces. SDK transports may differ; message meaning and lifecycle do not.
 
-## Context
+## Publications
 
-The `context` object is the executing Endpoint's communication and runtime
-environment.
+`publish(event, payload?)` is synchronous and fire-and-forget. It returns no
+delivery result, and an unavailable destination silently drops the
+publication.
+
+`context.publish()` produces destinationless output from the executing
+Endpoint. `endpoint.publish()` targets that exact Endpoint, and
+`service.publish()` targets the Endpoint at that Service address. An Endpoint
+root subscription observes its destinationless output; `traffic` observes its
+directed output.
+
+Context receives messages addressed to its executing Endpoint:
 
 ```ts
-context.subscribe("changed", (message) => {
-  console.log(message.payload)
+context.subscribe("changed", message => {
+  console.log(message.from, message.payload)
 })
 
 context.publish("changed", { value: 1 })
 ```
 
-Context subscriptions receive messages addressed to the executing Endpoint as
-`{ from, payload }`. Publishing emits from that Endpoint and does not loop back
-into the same Context subscription.
-
-On the Server, `context.answer()` answers questions addressed to that Server.
-
-```ts
-context.answer("status.read", () => ({ ready: true }))
-```
-
-## Endpoint and Service handles
-
-Use an Endpoint handle when the exact destination or source matters. Use a
-Service when the stable service address matters instead of one Process
-incarnation.
-
-- `endpoint.publish()` sends directly to that Endpoint.
-- `server.ask()` asks an exact Server.
-- `endpoint.subscribe()` follows destinationless publications from that Endpoint.
-- `endpoint.traffic` inspects directed questions, publications, and answers.
-
-Every permanent Endpoint also has `endpoint.lifecycle`, a separate subscribable
-surface for its own `start` and `stop` transitions. Application events remain
-on the Endpoint root.
+Context messages are `{ from, payload }`. Endpoint traffic messages are
+`{ to, payload }`. An inaccessible sender or destination is represented as
+`null`, never as a fabricated or partially visible handle.
 
 ## Observation
 
-Every subscribable contract follows the same three forms:
+Every `Subscribable` exposes the same three operations:
 
 | Operation | Result |
 | --- | --- |
-| `subscribe(event, callback)` | Persistent registration and its cleanup function |
+| `subscribe(event, subscriber)` | Persistent registration and its cleanup |
+| `subscribe(subscriber)` | Persistent registration across correlated `{ event, message }` captures |
 | `waitFor(event, timeout?)` | Promise for the next matching message |
-| `events(event?, { signal, capacity }?)` | Abortable asynchronous iterator |
+| `events(event?, options?)` | Async iterator for one event or all correlated captures |
 
-`waitFor()` and `ask()` use a ten-second deadline unless the caller supplies
-another one. Event iterators remain live until closed, aborted, or future
-delivery becomes impossible.
+Event iterator options are `{ signal, capacity }`. Capacity defaults to `64`;
+`Infinity` removes the queue bound. `waitFor()` uses ten seconds by default.
 
-`endpoint.traffic` observes directed publications and questions originating
-from an Endpoint. Server traffic also observes answers. Questions use
-`subscribeAsks()` or `asks()`; answers use `subscribeAnswers()` or `answers()`.
+Subscriptions observe future messages and do not replay current state. A
+persistent registration ends only when its cleanup runs or its owning boundary
+is destroyed. Iteration ends when closed, aborted, or future delivery becomes
+impossible.
 
-## Delivery semantics
+## Questions and answers
 
-Importing an SDK or starting an Endpoint does not push state into it. Requests
-read the present. Subscriptions observe future publications and do not replay an
-initial value. Persistent registrations may survive temporary Endpoint absence
-and end when their cleanup runs or their owning boundary is destroyed. React
-state hooks compose an explicit read with a subscription without changing those
-semantics.
+Server Endpoints and Server Services are `Askable`:
+
+```ts
+const result = await server.ask("status.read")
+const slower = await server.timeout(30_000).ask("report.create", {
+  format: "pdf",
+})
+```
+
+An ask rejects when its destination is known to be unavailable or stops before
+answering. Once delivered, an unanswered question waits for its deadline
+because a boundary cannot infer whether an answerer exists.
+
+The executing Server registers an answerer through its Context:
+
+```ts
+const cleanup = context.answer("status.read", () => ({ ready: true }))
+```
+
+Answer outcomes are transport-neutral: `{ success: true, result }` or
+`{ success: false, error }`.
+
+## Traffic
+
+`endpoint.traffic` observes communication originating from one Endpoint,
+including destinations that an Endpoint subscription does not expose.
+
+| Traffic contract | Additional observation |
+| --- | --- |
+| Endpoint and Client traffic | `subscribeAsks()` and `asks()` |
+| Server traffic | `subscribeAsks()`, `asks()`, `subscribeAnswers()`, and `answers()` |
+
+Question and answer captures contain `event`, `questionId`, and `message`. The
+question message holds `{ to, payload }`; the answer message holds
+`{ to, outcome }`. Ordinary traffic remains available through `subscribe()`,
+`waitFor()`, and `events()`.

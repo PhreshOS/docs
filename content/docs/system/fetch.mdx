@@ -1,0 +1,31 @@
+---
+title: Fetch
+description: Perform outbound web requests through the shared System contract.
+icon: Globe
+---
+
+`system.fetch()` performs one outbound request using the platform-standard
+`fetch` input and result contracts.
+
+```ts
+const response = await system.fetch("https://example.com/data.json", {
+  headers: { accept: "application/json" },
+})
+
+const data = await response.json()
+```
+
+## Contract
+
+The operation accepts `RequestInfo | URL` and optional `RequestInit`, then
+returns a standard `Response`. Supplying a `Request` preserves its method,
+headers, body, and abort signal.
+
+Node and Server execute the request locally when that preserves the observable
+contract. A Client crosses its System boundary. In every environment the
+request remains owned by the active System connection or execution Context.
+
+## Authority
+
+A Client requires the `all` permission. Server and Node retain full System
+authority.

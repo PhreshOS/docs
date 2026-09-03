@@ -33,6 +33,9 @@ contract with different boundary policies.
 | `delete(...parts)` | Recursively remove an entry |
 | `clear(...parts)` | Empty a directory while preserving it |
 
+`stat()` discriminates results by `kind`. Files include `size` and
+`modifiedAt`; directories and other entries include `modifiedAt`.
+
 ## Native storage
 
 `system.storage` enters the native filesystem at the operating-system user's
@@ -45,7 +48,7 @@ to that Storage's boundary policy; it does not read the path.
 
 ## Program resources
 
-Every Program owns the same resource families in Client and Server contexts:
+Every Program handle exposes the same resource families in every SDK:
 
 | Resource | Purpose |
 | --- | --- |
@@ -58,3 +61,27 @@ Every Program owns the same resource families in Client and Server contexts:
 Program `data` and `cache` are contained within their own roots. Their paths
 cannot traverse outside the root or pass through a symbolic link. A Client can
 access only resources belonging to its own Program unless it has `all`.
+
+## Program store
+
+`program.store` is persistent key-value state rather than a filesystem:
+
+| Operation | Result |
+| --- | --- |
+| `get(key)` | Stored value, or `undefined` when absent or expired |
+| `set(key, value, ttl?)` | Whether the value was stored; optional TTL is milliseconds |
+| `delete(keyOrKeys)` | Whether any value was removed |
+| `has(key)` | Whether a non-expired value exists |
+| `clear()` | Remove every stored value |
+
+## Program SQL
+
+Both `program.database` and `program.logs` expose `query()`. It accepts a tagged
+template, or a SQL string with an optional values array, and returns the rows.
+Template interpolations become bound values. The database is writable; logs
+are read-only.
+
+Each captured log row has `createdAt`, Process identity in `process`, Endpoint
+`source`, `kind`, and text `content`. Sources are `client` or `server`. Standard kinds are
+`debug`, `log`, `info`, `warn`, `error`, `stdout`, `stderr`, and `exit`;
+applications may use another string kind.

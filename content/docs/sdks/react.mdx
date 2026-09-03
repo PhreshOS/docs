@@ -31,11 +31,11 @@ those values are pending.
 
 | Hook | Resolved state |
 | --- | --- |
-| `useProgramState` | Installation and live Processes |
-| `useProcessState` | Exit and Endpoint existence |
-| `useEndpointState` | Endpoint existence |
-| `useServiceState` | Addressed Endpoint existence |
-| `useWindowState` | Complete authoritative Window state |
+| `useProgramState(program)` | `{ installed, processes }` |
+| `useProcessState(process)` | `{ exited, serverExists, clientExists }` |
+| `useEndpointState(endpoint)` | `{ exists }` |
+| `useServiceState(service)` | `{ exists }` |
+| `useWindowState(window)` | `{ title, position, size, minimized, front, layer, location }` |
 
 These hooks subscribe before performing their initial explicit read, preventing
 a stale read from overwriting a newer event.

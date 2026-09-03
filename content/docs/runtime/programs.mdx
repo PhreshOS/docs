@@ -5,17 +5,82 @@ icon: Package
 ---
 
 A Program is the stable software identity known by the System. It is the domain
-root for configuration, resources, installation, startup, and live Processes.
+root for declaration, resources, installation, startup, and live Processes.
 
-## Identity and declaration
+## State
 
-Every Program has a kebab-case `identity` and a runtime `assetId`. The public
-identity remains stable; the asset identity distinguishes the current runtime
-entity used to serve its Client files.
+| Member | Meaning |
+| --- | --- |
+| `identity` | Stable public kebab-case identity |
+| `assetId` | Identity of the current runtime entity used in Client asset URLs |
+| `name` | Human-readable resolved name |
+| `version` | Declared version, or `null` |
+| `description` | Declared description, or `null` |
+| `hasAgent` | Whether agent documentation was declared |
+| `server` | Resolved Server declaration, or `null` |
+| `client` | Resolved Client declaration, or `null` |
 
-A Program may declare a name, version, description, icon, agent document,
-Server Endpoint, Client Endpoint, and immutable Client permissions. It must
-declare a Server, a Client, or both.
+The Server and Client declarations expose their default `start` and `service`
+values. The Client declaration also exposes its resolved Window defaults and
+immutable permission declaration.
+
+Only one current runtime Program occupies an identity. `assetId` changes when
+that runtime entity is replaced, allowing the System to distinguish its Client
+assets without changing the public identity.
+
+## System collection
+
+`system.program` is the collection of Programs known to the System:
+
+| Operation | Result |
+| --- | --- |
+| `list(onlyInstalled?)` | Every visible Program, optionally limited to installed Programs |
+| `find(identity)` | One Program or `null` |
+| `create(source)` | A new uninstalled Program from a runtime definition or absolute `program.json` path |
+
+The collection emits `create`, `forget`, `install`, and `uninstall`. The first
+three messages are the affected Program. `uninstall` sends
+`{ program, everything }`.
+
+## Owned capabilities
+
+| Member | Contract |
+| --- | --- |
+| `program.process` | List, create, run, and observe this Program's Processes |
+| `program.startup` | Read, enable, or disable one persistent Process launch |
+| `program.data` | Durable filesystem storage |
+| `program.cache` | Disposable filesystem storage |
+| `program.store` | Persistent key-value storage |
+| `program.database` | Writable Program SQL database |
+| `program.logs` | Read-only SQL access to captured Endpoint output |
+| `program.permissions` | Stored user grants belonging to this Program |
+
+`startup.get()` returns the configured launch or `null`.
+`startup.enable(launch?)` stores a validated launch, and `startup.disable()`
+removes it without changing the Program or its current Processes. Only an
+installed Program can enable startup.
+
+## Operations
+
+| Operation | Result |
+| --- | --- |
+| `icon(size?)` | `small`, `medium`, or `large` PNG icon as a `Blob`; `medium` is the default |
+| `agent()` | Declared agent document or `null` |
+| `installed()` | Whether an installed form currently exists |
+| `install()` | Async generator of exact `stdout` and `stderr` command chunks |
+| `uninstall(everything?)` | Async generator of cleanup command chunks |
+| `forget()` | End Processes and remove only the runtime entity |
+| `fork(identity)` | Create another Program under a new identity |
+
+`uninstall()` preserves Program storage unless `everything` is `true`.
+`system.forceCreateProgram(source)` is the System-level operation for replacing
+the current runtime entity while preserving installed files and storage.
+
+## Events
+
+An individual Program emits `forget` with `undefined` and `uninstall` with the
+`everything` boolean. Process membership events belong to `program.process`,
+not to the Program root.
 
 ## Runtime forms
 
@@ -29,27 +94,3 @@ declare a Server, a Client, or both.
     Program remains tethered to the connection that started it.
   </Tab>
 </Tabs>
-
-Only one current runtime Program occupies an identity. Replacing a runtime
-Program does not silently uninstall files or erase storage.
-
-## Owned capabilities
-
-Every Program owns:
-
-- `process`, for creating and observing its Processes;
-- `startup`, for one persistent Process launch;
-- `data`, `cache`, `store`, `database`, and `logs`;
-- `permissions`, for stored user grants; and
-- its icon and optional agent document.
-
-## Lifecycle
-
-| Operation | Contract |
-| --- | --- |
-| `system.program.create()` | Create an uninstalled runtime Program |
-| `system.forceCreateProgram()` | Replace the current runtime entity while preserving installed files and storage |
-| `install()` | Install the Program while yielding command output |
-| `uninstall()` | Remove its installed form while yielding command output |
-| `forget()` | End its Processes and remove only its runtime entity |
-| `fork(identity)` | Create another Program under a new identity |

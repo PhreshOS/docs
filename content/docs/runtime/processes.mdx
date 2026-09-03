@@ -8,28 +8,60 @@ A Process is one live execution aggregate owned by a Program. Its identity,
 optional Program-local name, start time, launch options, and parentage remain
 fixed for its lifetime.
 
+## State
+
+| Member | Meaning |
+| --- | --- |
+| `identity` | Immutable globally unique runtime identity |
+| `name` | Optional name unique among the Program's live Processes |
+| `startedAt` | Creation instant as a `Date` |
+| `server` | Permanent Server Endpoint handle |
+| `client` | Permanent Client Endpoint handle |
+
+`program()` returns the owning Program. `parent()` returns the Process whose
+creation call produced this Process, or `null`. `option(name)` reads one
+immutable string launch option or returns `undefined`.
+
+`parent()` rejects when this Process or its retained parent no longer exists.
+
+## Program collection
+
+`program.process` addresses only Processes belonging to that Program:
+
+| Operation | Result |
+| --- | --- |
+| `list()` | Every live Process |
+| `first()` | Earliest-started Process or `null` |
+| `last()` | Latest-started Process or `null` |
+| `find(identityOrName)` | Matching Process or `null` |
+| `create(launch?)` | Always create a Process |
+| `findOrCreate(launch)` | Find the named Process or atomically create it |
+| `exitAll()` | End every Process and return their identities |
+| `run(launch?, { signal }?)` | Create a Process owned by an async generator |
+
+`system.process.list()` and `system.process.find(identity)` provide the
+System-wide collection.
+
 ## Launch
 
-A launch selects which Endpoints start, whether either incarnation is a
-Service, Client Window overrides, and immutable string options.
-
-## Create or run
+A launch selects a Process name, which declared Endpoints start, per-incarnation
+Service roles, Client Window overrides, and immutable string options. Omitting
+an Endpoint selection uses its declaration default. Reusing a live Process name
+with a different launch rejects.
 
 ```ts
 const process = await program.process.create({
   name: "main",
-  server: true,
+  server: { service: true },
   client: true,
+  options: { mode: "primary" },
 })
 ```
 
-| Operation | Contract |
-| --- | --- |
-| `create(launch)` | Always create a Process |
-| `findOrCreate(launch)` | Find an equivalent named Process or create it atomically |
-| `run(launch, { signal })` | Create a Process owned by its asynchronous generator |
+## Attached run
 
-Reusing a Process name with a different launch rejects.
+`run()` yields `started`, `output`, and `exited` in order. Output contains its
+`stream` and exact `text`; the final event contains the Process and `Exit`.
 
 ```ts
 const controller = new AbortController()
@@ -38,26 +70,24 @@ for await (const event of program.process.run(
   { server: true, client: true },
   { signal: controller.signal },
 )) {
-  switch (event.event) {
-    case "started":
-    case "output":
-    case "exited":
-      console.log(event)
-  }
+  if (event.event === "started") console.log(event.process.identity)
+  if (event.event === "output") console.log(event.stream, event.text)
+  if (event.event === "exited") console.log(event.exit)
 }
 ```
 
-Aborting the signal, returning early from the generator, or losing its owning
-connection exits the Process.
+Aborting the signal, returning early, or losing the owning connection exits the
+Process.
 
-## Endpoints
+## Operations and events
 
-Every Process owns permanent `server` and `client` handles. The handles remain
-addressable while their current Endpoint incarnations are stopped. A Process
-ends when its complete execution ends; `exit()` ends all remaining Endpoints.
+`exit()` ends the Process and all live Endpoints. `exited()` reports whether it
+has ended. An individual Process emits `exit` with `{ status, code, signal }`.
+Both `program.process` and `system.process` emit `create` with a Process and
+`exit` with the Process plus its exit result.
 
 ## Parentage
 
-A Process may retain the immediate Process that created it. Parentage records
-creation lineage, not ownership. A Client can traverse parentage only inside its
-own Program; the first cross-Program parent is represented as `null`.
+Parentage records creation lineage, not ownership. A Client can traverse it
+only inside its own Program; the first cross-Program parent is represented as
+`null`.

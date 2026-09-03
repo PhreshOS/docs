@@ -30,6 +30,11 @@ host capabilities. The Desktop represents that state graphically.
     href="/system/uploads"
   />
   <Card
+    title="Fetch"
+    description="Perform an outbound request through the connected System environment."
+    href="/system/fetch"
+  />
+  <Card
     title="Shell"
     description="Stream an operating-system command through the shared System contract."
     href="/system/shell"
@@ -40,6 +45,23 @@ host capabilities. The Desktop represents that state graphically.
     href="/system/security"
   />
 </Cards>
+
+## Contract
+
+| Member | Capability |
+| --- | --- |
+| `program` | System-wide Program collection and lifecycle events |
+| `process` | System-wide Process collection and lifecycle events |
+| `storage` | Native filesystem access |
+| `uploads` | Flat System-owned upload collection |
+| `appearance` | Read and replace authoritative Appearance |
+| `service(key)` | Stable communication address for one Endpoint Service |
+| `forceCreateProgram(source)` | Replace one runtime Program without removing installed resources |
+| `fetch(input, init?)` | Outbound web request |
+| `shell(command, options?)` | Owned operating-system command stream |
+
+Client, Server, and Node implement this same contract. Authority may reject an
+operation; it does not replace the contract with a narrower shape.
 
 ## Local connection
 

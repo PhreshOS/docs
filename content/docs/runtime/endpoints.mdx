@@ -4,32 +4,56 @@ description: Server and Client execution within each Process.
 icon: Unplug
 ---
 
-Every Process owns a permanent `ServerEndpoint` handle and `ClientEndpoint`
-handle. Both implement the shared Endpoint contract; each adds only the
-capabilities inherent to its execution role.
+Every Process owns one permanent `ServerEndpoint` handle and one permanent
+`ClientEndpoint` handle. Both implement the shared Endpoint contract; each adds
+only capabilities inherent to its execution role.
 
 ## Shared contract
 
-An Endpoint publishes application events, exposes its outgoing traffic, and
-observes `start` and `stop` transitions through `lifecycle`.
-
-| Operation | Contract |
+| Member | Contract |
 | --- | --- |
-| `exists()` | Read whether a current incarnation exists |
-| `isService()` | Read whether that incarnation declared a Service role |
-| `start()` | Create a fresh incarnation |
-| `stop()` | End the incarnation without implicitly ending the Process |
-| `waitReady()` | Wait up to ten seconds by default for a usable incarnation |
+| `traffic` | Directed publications and questions originating here |
+| `lifecycle` | `start` and `stop` transitions at this permanent address |
+| `process()` | Owning Process |
+| `exists()` | Whether a current incarnation exists |
+| `waitReady(timeout?)` | Wait for a usable incarnation; ten seconds by default |
+| `start()` | Start a fresh incarnation |
+| `stop()` | Stop the incarnation without implicitly ending the Process |
+| `isService()` | Whether the current incarnation is a Service |
+
+Endpoints also implement `publish()`, `subscribe()`, `waitFor()`, and `events()`
+for application communication. These operations remain on the Endpoint root;
+only lifecycle transitions use `endpoint.lifecycle`.
+
+Starting rejects when the Process is gone, the Program did not declare that
+Endpoint, or an incarnation is already starting or live. Stopping rejects when
+the Endpoint is absent or stopping, or when it would remove the Process's final
+live Endpoint.
 
 A Client is ready when it exists. A Server must also announce readiness.
-Starting rejects when the Program did not declare that Endpoint or an
-incarnation is already starting or live. Stopping rejects when it would remove
-the Process's final live Endpoint. Readiness rejects when the owning Process can
-no longer provide a future incarnation.
+Temporary absence remains waitable while the Process exists; readiness rejects
+when that Process can no longer provide a future incarnation.
+
+## Events
+
+| Surface | Events |
+| --- | --- |
+| Endpoint root | Application-defined publications |
+| `lifecycle` | `start: undefined`, `stop: undefined` |
+| `traffic` | Directed application events and outgoing questions |
+| Server `traffic` | Directed application events, questions, and answers |
+
+Lifecycle events exist because a permanent Endpoint handle may observe
+multiple incarnations. A Process does not emit separate Endpoint start and stop
+events.
 
 ## Server Endpoint
 
-A Server executes host-side JavaScript in one of two modes:
+`ServerEndpoint` adds `ask(event, payload?)` and `timeout(milliseconds)` because
+questions are addressed to Servers. `start(serverLaunch?)` may select the
+Service role for the new incarnation.
+
+A Server executes host-side JavaScript in one of two declared modes:
 
 <Tabs items={["Command", "Worker"]}>
   <Tab value="Command">
@@ -45,22 +69,22 @@ boundary and does not have an independent working directory.
 
 ## Client Endpoint
 
-A Client executes in an iframe inside the Desktop and owns one Window. Its
-Context provides its Program, Process, paired Server Endpoint, Window, local
-Window representation, options, communication, and permission requests.
+`ClientEndpoint` adds its permanent `window` capability.
+`start(clientLaunch?)` may select the Service role and initial Window title,
+size, position, layer, location, and minimized state.
 
-The Client may access its own Program, Processes belonging to that Program, and
-Services belonging to that Program. System-wide capabilities and foreign
-Programs require the `all` permission. See [Security](/system/security).
+A Client executes in a Desktop iframe. It may access its own Program, that
+Program's Processes and Services, and its Context and Desktop capabilities.
+System-wide capabilities and foreign Programs require `all`; see
+[Security](/system/security).
 
-The iframe always permits scripts and forms through its sandbox. When the
-Client's effective `all` permission is present, the sandbox also permits
-same-origin access. Changing between these states requires the iframe to reload.
+The iframe permits scripts and forms. With effective `all`, it also permits
+same-origin access. Moving between those sandbox states requires a reload.
 
 ## Client assets
 
 The browser always loads `/program/<assetId>/assets/`. In production the System
-serves installed Client files there. During development it proxies the declared
+serves installed Client files. During development it proxies the declared
 HTTP(S) Client server, including WebSocket traffic, through the same address.
 Installation still requires Client files that the System can copy into
 installed storage.

@@ -26,6 +26,9 @@ environment values are merged over the System process environment. Output is
 reported exactly as `stdout` and `stderr` chunks; the SDK does not write it to
 the caller's terminal.
 
+The final `exit` contains `status` (`exited` or `signaled`), numeric `code` or
+`null`, and signal name or `null`.
+
 ## Lifetime
 
 The generator owns the complete operating-system process tree. Aborting its

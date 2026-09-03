@@ -48,9 +48,27 @@ for await (const event of lifecycle) {
 production definitions, installation, and packaging. The System receives only
 the resulting runtime or installed Program definition.
 
+| Operation | Result |
+| --- | --- |
+| `Project.open(source?)` | Load `phresh.config.ts` from a path or current directory |
+| `Project.define(config, options?)` | Create a Project from an already loaded configuration |
+| `manifest()` | Validated project package manifest |
+| `productionDefinition()` | Production `ProgramDefinition` |
+| `developmentDefinition()` | Development `ProgramDefinition` |
+| `build()` | Run the optional author-owned build command |
+| `start(system, options?)` | Promise of the production Process lifecycle generator |
+| `dev(system, options?)` | Promise of the development Process lifecycle generator |
+| `install(system)` | Promise of the Program installation generator |
+| `pack()` | Archive, checksum, declaration paths, and SHA-256 digest |
+
 `developmentDefinition()` and `productionDefinition()` return derived Program
 definitions for custom composition. `dev()`, `start()`, and `install()` are
-shortcuts that preserve the underlying lifecycle generators.
+shortcuts that return the underlying lifecycle generators; await the shortcut
+before iterating the returned generator.
+
+`start()` and `dev()` accept immutable Process `options` and an abort `signal`.
+Closing their returned generator, aborting that signal, or disconnecting the
+System ends the attached lifecycle.
 
 When a Client development declaration supplies a `startCommand` without a
 fixed URL, Project selects an available local port and supplies

@@ -5,57 +5,73 @@ icon: PanelsTopLeft
 ---
 
 A Desktop is one graphical representation of authoritative System state. A live
-Client owns one authoritative Window, and the Desktop owns its local visual
+Client owns one authoritative Window, while the Desktop owns its local visual
 representation.
 
 ## Desktop contract
 
-| Capability | Contract |
+| Capability | Read | Change | Event |
+| --- | --- | --- | --- |
+| `desktop.surface` | `snapshot()` → `{ size: { width, height } }` | — | `resize` with the complete snapshot |
+| `desktop.preferences` | `snapshot()` → `{ theme, animations }` | `update(preferences)` | `change` with the complete preferences |
+
+The Client may read both capabilities. Updating preferences requires `all`.
+[Appearance](/system/appearance) defines how preferences resolve visual values.
+
+## Window state
+
+Every Client Endpoint owns a permanent `window` handle. Its authoritative state
+contains `title`, `position`, `size`, `minimized`, `front`, `layer`, and
+`location`.
+
+| Read | Mutation | Event |
+| --- | --- | --- |
+| `title()` | `changeTitle(title)` | `changeTitle` with the title |
+| `position()` | `move(position)` | `move` with the position |
+| `size()` | `resize(size)` | `resize` with the size |
+| position and size | `setGeometry(geometry)` | `geometry` with both values |
+| `minimized()` | `minimize(minimized?)` | `minimize` with the state |
+| `front()` | `raise()` | `front` with the state |
+| `layer()` | — | — |
+| `location()` | — | — |
+
+Calling `minimize()` without a value selects `true`. `raise()` brings the
+Window to the front of its own layer.
+
+## Geometry and layers
+
+Geometry accepts finite pixels or linear workspace-relative expressions such
+as `"1/2"`, `"50%"`, or `"50% + 10"`. `setGeometry()` commits position and
+size atomically. Filling the workspace is geometry, not a separate maximized
+domain state; the interface offering restoration owns the temporary geometry.
+
+Numbers are absolute pixels. Percentages and fractions are relative values;
+addition and subtraction combine terms, while multiplication and division
+scale the preceding term. Other strings are rejected.
+
+Windows occupy `under`, `window`, or `over`, from back to front. Wallpaper is
+Appearance rather than another Window layer, and the taskbar remains above all
+three.
+
+## Local Window
+
+`Window` is authoritative. `context.localWindow` is this Desktop's physical
+representation of that Window:
+
+| Operation | Effect |
 | --- | --- |
-| `desktop.surface` | Read the Desktop size and observe future resizes |
-| `desktop.preferences` | Read and update the effective theme and animation preference |
+| `addSurface()` | Add the host Surface |
+| `removeSurface()` | Remove the host Surface |
+| `move(position)` | Move only the local representation |
+| `resize(size)` | Resize only the local representation |
+| `setGeometry(geometry)` | Change local position and size together |
+| `transaction(transaction)` | Return the same operations bound to visual timing |
 
-The Client may read both capabilities. Updating preferences requires the
-`all` permission. [Appearance](/system/appearance) defines how those preferences
-resolve visual values.
+A transaction requires `duration`, `easing`, or both; `wait` optionally makes
+an operation resolve after the transition. Easing accepts the standard CSS
+names or a four-number cubic Bézier tuple.
 
-## Window
-
-Window state includes title, position, size, minimized state, front state,
-layer, and Client location. Geometry can use finite pixels or linear
-workspace-relative expressions such as `"1/2"`, `"50%"`, or `"50% + 10"`.
-
-## Geometry
-
-- `move()` changes position.
-- `resize()` changes size.
-- `setGeometry()` commits position and size atomically.
-
-Filling the workspace is geometry, not a separate maximized domain state. The
-interface that offers restoration owns the temporary geometry to restore.
-
-## Layers
-
-Windows use three layers:
-
-1. `under`
-2. `window`
-3. `over`
-
-Wallpaper is Appearance rather than another Window layer. The taskbar remains
-above all layers.
-
-## Local representation
-
-`Window` is authoritative. `LocalWindow` is one Desktop's representation.
-Pointer gestures, measurements, snap previews, iframe references, and animation
-state are local to that Desktop.
-
-`context.localWindow` can add or remove the host Surface, change local geometry,
-or bind those operations to one visual transaction. These operations do not
-publish authoritative Window events and are accepted only for Windows in the
-`under` or `over` layer.
-
-Dragging and resizing remain local while continuous and commit as one System
-request. Interaction waits for authoritative facts rather than arbitrary
-animation delays.
+Local operations publish no authoritative Window events and are accepted only
+for `under` or `over` Windows. Pointer gestures, measurements, snap previews,
+iframe references, and animation state remain local. Continuous dragging and
+resizing commit one authoritative request at the end.

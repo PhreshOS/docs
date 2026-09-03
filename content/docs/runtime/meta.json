@@ -8,6 +8,7 @@
     "processes",
     "endpoints",
     "services",
+    "context",
     "communication"
   ]
 }

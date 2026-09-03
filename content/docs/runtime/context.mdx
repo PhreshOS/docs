@@ -1,0 +1,63 @@
+---
+title: Context
+description: Capabilities belonging to the currently executing Endpoint.
+icon: Focus
+---
+
+A Context is the execution-local view of one live Endpoint. It identifies that
+execution, receives messages addressed to it, and exposes only capabilities
+that belong to being the current Endpoint.
+
+## Shared contract
+
+Every Client and Server Context has the same execution operations:
+
+| Operation | Result |
+| --- | --- |
+| `context.process()` | Current Process handle |
+| `context.name()` | Current Process name, or `null` |
+| `context.parent()` | Parent Process visible to this Context, or `null` |
+| `context.program()` | Current Program handle |
+| `context.option(name)` | Immutable launch option, or `undefined` |
+| `context.isService()` | Whether this Endpoint incarnation is a Service |
+| `context.stop()` | End the current Endpoint incarnation |
+
+Context also implements the common publication and observation contract.
+Inbound messages have the shape `{ from, payload }`; `from` is `null` when the
+sending Endpoint is outside the Context's authority boundary.
+
+## Client Context
+
+The Client Context adds capabilities inherent to an executing Client:
+
+| Capability | Contract |
+| --- | --- |
+| `context.server` | Paired Server Endpoint handle |
+| `context.window` | Authoritative Window state and operations |
+| `context.localWindow` | This Desktop's physical Window representation |
+| `context.permissions` | Stored grants and owner permission requests |
+
+These are context-owned capabilities. `localWindow`, in particular, does not
+become a System-wide Window controller.
+
+## Server Context
+
+The Server Context adds the paired `context.client` Endpoint handle and
+`context.answer()`:
+
+```ts
+context.answer("status.read", ({ from, payload }) => {
+  return { ready: true }
+})
+```
+
+`answer(event, answerer)` registers one question handler and returns its cleanup
+function. Only a Server Context answers because questions are addressed to
+Server Endpoints.
+
+## Lifetime
+
+A Context begins with its Endpoint incarnation and ends with that incarnation.
+Pending operations and registrations owned by its boundary are released when
+the Endpoint stops. A Context is not a retained handle to a future incarnation.
+`context.stop()` follows the same final-Endpoint constraint as `endpoint.stop()`.

@@ -10,10 +10,12 @@ The Program is the domain root. Everything live belongs to this hierarchy:
 Program
 └── Process
     ├── ServerEndpoint
+    │   ├── Context while executing
     │   └── traffic
     └── ClientEndpoint
+        ├── Context while executing
         ├── traffic
-        └── window
+        └── Window
 ```
 
 `Program`, `Process`, `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, and
@@ -43,6 +45,11 @@ Endpoint without entering the ownership tree.
     href="/runtime/services"
   />
   <Card
+    title="Context"
+    description="Capabilities belonging to the currently executing Endpoint."
+    href="/runtime/context"
+  />
+  <Card
     title="Communication"
     description="Context, exact destinations, questions, and observation."
     href="/runtime/communication"
@@ -54,3 +61,7 @@ Endpoint without entering the ownership tree.
 Client, Server, and Node SDKs implement the same contracts for these domain
 objects. Repeated lookup of one live entity within the same SDK context returns
 its canonical handle, so reference equality and `instanceof` remain meaningful.
+
+Context, Desktop, Window, storage, and appearance are contracts rather than
+additional ownership levels. Each belongs to the domain entity or environment
+identified on its canonical page.

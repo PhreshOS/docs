@@ -52,6 +52,25 @@ the request for the current Process, store it for the Program, deny it, or leave
 it unresolved. Requests wait for up to two minutes by default, and `timeout()`
 selects another deadline.
 
+| Context operation | Result |
+| --- | --- |
+| `get(name)` | Stored `string[]`, `false`, or `null` |
+| `request(name, value?)` | Resolved `{ permission, needReload }` |
+| `timeout(milliseconds).request(...)` | The same request with another deadline |
+
+`program.permissions` is the authoritative stored-grant capability:
+
+| Program operation | Result |
+| --- | --- |
+| `get(name)` | Stored canonical value |
+| `all()` | Stored values indexed by permission name |
+| `set(name, value)` | Assigned value and derived reload requirement |
+| `delete(name)` | `null` value and derived reload requirement |
+
+`set()` accepts `true`, an allowed value set, or `false`; `null` belongs to
+`delete()`. A permission declaration accepts only `true` or an allowed value
+set. Arrays are canonicalized as unordered sets.
+
 `needReload` is derived from the effective permission transition when the
 request is resolved; it is not stored as permission state. `program.permissions`
 can set or remove stored grants authoritatively and is itself available only

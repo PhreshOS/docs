@@ -133,6 +133,12 @@ For every documentation change:
 5. Run the documentation type check and inspect the resulting diff for
    duplication, unsupported claims, stale names, and personal data.
 
+Before a repository-wide contract audit, inventory Core's public domains,
+capabilities, operations, events, and permissions and map each item to its
+current canonical page. Freeze that coverage matrix before editing. Finish by
+rechecking the same matrix so an undocumented contract cannot remain invisible
+and a repeated contract cannot acquire two competing homes.
+
 Documentation changes with the public contract that made them necessary. A
 code change is not complete when its canonical documentation now says
 something false; unrelated pages are not rewritten merely because one fact
