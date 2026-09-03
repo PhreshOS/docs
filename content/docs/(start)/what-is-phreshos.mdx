@@ -8,12 +8,15 @@ PhreshOS is an open-source, server-authoritative operating system for running an
 managing web-based programs in a unified web desktop environment, with native
 agent access through shared APIs.
 
-It is self-hosted and single-user: one owner runs it on a machine they control,
-and the System keeps its authoritative state there.
+## The model
+
+One owner runs the System on a machine they control. The System keeps the
+authoritative state for installed software, live execution, communication,
+persistence, authentication, and access to host capabilities.
 
 The browser is the machine's display, not its authority. The server owns the
 truth about Programs, Processes, authentication, persistence, and access to host
-resources. A desktop connection represents that truth and provides the local
+resources. A Desktop connection represents that truth and provides the local
 pointer, keyboard, measurements, iframes, and temporary visual state needed to
 interact with it.
 
@@ -22,9 +25,19 @@ Host operating system
 └── PhreshOS System
     ├── Server runtime
     │   └── Programs → Processes → Server and Client Endpoints
-    └── Web desktop
+    └── Desktop
         └── Windows, taskbar, dialogs, and Client representations
 ```
+
+## One unit of composition
+
+Applications, background services, tools, and agents are Programs. Every
+Program enters the same Program, Process, Endpoint, and Service model. An
+official Program does not receive a separate architectural path.
+
+Client, Server, and Node SDKs preserve the same domain contracts. Their
+environments change implementation and authority, not the meaning of a
+Program, Process, Endpoint, or Service.
 
 ## Goal
 
@@ -33,13 +46,6 @@ applications, services, and agents operate as one coherent, interactive system.
 It provides managed execution, bidirectional communication, and system-wide
 identity and authorization, allowing each application to focus on its domain
 instead of rebuilding infrastructure.
-
-## Programs are the unit of composition
-
-Applications, background services, tools, and Lemo—the official PhreshOS
-agent—are ordinary Programs. Official Programs do not receive a private
-architectural path. People, agents, and other Programs use the same public
-domain model.
 
 <Cards>
   <Card
@@ -58,15 +64,13 @@ domain model.
     href="/sdks/server"
   />
   <Card
-    title="Desktop and Windows"
+    title="Desktop"
     description="Understand authoritative Windows and their local representations."
     href="/system/desktop"
   />
 </Cards>
 
-## What PhreshOS does not imply
-
-PhreshOS runs inside an existing host operating system as a per-user service on
-macOS, Linux, or Windows. The name does not imply that it replaces the host
-kernel. Its concrete meaning is the runtime and remotely accessible System
-described in these docs.
+<Callout title="Runs on a host operating system">
+  PhreshOS runs as a per-user service on macOS, Linux, or Windows. It does not
+  replace the host kernel.
+</Callout>

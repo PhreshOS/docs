@@ -4,59 +4,9 @@ description: Install PhreshOS and run your first Program.
 icon: Rocket
 ---
 
-import {
-  BracesIcon,
-  CpuIcon,
-  PackageIcon,
-  PanelsTopLeftIcon,
-} from "lucide-react"
+This guide installs the System and creates a Program project connected to it.
 
-## Introduction
-
-PhreshOS is an open-source, server-authoritative operating system for running and
-managing web-based programs in a unified web desktop environment, with native
-agent access through shared APIs.
-
-<Cards>
-  <Card
-    icon={<CpuIcon className="text-purple-300" />}
-    title="System"
-    href="/system"
-  >
-    Owns Programs, Processes, authentication, persistence, routing, and access
-    to host resources.
-  </Card>
-  <Card
-    icon={<PackageIcon className="text-amber-300" />}
-    title="Programs"
-    href="/runtime/programs"
-  >
-    Applications, background services, tools, and agents that run inside the
-    System.
-  </Card>
-  <Card
-    icon={<BracesIcon className="text-emerald-300" />}
-    title="SDKs"
-    href="/sdks"
-  >
-    One shared domain model exposed through the Client, Server, React, and Node.js
-    SDKs.
-  </Card>
-  <Card
-    icon={<PanelsTopLeftIcon className="text-blue-300" />}
-    title="Web desktop"
-    href="/system/desktop"
-  >
-    The remotely accessible display that represents authoritative System state
-    as Windows and direct interactions.
-  </Card>
-</Cards>
-
-<Callout title="Want to understand the model first?">
-  Read the complete [What is PhreshOS?](/what-is-phreshos) introduction.
-</Callout>
-
-## Install PhreshOS
+## Install and create
 
 You need Node.js `24.15.0` or newer and a machine on which you can run a per-user
 service. PhreshOS stores its state on that machine.
@@ -71,7 +21,7 @@ node --version
 
 ### Install the CLI
 
-<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]}>
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
     ```sh
     npm install --global @phreshos/cli
@@ -123,12 +73,12 @@ The generated project connects its development Process to your local System.
 
 </Steps>
 
-## Choose where to go next
+## Continue
 
 <Cards>
   <Card
     title="What is PhreshOS?"
-    description="Understand the System, desktop, and Program model."
+    description="Understand the System, Desktop, and Program model."
     href="/what-is-phreshos"
   />
   <Card

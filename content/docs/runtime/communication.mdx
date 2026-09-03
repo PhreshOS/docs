@@ -4,7 +4,8 @@ description: Context, Endpoint handles, questions, events, and traffic.
 icon: MessagesSquare
 ---
 
-PhreshOS uses one communication model across its environments.
+Communication is expressed through Context, Endpoint, and Service contracts;
+the transport used by an SDK does not change their meaning.
 
 ## Context
 
@@ -19,38 +20,54 @@ context.subscribe("changed", (message) => {
 context.publish("changed", { value: 1 })
 ```
 
-Subscriptions receive events addressed to this Endpoint. Publishing emits an
-event from this Endpoint; it does not loop back into the same subscription.
+Context subscriptions receive messages addressed to the executing Endpoint as
+`{ from, payload }`. Publishing emits from that Endpoint and does not loop back
+into the same Context subscription.
 
 On the Server, `context.answer()` answers questions addressed to that Server.
 
 ```ts
-context.answer("counter.read", async () => {
-  return { value: await counter.read() }
-})
+context.answer("status.read", () => ({ ready: true }))
 ```
 
-## Exact Endpoint handles
+## Endpoint and Service handles
 
-Use an Endpoint handle when the destination or source matters.
+Use an Endpoint handle when the exact destination or source matters. Use a
+Service when the stable service address matters instead of one Process
+incarnation.
 
 - `endpoint.publish()` sends directly to that Endpoint.
 - `server.ask()` asks an exact Server.
 - `endpoint.subscribe()` follows destinationless publications from that Endpoint.
 - `endpoint.traffic` inspects directed questions, publications, and answers.
 
-Ordinary traffic supports `subscribe()` and `events()`. Questions use
-`subscribeAsks()` or `asks()`, while Server answers use `subscribeAnswers()` or
-`answers()`. Callback subscriptions return their cleanup; the other forms are
-abortable async iterators.
-
 Every permanent Endpoint also has `endpoint.lifecycle`, a separate subscribable
 surface for its own `start` and `stop` transitions. Application events remain
 on the Endpoint root.
 
-## Silent by default
+## Observation
+
+Every subscribable contract follows the same three forms:
+
+| Operation | Result |
+| --- | --- |
+| `subscribe(event, callback)` | Persistent registration and its cleanup function |
+| `waitFor(event, timeout?)` | Promise for the next matching message |
+| `events(event?, { signal, capacity }?)` | Abortable asynchronous iterator |
+
+`waitFor()` and `ask()` use a ten-second deadline unless the caller supplies
+another one. Event iterators remain live until closed, aborted, or future
+delivery becomes impossible.
+
+`endpoint.traffic` observes directed publications and questions originating
+from an Endpoint. Server traffic also observes answers. Questions use
+`subscribeAsks()` or `asks()`; answers use `subscribeAnswers()` or `answers()`.
+
+## Delivery semantics
 
 Importing an SDK or starting an Endpoint does not push state into it. Requests
 read the present. Subscriptions observe future publications and do not replay an
-initial value. React state hooks compose an explicit read with a subscription
-without changing those semantics.
+initial value. Persistent registrations may survive temporary Endpoint absence
+and end when their cleanup runs or their owning boundary is destroyed. React
+state hooks compose an explicit read with a subscription without changing those
+semantics.

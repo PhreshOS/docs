@@ -4,11 +4,15 @@ description: One domain model adapted to each PhreshOS environment.
 icon: Braces
 ---
 
-PhreshOS separates SDKs by responsibility. An environment can expose fewer
-capabilities, but it uses the same domain objects and constructors.
+PhreshOS separates contracts from environment adapters. Core defines the
+domain model; each SDK implements or composes that model without redefining it.
 
 <Cards>
-  <Card title="Core" description="Shared contracts, schemas, and runtime classes." />
+  <Card
+    title="Core"
+    description="Shared contracts, schemas, constructors, and Program configuration."
+    href="/sdks/core"
+  />
   <Card
     title="Client"
     description="Use the shared model inside a Desktop Client Endpoint."
@@ -21,7 +25,7 @@ capabilities, but it uses the same domain objects and constructors.
   />
   <Card
     title="React"
-    description="Explicit Client reads and subscriptions adapted to React."
+    description="Core contracts and explicit subscriptions adapted to React."
     href="/sdks/react"
   />
   <Card
@@ -36,15 +40,20 @@ capabilities, but it uses the same domain objects and constructors.
   />
 </Cards>
 
-## Shared handle identity
+## One domain model
 
-Every SDK imports Core's domain constructors rather than redefining private
-handle contracts. Repeated navigation to one live entity in the same SDK
-context returns the same canonical handle.
+Client, Server, and Node expose the same `Program`, `Process`, `Endpoint`, and
+`Service` contracts from Core. Their transports and authority boundaries may
+differ, but the public entities do not. Repeated navigation to one live entity
+in the same SDK context returns the same canonical handle.
 
 ```ts
-import { Program } from "@phreshos/node"
+import { Program, System } from "@phreshos/node"
 
+const system = await System.connect()
 const [program] = await system.program.list()
+
 console.log(program instanceof Program) // true
+
+await system.disconnect()
 ```

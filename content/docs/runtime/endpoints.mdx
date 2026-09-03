@@ -1,12 +1,31 @@
 ---
 title: Endpoints
-description: Server authority and Client representation.
+description: Server and Client execution within each Process.
 icon: Unplug
 ---
 
-Every Process owns a `ServerEndpoint` handle and a `ClientEndpoint` handle. Their capabilities
-differ because their execution environments differ, but both are Endpoints in
-the same domain model.
+Every Process owns a permanent `ServerEndpoint` handle and `ClientEndpoint`
+handle. Both implement the shared Endpoint contract; each adds only the
+capabilities inherent to its execution role.
+
+## Shared contract
+
+An Endpoint publishes application events, exposes its outgoing traffic, and
+observes `start` and `stop` transitions through `lifecycle`.
+
+| Operation | Contract |
+| --- | --- |
+| `exists()` | Read whether a current incarnation exists |
+| `isService()` | Read whether that incarnation declared a Service role |
+| `start()` | Create a fresh incarnation |
+| `stop()` | End the incarnation without implicitly ending the Process |
+| `waitReady()` | Wait up to ten seconds by default for a usable incarnation |
+
+A Client is ready when it exists. A Server must also announce readiness.
+Starting rejects when the Program did not declare that Endpoint or an
+incarnation is already starting or live. Stopping rejects when it would remove
+the Process's final live Endpoint. Readiness rejects when the owning Process can
+no longer provide a future incarnation.
 
 ## Server Endpoint
 
@@ -21,27 +40,27 @@ A Server executes host-side JavaScript in one of two modes:
   </Tab>
 </Tabs>
 
-Both modes expose the same Server SDK. A Worker is not a security boundary and
-does not have an independent working directory.
+Both modes expose the same Server SDK contract. A Worker is not a security
+boundary and does not have an independent working directory.
 
 ## Client Endpoint
 
-A Client executes in an iframe inside the desktop and owns one Window.
-It may access its current Program and Process, paired Server, Window, desktop
-preferences, read-only Appearance, uploads, fetch, Program resources, and exact
-Client Services.
+A Client executes in an iframe inside the Desktop and owns one Window. Its
+Context provides its Program, Process, paired Server Endpoint, Window, local
+Window representation, options, communication, and permission requests.
 
-The Client has no general authority over the desktop or foreign Programs.
-Fabricating a handle cannot expand that authority.
+The Client may access its own Program, Processes belonging to that Program, and
+Services belonging to that Program. System-wide capabilities and foreign
+Programs require the `all` permission. See [Security](/system/security).
 
 The iframe always permits scripts and forms through its sandbox. When the
 Client's effective `all` permission is present, the sandbox also permits
 same-origin access. Changing between these states requires the iframe to reload.
 
-<Callout title="Location rules">
-  The browser always loads `/program/&lt;identity&gt;/assets/`. In production the
-  System serves installed Client files there. During development it proxies the
-  declared HTTP(S) Client server, including its WebSocket traffic, through the
-  same address. Installation still requires Client files that the System can
-  copy into installed storage.
-</Callout>
+## Client assets
+
+The browser always loads `/program/<assetId>/assets/`. In production the System
+serves installed Client files there. During development it proxies the declared
+HTTP(S) Client server, including WebSocket traffic, through the same address.
+Installation still requires Client files that the System can copy into
+installed storage.

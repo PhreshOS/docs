@@ -11,8 +11,8 @@ content as a statically exported documentation application.
 ```text
 content/docs/
 ├── (start)
-├── system
 ├── runtime
+├── system
 └── sdks
 ```
 

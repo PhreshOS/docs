@@ -4,13 +4,20 @@ description: Stable software identities owned by the System.
 icon: Package
 ---
 
-A Program is the stable application or service known by the System. It has a
-kebab-case identity and may describe its name, version, icon, Server, Client,
-agent documentation, and Program-owned resources.
+A Program is the stable software identity known by the System. It is the domain
+root for configuration, resources, installation, startup, and live Processes.
 
-A Program declares a Server, a Client, or both.
+## Identity and declaration
 
-## Installed and attached Programs
+Every Program has a kebab-case `identity` and a runtime `assetId`. The public
+identity remains stable; the asset identity distinguishes the current runtime
+entity used to serve its Client files.
+
+A Program may declare a name, version, description, icon, agent document,
+Server Endpoint, Client Endpoint, and immutable Client permissions. It must
+declare a Server, a Client, or both.
+
+## Runtime forms
 
 <Tabs items={["Installed", "Attached"]}>
   <Tab value="Installed">
@@ -26,27 +33,23 @@ A Program declares a Server, a Client, or both.
 Only one current runtime Program occupies an identity. Replacing a runtime
 Program does not silently uninstall files or erase storage.
 
-## Project shortcuts
+## Owned capabilities
 
-```ts
-const system = await System.connect()
+Every Program owns:
 
-for await (const event of await project.dev(system, { signal })) {
-  console.log(event)
-}
+- `process`, for creating and observing its Processes;
+- `startup`, for one persistent Process launch;
+- `data`, `cache`, `store`, `database`, and `logs`;
+- `permissions`, for stored user grants; and
+- its icon and optional agent document.
 
-await system.disconnect()
-```
+## Lifecycle
 
-`project.dev()`, `project.start()`, and `project.install()` expose the lifecycle
-generators from the corresponding Program operations. They are shortcuts, not
-a parallel execution abstraction. `project.dev()` also owns any declared Client
-development command and binds it to that lifecycle.
-
-When a Client development declaration contains only `startCommand`, the Project
-selects an available local port and provides `PHRESHOS_CLIENT_PORT` and
-`PHRESHOS_CLIENT_BASE` to the command. An explicit `url` instead addresses an
-external or fixed development server.
-
-For custom composition, use `developmentDefinition()` or
-`productionDefinition()` to obtain the derived concrete Program definition.
+| Operation | Contract |
+| --- | --- |
+| `system.program.create()` | Create an uninstalled runtime Program |
+| `system.forceCreateProgram()` | Replace the current runtime entity while preserving installed files and storage |
+| `install()` | Install the Program while yielding command output |
+| `uninstall()` | Remove its installed form while yielding command output |
+| `forget()` | End its Processes and remove only its runtime entity |
+| `fork(identity)` | Create another Program under a new identity |

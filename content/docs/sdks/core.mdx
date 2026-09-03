@@ -1,0 +1,46 @@
+---
+title: Core
+description: Use the shared PhreshOS contracts and Program configuration.
+icon: Boxes
+---
+
+`@phreshos/core` defines the domain contracts shared by every PhreshOS
+environment. It performs no connection, persistence, rendering, or execution.
+
+```ts
+import {
+  Program,
+  Process,
+  Endpoint,
+  Service,
+  defineConfig,
+} from "@phreshos/core"
+```
+
+## Domain contracts
+
+Core owns the `System`, `Program`, `Process`, `Endpoint`, `Service`, `Context`,
+`Desktop`, `Window`, storage, permission, communication, launch, and appearance
+contracts. Environment SDKs implement those contracts and export the same
+runtime constructors where reference identity matters.
+
+## Program configuration
+
+`defineConfig()` provides contextual typing for `phresh.config.ts`. It returns
+the supplied authoring declaration unchanged. The Node Project API validates
+and derives that declaration for development, production, and packaging.
+
+```ts
+import { defineConfig } from "@phreshos/core"
+
+export default defineConfig({
+  identity: "my-program",
+  server: {
+    location: "dist/server",
+    entryFile: "main.js",
+  },
+})
+```
+
+Use Core when code needs the shared contract without choosing a transport or
+execution environment.

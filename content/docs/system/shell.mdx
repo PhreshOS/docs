@@ -4,14 +4,16 @@ description: Run an operating-system command through the shared System contract.
 icon: Terminal
 ---
 
-`system.shell()` runs one shell command and returns its original event generator.
-It has the same contract in the Client, Server, and Node SDKs.
+`system.shell()` runs one operating-system shell command and returns the event
+generator that owns it. The Client, Server, and Node SDKs expose the same
+contract.
+
+## Events
 
 ```ts
 for await (const event of system.shell("npm install", {
   cwd: "/path/to/project",
-  env: { NODE_ENV: "production" },
-  signal
+  env: { LOG_LEVEL: "info" },
 })) {
   if (event.event === "started") console.log(event.pid)
   if (event.event === "output") console.log(event.stream, event.text)
@@ -24,6 +26,8 @@ environment values are merged over the System process environment. Output is
 reported exactly as `stdout` and `stderr` chunks; the SDK does not write it to
 the caller's terminal.
 
+## Lifetime
+
 The generator owns the complete operating-system process tree. Aborting its
 signal, closing the generator, or disconnecting its System connection
 terminates that tree. A non-zero exit is an `exited` event, while failures to
@@ -34,13 +38,13 @@ contract without crossing a boundary. Client execution crosses its Desktop
 boundary. This is an implementation difference only; ownership and observable
 behavior remain attached to the same System connection.
 
-<Callout title="System operation, not Process creation">
+<Callout title="Not a PhreshOS Process">
   A shell command does not create a PhreshOS Process. Use a Program's Process
   capability when the work must enter the Program, Process, Endpoint, and
   Service domain model.
 </Callout>
 
-## Client permission
+## Authority
 
 A Client can call `system.shell()` only when its effective permissions include
-`all`. Server and Node adapters retain full System authority.
+`all`. Server and Node retain full System authority.

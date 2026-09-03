@@ -4,8 +4,8 @@ description: Access PhreshOS from a Client Endpoint inside the Desktop.
 icon: PanelTop
 ---
 
-`@phreshos/client` adapts the shared PhreshOS contracts to the Client Endpoint
-executing inside a Desktop iframe.
+`@phreshos/client` implements the shared PhreshOS contracts for a Client
+Endpoint executing inside a Desktop iframe.
 
 ```ts
 import { context, desktop, system } from "@phreshos/client"
@@ -13,23 +13,30 @@ import { context, desktop, system } from "@phreshos/client"
 
 ## Entry points
 
-- `context` belongs to the executing Client Endpoint. It provides its Program,
-  Process, paired Server Endpoint, Window, local Window representation, options,
-  communication, and permission requests.
-- `desktop` provides capabilities belonging to the current Desktop
-  representation, including its surface and preferences.
-- `system` exposes the shared System domain through the Client's authority
-  boundary.
+| Export | Contract |
+| --- | --- |
+| `context` | Current Client execution Context |
+| `desktop` | Desktop containing the Client |
+| `system` | Global System through Client authority |
 
-The SDK exports the Core `Program`, `Process`, `Endpoint`, and `Service` classes.
-Repeated access within the same Client context preserves their handle identity.
+## Context
+
+`context` provides the executing Program and Process, paired Server Endpoint,
+authoritative Window, local Window representation, immutable options,
+communication, and permission requests.
 
 ## Authority
 
-A Client can access its own Program, that Program's runtime entities and
-resources, and Services belonging to that Program. System-wide capabilities
-and other Programs require an applicable permission. Fabricating an identity
-or handle cannot expand that authority.
+A Client can access its own Program, Processes belonging to that Program, and
+Services belonging to that Program. System-wide capabilities and other
+Programs require an applicable permission. Fabricating an identity or handle
+cannot expand that authority.
+
+## Domain handles
+
+The SDK exports Core's `Program`, `Process`, `Endpoint`, `ServerEndpoint`,
+`ClientEndpoint`, `Service`, `ServerService`, and `ClientService` constructors.
+These preserve Core reference identity within this SDK context.
 
 See [Security](/system/security) for the permission boundary and
 [Communication](/runtime/communication) for requests, subscriptions, and event

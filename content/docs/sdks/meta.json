@@ -4,6 +4,7 @@
   "icon": "Braces",
   "pages": [
     "index",
+    "core",
     "client",
     "server",
     "react",

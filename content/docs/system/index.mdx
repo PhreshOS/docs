@@ -1,16 +1,16 @@
 ---
 title: System
-description: The authoritative runtime and the web desktop that represents it.
+description: The authoritative runtime and the Desktop that represents it.
 icon: MonitorCog
 ---
 
-The System owns Program and Process lifecycle, routing, authentication,
-persistence, and the boundaries through which code reaches host resources. The
-web desktop turns that truth into a direct graphical interface.
+The System is the authoritative runtime. It owns Program and Process lifecycle,
+communication routing, authentication, persistence, appearance, and access to
+host capabilities. The Desktop represents that state graphically.
 
 <Cards>
   <Card
-    title="Desktop and Windows"
+    title="Desktop"
     description="Authoritative Window state and local browser representation."
     href="/system/desktop"
   />
@@ -21,8 +21,13 @@ web desktop turns that truth into a direct graphical interface.
   />
   <Card
     title="Storage"
-    description="System state and Program-owned resource families."
+    description="Native files, System state, and Program-owned resources."
     href="/system/storage"
+  />
+  <Card
+    title="Uploads"
+    description="Opaque files in the flat System-owned upload collection."
+    href="/system/uploads"
   />
   <Card
     title="Shell"
@@ -31,17 +36,17 @@ web desktop turns that truth into a direct graphical interface.
   />
   <Card
     title="Security"
-    description="Owner authentication, isolation, permissions, and privacy."
+    description="Owner authentication, Client authority, and permissions."
     href="/system/security"
   />
 </Cards>
 
-## Owner-local gateway
+## Local connection
 
 External Node tools and the CLI reach the running System through an owner-local
 gateway: a Unix-domain socket with owner-only permissions on POSIX systems or an
 owner-created named pipe on Windows. It opens no network port.
 
-The gateway is a connection mechanism, not a separate public model. Consumers
-use ordinary System handles and add only `disconnect()` when they own the
-connection.
+The gateway is a connection mechanism, not a public domain. Node and the CLI
+use ordinary System contracts through it; code that owns a connection adds only
+`disconnect()` to end that connection's lifetime.

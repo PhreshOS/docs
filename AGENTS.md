@@ -61,6 +61,13 @@ first paragraph directly defines the subject or outcome. The remaining
 sections follow the concept's natural contract; headings exist only when they
 separate meaningful concerns.
 
+Uniformity is the default. Pages at the same level use the same naming grammar,
+information order, component patterns, and level of detail. Begin with the
+established sibling pattern and diverge only when the documented domain has a
+real difference that the shared shape cannot express. Historical authorship,
+implementation location, or available prose does not justify a different
+structure.
+
 Use PhreshOS domain names precisely and consistently: System, Program,
 Process, Endpoint, Server Endpoint, Client Endpoint, Service, Context, Desktop,
 and Window. Name the entity that owns state or behavior. Distinguish an

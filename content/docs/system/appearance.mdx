@@ -1,20 +1,32 @@
 ---
 title: Appearance
-description: Resolve one System appearance for each desktop and Client.
+description: Resolve global Appearance through each Desktop's preferences.
 icon: Palette
 ---
 
-The System owns one complete unresolved `Appearance`. Properties with distinct
-dark values hold explicit light and dark branches. Shared properties need only
-the light branch.
+Appearance is the complete unresolved visual contract owned by the System. It
+contains semantic colors, spacing, radius, Surface material, and sign-in and
+Desktop wallpapers.
 
-Each desktop owns its effective preferences:
+| Operation | Contract |
+| --- | --- |
+| `snapshot()` | Read the complete current Appearance |
+| `subscribe("change", callback)` | Observe future complete replacements |
+| `update(appearance)` | Validate and replace the complete Appearance |
+
+## Theme resolution
+
+Properties with distinct dark values hold explicit `light` and `dark` branches.
+Shared properties need only `light`.
+
+Each Desktop owns its effective preferences:
 
 - `theme`: light, dark, or the native default;
 - `animations`: enabled, disabled, or the native default.
 
-A consumer combines Appearance with the effective Theme and resolves only the
-visual property it needs.
+A consumer combines Appearance with the effective theme and resolves only the
+property it needs. Reading Appearance and Desktop preferences is available to a
+Client; updating either requires the `all` permission.
 
 ## Client color scheme
 
@@ -28,9 +40,9 @@ created. The Client HTML document declares that it supports both schemes:
 This lets the browser choose built-in controls and the initial canvas correctly
 before React mounts; no hook needs to race the first paint.
 
-## React UI
+## Visual language
 
-`@phreshos/react-ui` is the visual language used inside the desktop and
+`@phreshos/react-ui` is the visual language used inside the Desktop and
 available to Programs. `AppearanceProvider` supplies Appearance and Theme
 without adding a rendered container.
 

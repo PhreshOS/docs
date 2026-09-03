@@ -1,11 +1,25 @@
 ---
-title: Desktop and Windows
+title: Desktop
 description: Represent authoritative Client Windows on one or more screens.
 icon: PanelsTopLeft
 ---
 
-A live Client owns one authoritative Window. The desktop represents it; the
-Program does not own arbitrary desktop DOM.
+A Desktop is one graphical representation of authoritative System state. A live
+Client owns one authoritative Window, and the Desktop owns its local visual
+representation.
+
+## Desktop contract
+
+| Capability | Contract |
+| --- | --- |
+| `desktop.surface` | Read the Desktop size and observe future resizes |
+| `desktop.preferences` | Read and update the effective theme and animation preference |
+
+The Client may read both capabilities. Updating preferences requires the
+`all` permission. [Appearance](/system/appearance) defines how those preferences
+resolve visual values.
+
+## Window
 
 Window state includes title, position, size, minimized state, front state,
 layer, and Client location. Geometry can use finite pixels or linear
@@ -31,14 +45,17 @@ Windows use three layers:
 Wallpaper is Appearance rather than another Window layer. The taskbar remains
 above all layers.
 
-## Authority and representation
+## Local representation
 
-`Window` is authoritative. `LocalWindow` is one desktop's representation.
+`Window` is authoritative. `LocalWindow` is one Desktop's representation.
 Pointer gestures, measurements, snap previews, iframe references, and animation
-state are naturally local. Local representation operations do not publish
-authoritative events.
+state are local to that Desktop.
 
-<Callout>
-  Dragging and resizing are continuous local gestures committed as one System
-  request. Interaction should wait for facts, not arbitrary animation delays.
-</Callout>
+`context.localWindow` can add or remove the host Surface, change local geometry,
+or bind those operations to one visual transaction. These operations do not
+publish authoritative Window events and are accepted only for Windows in the
+`under` or `over` layer.
+
+Dragging and resizing remain local while continuous and commit as one System
+request. Interaction waits for authoritative facts rather than arbitrary
+animation delays.

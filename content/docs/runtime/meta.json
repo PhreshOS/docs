@@ -7,7 +7,7 @@
     "programs",
     "processes",
     "endpoints",
-    "communication",
-    "services"
+    "services",
+    "communication"
   ]
 }

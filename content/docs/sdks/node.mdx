@@ -4,8 +4,10 @@ description: Connect external Node.js tools to the System and local projects.
 icon: Box
 ---
 
-`@phreshos/node` connects external Node.js code to the same Core System
-contract exposed inside a Server Endpoint.
+`@phreshos/node` implements the Core System contract for external Node.js code
+and provides the Project authoring API.
+
+## Connection
 
 ```ts
 import { System } from "@phreshos/node"
@@ -18,11 +20,16 @@ await system.disconnect()
 
 `System.connect()` is the connection factory, not part of the connected System
 interface. The instance adds only `disconnect()` to the shared System contract.
-The transport is not public API. Program, Process, Endpoint, Service, Window,
-storage, permission, startup, and upload handles keep their Server meanings and
-Core runtime identities.
+The transport is not public API. The connection owns its handles and pending
+operations; disconnecting ends that lifetime.
 
-## Project API
+## Domain handles
+
+The SDK exports Core's `Program`, `Process`, `Endpoint`, `ServerEndpoint`,
+`ClientEndpoint`, `Service`, `ServerService`, and `ClientService` constructors.
+These preserve Core reference identity within this SDK context.
+
+## Project
 
 ```ts
 import { Project, System } from "@phreshos/node"
@@ -30,7 +37,9 @@ import { Project, System } from "@phreshos/node"
 const project = await Project.open()
 const system = await System.connect()
 
-for await (const event of await project.start(system, { signal })) {
+const lifecycle = await project.start(system)
+
+for await (const event of lifecycle) {
   console.log(event)
 }
 ```
@@ -38,3 +47,17 @@ for await (const event of await project.start(system, { signal })) {
 `Project` owns authoring concerns such as builds, development commands,
 production definitions, installation, and packaging. The System receives only
 the resulting runtime or installed Program definition.
+
+`developmentDefinition()` and `productionDefinition()` return derived Program
+definitions for custom composition. `dev()`, `start()`, and `install()` are
+shortcuts that preserve the underlying lifecycle generators.
+
+When a Client development declaration supplies a `startCommand` without a
+fixed URL, Project selects an available local port and supplies
+`PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE` to that command.
+
+## Authority
+
+Node retains the complete System contract. `fetch()` and `shell()` execute
+locally when doing so preserves their observable contract, while their lifetime
+remains tied to the System connection.

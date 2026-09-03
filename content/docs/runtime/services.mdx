@@ -4,20 +4,23 @@ description: Stable communication addresses for Endpoint services.
 icon: Waypoints
 ---
 
-A Service is a stable communication address for one Endpoint:
+A Service is a stable communication address for an Endpoint that declared a
+service role. It provides communication without controlling the Endpoint.
+
+## Address
 
 ```ts
-const browser = system.service({
-  program: "flambo",
-  process: "browser-server",
+const service = system.service({
+  program: "web-browser",
+  process: "main",
   endpoint: "server",
 })
 ```
 
-When `process` is a Program-local name, `program` supplies its namespace and the
-address follows a replacement Process created under the same name. An exact
-globally unique Process identity needs no Program coordinate and remains tied
-to that one Process:
+When `process` is a Program-local name, `program` supplies its namespace. The
+Service then follows replacement Processes created under that name. A globally
+unique Process identity needs no Program coordinate and addresses only that
+Process:
 
 ```ts
 const exact = system.service({
@@ -26,7 +29,9 @@ const exact = system.service({
 })
 ```
 
-A Program may declare the default role:
+## Service role
+
+A Program declaration may provide the default role:
 
 ```ts
 server: {
@@ -40,26 +45,33 @@ default. An object launch can override it for one incarnation:
 
 ```ts
 await program.process.create({
-  name: "browser-server",
+  name: "main",
   server: { service: true },
   client: false,
 })
 ```
 
-Client launches accept `service` in their object form alongside Window options.
-The same `ServerLaunch` and `ClientLaunch` contracts apply to initial Process
-creation and later `server.start()` or `client.start()` calls, so every fresh
-Endpoint incarnation resolves its own role. `context.isService()` and
-`endpoint.isService()` read the current incarnation.
-Only `system.service()` creates a Service handle.
+Client launches accept `service` alongside Window options. The same
+`ServerLaunch` and `ClientLaunch` contracts apply to Process creation and later
+`server.start()` or `client.start()` calls. Each fresh Endpoint incarnation
+therefore resolves its own role. `context.isService()` and
+`endpoint.isService()` read that role. Only `system.service()` creates a Service
+handle.
+
+## Availability
 
 `system.service(key)` creates or reuses the exact local handle synchronously. It
-does not discover providers, list Services, start a Process, or imply that the
-Service is ready. Application events are published and subscribed to directly
-on the handle. `exists()` reads Endpoint existence, while `service.lifecycle`
-observes the same `start` and `stop` transitions as the Endpoint. A Service has
-no lifecycle controls. A Server Service additionally provides `ask()` and
-`waitReady()`.
+does not discover providers, list Services, start a Process, or imply readiness.
+
+| Operation | Contract |
+| --- | --- |
+| `exists()` | Read whether the addressed Endpoint incarnation exists |
+| `waitReady()` | Wait up to ten seconds by default for a usable Client or ready Server |
+| `subscribe()` | Observe application events from the service address |
+| `lifecycle` | Observe the Endpoint's `start` and `stop` transitions |
+| `ask()` | Ask a Server Service and await its answer |
+
+A Service has no lifecycle controls.
 
 ```ts
 service.subscribe("changed", message => console.log(message))
@@ -75,10 +87,6 @@ The public hierarchy is:
 - `ServerService`
 - `ClientService`
 
-These constructors are exported by the relevant SDKs and preserve reference
-identity in one context. They do not use a `Handler` suffix.
-
-<Callout>
-  Service discovery and Program agent documentation are independent. A document
-  does not create a Service, and a Service does not require a document.
-</Callout>
+`ServerService` adds `ask()`. `ClientService` adds no operation beyond the
+shared Service contract. All three constructors are exported by the relevant
+SDKs and preserve reference identity within one SDK context.

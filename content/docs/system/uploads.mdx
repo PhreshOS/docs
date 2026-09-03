@@ -1,0 +1,38 @@
+---
+title: Uploads
+description: Store and read files in the flat System-owned upload collection.
+icon: Upload
+---
+
+`system.uploads` is a flat collection of public files owned by the System. It is
+a distinct contract from `Storage`; the two are only similar in some read
+operations.
+
+## Upload records
+
+`write(value)` stores one supported value under an opaque generated key and
+returns its complete upload record:
+
+```ts
+const upload = await system.uploads.write("Hello from PhreshOS")
+
+console.log(upload.file, upload.type, upload.size, upload.time)
+```
+
+The record contains the opaque file key, detected media type or `null`, size in
+bytes, and storage time as Unix milliseconds.
+
+## Operations
+
+| Operation | Contract |
+| --- | --- |
+| `path()` | Return the collection's absolute directory |
+| `write(value)` | Store a value and return its upload record |
+| `stat(file)` | Return one upload record or `null` |
+| `stream(file)` | Open an upload as a byte stream |
+| `bytes(file)` | Read an upload as bytes |
+| `text(file)` | Read an upload as UTF-8 text |
+| `json(file)` | Read and parse an upload as JSON |
+
+The contract intentionally exposes no listing, deletion, or clearing operation.
+A Client requires the `all` permission to access uploads.

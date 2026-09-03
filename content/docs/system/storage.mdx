@@ -1,15 +1,47 @@
 ---
 title: Storage
-description: Keep System state and Program resources with their real owner.
+description: Access native files, System state, and Program resources.
 icon: Database
 ---
 
-Production System state lives beneath `~/.phreshos` by default. A selected
-`PHRESHOS_HOME` replaces that root.
+Storage is divided by ownership. System state, native filesystem access, and
+Program resources are separate capabilities even when they share similar read
+and write operations.
 
-Persistent state includes owner credentials, the System database, installed
-Program files, Program resources, public uploads, logs, and the local gateway
-address while running.
+## System state
+
+Production state lives beneath `~/.phreshos` by default. `PHRESHOS_HOME`
+selects another root for that state.
+
+The System home contains owner credentials, the System database, installed
+Program files, Program resources, [uploads](/system/uploads), and logs. While
+the System is running, the home also determines its local gateway address.
+
+## Storage contract
+
+Native storage and Program `data` and `cache` implement the same filesystem
+contract with different boundary policies.
+
+| Operation | Contract |
+| --- | --- |
+| `path()` | Return the configured entry point |
+| `resolve(...parts)` | Resolve a path without reading it |
+| `stream(...parts)`, `bytes(...parts)`, `text(...parts)`, `json(...parts)` | Read one file in the selected representation |
+| `write(...parts, value)` | Atomically write one supported value |
+| `stat(...parts)` | Return entry metadata or `null` |
+| `list(...parts)` | Return the sorted immediate child names |
+| `delete(...parts)` | Recursively remove an entry |
+| `clear(...parts)` | Empty a directory while preserving it |
+
+## Native storage
+
+`system.storage` enters the native filesystem at the operating-system user's
+home directory. That entry point is not a containment boundary: absolute paths
+and resolved parent paths may address files elsewhere. Client access requires
+the `all` permission.
+
+`path()` returns the entry point. `resolve(...parts)` resolves a path according
+to that Storage's boundary policy; it does not read the path.
 
 ## Program resources
 
@@ -23,15 +55,6 @@ Every Program owns the same resource families in Client and Server contexts:
 | `database` | Writable SQLite application data |
 | `logs` | Read-only structured Program logs |
 
-Server storage can additionally expose safe native filesystem paths. Client
-storage never exposes host paths. Operations reject traversal and symbolic-link
-escape.
-
-## Uploads
-
-The System owns one flat public upload collection. `system.uploads.path()`
-returns its absolute directory, while individual uploads use opaque generated
-keys and can be read or written as streams, bytes, text, JSON, or metadata.
-
-The public contract intentionally exposes no listing, deletion, or clearing
-operation.
+Program `data` and `cache` are contained within their own roots. Their paths
+cannot traverse outside the root or pass through a symbolic link. A Client can
+access only resources belonging to its own Program unless it has `all`.

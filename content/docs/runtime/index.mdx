@@ -10,36 +10,47 @@ The Program is the domain root. Everything live belongs to this hierarchy:
 Program
 └── Process
     ├── ServerEndpoint
+    │   └── traffic
     └── ClientEndpoint
         ├── traffic
         └── window
 ```
 
-`Program`, `Process`, `Endpoint`, `ServerEndpoint`, and `ClientEndpoint` are
-shared runtime classes. `Endpoint` is the common base of `ServerEndpoint` and
-`ClientEndpoint`; it is not an
-additional ownership level.
+`Program`, `Process`, `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, and
+`Service` are shared runtime classes. `Endpoint` is the common base of the two
+Endpoint kinds; it is not another ownership level. A Service addresses an
+Endpoint without entering the ownership tree.
 
 <Cards>
-  <Card title="Program" href="/runtime/programs">
-    Stable application identity, installation, and resources.
-  </Card>
-  <Card title="Process" href="/runtime/processes">
-    A live execution aggregate with immutable launch intent.
-  </Card>
-  <Card title="Endpoints" href="/runtime/endpoints">
-    Host-side Server Endpoint and desktop Client Endpoint execution.
-  </Card>
-  <Card title="Communication" href="/runtime/communication">
-    Context, exact destinations, questions, and subscriptions.
-  </Card>
-  <Card title="Services" href="/runtime/services">
-    Stable addresses for live Endpoint capabilities.
-  </Card>
+  <Card
+    title="Programs"
+    description="Stable software identity, installation, and owned resources."
+    href="/runtime/programs"
+  />
+  <Card
+    title="Processes"
+    description="Live execution aggregates created from immutable launch intent."
+    href="/runtime/processes"
+  />
+  <Card
+    title="Endpoints"
+    description="Server and Client execution owned by each Process."
+    href="/runtime/endpoints"
+  />
+  <Card
+    title="Services"
+    description="Stable addresses for live Endpoint capabilities."
+    href="/runtime/services"
+  />
+  <Card
+    title="Communication"
+    description="Context, exact destinations, questions, and observation."
+    href="/runtime/communication"
+  />
 </Cards>
 
-## One model in every SDK
+## Shared contracts
 
-SDKs adapt access and authority, but they do not redefine the domain. Repeated
-lookup of one live object within an SDK context returns its canonical handle,
-so reference equality and `instanceof` remain meaningful.
+Client, Server, and Node SDKs implement the same contracts for these domain
+objects. Repeated lookup of one live entity within the same SDK context returns
+its canonical handle, so reference equality and `instanceof` remain meaningful.

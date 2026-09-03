@@ -1,41 +1,59 @@
 ---
 title: React
-description: Adapt explicit Client state and subscriptions to React.
+description: Adapt PhreshOS contracts and live state to React.
 icon: Atom
 ---
 
-`@phreshos/react` adapts the Client SDK without becoming another state authority.
+`@phreshos/react` adapts shared Core contracts to React without becoming
+another state authority or depending on a specific runtime SDK.
+
+```tsx
+import {
+  ContextProvider,
+  DesktopProvider,
+  SystemProvider,
+} from "@phreshos/react"
+```
 
 ## Providers
 
-- `ContextProvider` resolves explicitly selected runtime values.
-- `SystemProvider` resolves explicitly selected System values.
+| Provider | Required contract | Resolved hooks |
+| --- | --- | --- |
+| `ContextProvider` | `ClientContext` | `useContext`, `useProgram`, `useProcess`, `useParent` |
+| `SystemProvider` | `System` | `useSystem`, `useSystemAppearance` |
+| `DesktopProvider` | `Desktop` | `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` |
 
-Selections are non-empty and deliberate. Mounting a provider does not fetch the
-entire System into a Client.
+Each provider receives its contract explicitly and resolves the initial values
+it owns before rendering children. Its optional `fallback` is rendered while
+those values are pending.
 
 ## State hooks
 
-- `useProgramState`
-- `useProcessState`
-- `useServiceState`
-- `useWindowState`
+| Hook | Resolved state |
+| --- | --- |
+| `useProgramState` | Installation and live Processes |
+| `useProcessState` | Exit and Endpoint existence |
+| `useEndpointState` | Endpoint existence |
+| `useServiceState` | Addressed Endpoint existence |
+| `useWindowState` | Complete authoritative Window state |
 
 These hooks subscribe before performing their initial explicit read, preventing
 a stale read from overwriting a newer event.
 
 ## Event hooks
 
-- `useSubscribe`
-- `useSubscribeAsks`
-- `useSubscribeAnswers`
+| Hook | Observation |
+| --- | --- |
+| `useSubscribe` | One event or every correlated event from a Subscribable |
+| `useSubscribeAsks` | Questions originating from Endpoint traffic |
+| `useSubscribeAnswers` | Answers originating from Server traffic |
 
 They own their mounted registration and clean it up on unmount.
 `useSubscribe(target, event, project)` follows one event, while
 `useSubscribe(target, project)` follows every event as a correlated capture.
 Async iterators remain imperative SDK APIs and do not gain React hooks.
 
-<Callout>
+<Callout title="Pending state is explicit">
   `undefined` means that an explicit initial read is still pending. React
   adapters do not invent fallback domain state.
 </Callout>
