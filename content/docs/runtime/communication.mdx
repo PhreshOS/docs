@@ -73,7 +73,7 @@ The executing Server registers an answerer through its Context:
 const cleanup = context.answer("status.read", () => ({ ready: true }))
 ```
 
-Answer outcomes are transport-neutral: `{ success: true, result }` or
+An observed answer records either `{ success: true, result }` or
 `{ success: false, error }`.
 
 ## Traffic
