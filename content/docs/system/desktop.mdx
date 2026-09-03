@@ -15,7 +15,8 @@ representation.
 | `desktop.surface` | `snapshot()` → `{ size: { width, height } }` | — | `resize` with the complete snapshot |
 | `desktop.preferences` | `snapshot()` → `{ theme, animations }` | `update(preferences)` | `change` with the complete preferences |
 
-The Client may read both capabilities. Updating preferences requires `all`.
+The Client may read both capabilities. Updating preferences requires
+`desktopPreferences` or `all`.
 [Appearance](/system/appearance) defines how preferences resolve visual values.
 
 ## Window state

@@ -42,6 +42,13 @@ The collection emits `create`, `forget`, `install`, and `uninstall`. The first
 three messages are the affected Program. `uninstall` sends
 `{ program, everything }`.
 
+A Client always sees its own Program. The `programs` permission grants selected
+Programs and their domain trees, except stored permission administration; an
+empty list grants every Program and also permits Program creation,
+force-creation, and forking. A selected list does not permit those three
+operations. See [Security](/system/security) for the complete authority
+contract.
+
 ## Owned capabilities
 
 | Member | Contract |

@@ -75,8 +75,8 @@ size, position, layer, location, and minimized state.
 
 A Client executes in a Desktop iframe. It may access its own Program, that
 Program's Processes and Services, and its Context and Desktop capabilities.
-System-wide capabilities and foreign Programs require `all`; see
-[Security](/system/security).
+Foreign Programs, Services, and mutable visual state require their applicable
+permissions; see [Security](/system/security).
 
 The iframe permits scripts and forms. With effective `all`, it also permits
 same-origin access. Moving between those sandbox states requires a reload.

@@ -22,28 +22,46 @@ nonexistent one; a hidden sender or destination is represented as `null`.
 ## Permissions
 
 Permissions come from the closed Core catalog. A Program cannot invent a
-permission name or a value outside that permission's finite value domain.
+permission name or a value outside that permission's value domain.
 
 Immutable initial grants are declared under `client.permissions`. Stored user
-grants belong to the Program. Permission checking considers the declaration
-first and then the stored grant.
+grants belong to the Program, while one owner decision may grant access only to
+the current Process. The effective permission combines those three sources;
+`all` overrides every narrower grant.
 
-The current catalog contains the value-less `all` permission:
+The current catalog is:
+
+| Permission | Values | Default | Authority |
+| --- | --- | --- | --- |
+| `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs |
+| `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, resources, and Services |
+| `appearance` | None | `[]` | Update System Appearance |
+| `desktopPreferences` | None | `[]` | Update Desktop preferences |
+| `all` | None | `[]` | Every available permission and the final unrestricted Client capabilities |
+
+For `services` and `programs`, an empty list means every Program; a non-empty
+list is an unordered set of selected Program identities. A `programs` grant
+also grants Services belonging to the same Programs. Creating or force-creating
+a Program and forking a Program require the unrestricted `programs: []` grant.
+
+Value-less permissions use an empty list only as their canonical present value.
+For example:
 
 ```ts
 permissions: {
-  all: true
+  services: ["web-browser"],
+  appearance: true,
 }
 ```
 
 `true` is assignment and request shorthand for the permission's default value.
-For `all`, it resolves to the canonical empty list because the permission has no
-selectable values. Arrays are unordered sets.
+It therefore selects every Program for `services` and `programs`, and the
+canonical present value for value-less permissions.
 
-When present, `all` grants every System capability, permits
-`program.permissions`, allows Appearance and Desktop preference updates, and
-adds `allow-same-origin` to the Client iframe. Activating or removing that iframe
-capability requires a reload.
+When present, `all` grants every System capability, uniquely permits
+`program.permissions`, and adds `allow-same-origin` to the Client iframe.
+Activating or removing that iframe capability requires a reload. The other
+permissions take effect without reloading.
 
 `context.permissions.get()` returns the stored user value.
 `context.permissions.request()` returns `{ permission, needReload }`; it returns

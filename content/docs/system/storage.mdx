@@ -60,7 +60,8 @@ Every Program handle exposes the same resource families in every SDK:
 
 Program `data` and `cache` are contained within their own roots. Their paths
 cannot traverse outside the root or pass through a symbolic link. A Client can
-access only resources belonging to its own Program unless it has `all`.
+access resources belonging to its own Program and to Programs granted by
+`programs`; `all` grants unrestricted access.
 
 ## Program store
 
