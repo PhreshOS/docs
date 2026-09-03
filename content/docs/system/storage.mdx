@@ -29,9 +29,9 @@ escape.
 
 ## Uploads
 
-The System owns one flat public upload collection. Uploads use opaque generated
-keys rather than filesystem paths and can be read or written as streams, bytes,
-text, JSON, or metadata.
+The System owns one flat public upload collection. `system.uploads.path()`
+returns its absolute directory, while individual uploads use opaque generated
+keys and can be read or written as streams, bytes, text, JSON, or metadata.
 
 The public contract intentionally exposes no listing, deletion, or clearing
 operation.

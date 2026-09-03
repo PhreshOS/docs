@@ -25,8 +25,14 @@ reported exactly as `stdout` and `stderr` chunks; the SDK does not write it to
 the caller's terminal.
 
 The generator owns the complete operating-system process tree. Aborting its
-signal or closing the generator terminates that tree. A non-zero exit is an
-`exited` event, while failures to perform the operation reject iteration.
+signal, closing the generator, or disconnecting its System connection
+terminates that tree. A non-zero exit is an `exited` event, while failures to
+perform the operation reject iteration.
+
+Node and Server execute the command locally because doing so preserves the
+contract without crossing a boundary. Client execution crosses its Desktop
+boundary. This is an implementation difference only; ownership and observable
+behavior remain attached to the same System connection.
 
 <Callout title="System operation, not Process creation">
   A shell command does not create a PhreshOS Process. Use a Program's Process
