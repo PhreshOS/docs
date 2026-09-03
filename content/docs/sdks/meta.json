@@ -4,7 +4,8 @@
   "icon": "Braces",
   "pages": [
     "index",
-    "client-and-server",
+    "client",
+    "server",
     "react",
     "node",
     "cli"

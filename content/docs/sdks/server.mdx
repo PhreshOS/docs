@@ -1,0 +1,36 @@
+---
+title: Server
+description: Access PhreshOS from a Server Endpoint.
+icon: Server
+---
+
+`@phreshos/server` adapts the shared PhreshOS contracts to a Program's executing
+Server Endpoint.
+
+```ts
+import { context, system } from "@phreshos/server"
+```
+
+## Entry points
+
+- `context` belongs to the executing Server Endpoint. It provides its Program,
+  Process, paired Client Endpoint, options, communication, and question
+  handlers.
+- `system` exposes the complete shared System contract.
+
+The same SDK is used whether the Server runs as an operating-system process or
+as a Worker owned by the System. That execution choice does not redefine its
+public contracts.
+
+```ts
+context.answer("counter.read", async () => {
+  return { value: await counter.read() }
+})
+```
+
+The SDK exports the Core `Program`, `Process`, `Endpoint`, and `Service` classes.
+Repeated access within the same Server context preserves their handle identity.
+
+See [Endpoints](/runtime/endpoints) for Server execution modes and
+[Communication](/runtime/communication) for questions, subscriptions, and
+event semantics.
