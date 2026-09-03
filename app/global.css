@@ -31,12 +31,13 @@ body {
 .mental-model {
   display: block;
   width: 100%;
+  max-width: 48rem;
   height: auto;
+  margin-inline: auto;
 }
 
 .mental-model-runtime {
-  max-width: 40rem;
-  margin-inline: auto;
+  max-width: 20rem;
 }
 
 .dark .mental-model {
