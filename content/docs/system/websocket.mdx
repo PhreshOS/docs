@@ -1,0 +1,34 @@
+---
+title: WebSocket
+description: Open a standard WebSocket through the shared System contract.
+icon: PlugZap
+---
+
+`system.websocket()` acquires an outbound connection and returns the platform's
+standard `WebSocket` object.
+
+```ts
+const socket = await system.websocket("wss://example.com/events")
+
+socket.addEventListener("message", event => {
+  console.log(event.data)
+})
+```
+
+## Contract
+
+The operation accepts the same URL and optional protocols as the standard
+`WebSocket` constructor. Its promise resolves with a native `WebSocket` in its
+ordinary `CONNECTING`, `OPEN`, `CLOSING`, or `CLOSED` lifecycle. Opening,
+messages, failures, and closure use the standard properties, methods, and
+events; PhreshOS does not add a second socket contract.
+
+Node and Server open the socket locally and close it when the owning System
+connection or Server Endpoint ends. A Client first acquires authority through
+the Desktop boundary, then creates the browser-native socket. Reloading or
+closing its frame therefore ends the connection naturally.
+
+## Authority
+
+A Client requires the `all` permission. Permission failure rejects the
+acquisition promise. Server and Node retain full System authority.

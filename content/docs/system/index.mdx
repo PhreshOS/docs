@@ -35,6 +35,11 @@ host capabilities. The Desktop represents that state graphically.
     href="/system/fetch"
   />
   <Card
+    title="WebSocket"
+    description="Open a standard WebSocket through the connected System environment."
+    href="/system/websocket"
+  />
+  <Card
     title="Shell"
     description="Stream an operating-system command through the shared System contract."
     href="/system/shell"
@@ -58,6 +63,7 @@ host capabilities. The Desktop represents that state graphically.
 | `service(key)` | Stable communication address for one Endpoint Service |
 | `forceCreateProgram(source)` | Replace one runtime Program without removing installed resources |
 | `fetch(input, init?)` | Outbound web request |
+| `websocket(url, protocols?)` | Outbound standard WebSocket connection |
 | `shell(command, options?)` | Owned operating-system command stream |
 
 Client, Server, and Node implement this same contract. Authority may reject an

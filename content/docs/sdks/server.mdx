@@ -30,8 +30,8 @@ context.answer("status.read", () => ({ ready: true }))
 ## Authority
 
 The Server retains complete System authority. Local capabilities such as
-`fetch()` and `shell()` preserve the System contract while executing locally
-and remain bound to the Server connection's lifetime.
+`fetch()`, `websocket()`, and `shell()` preserve the System contract while
+executing locally and remain bound to the Server connection's lifetime.
 
 The same SDK contract applies whether the Server runs as a host process or a
 System-owned Worker.

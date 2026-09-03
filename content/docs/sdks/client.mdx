@@ -33,6 +33,10 @@ Programs require an applicable `services`, `programs`, `appearance`,
 `desktopPreferences`, or `all` permission. Fabricating an identity or handle
 cannot expand that authority.
 
+`system.websocket()` first crosses the Desktop authority boundary, then returns
+the browser's native `WebSocket`; it does not introduce a Client-specific socket
+shape.
+
 ## Domain handles
 
 The SDK exports Core's `Program`, `Process`, `Endpoint`, `ServerEndpoint`,

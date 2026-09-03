@@ -9,6 +9,7 @@
     "storage",
     "uploads",
     "fetch",
+    "websocket",
     "shell",
     "security"
   ]
