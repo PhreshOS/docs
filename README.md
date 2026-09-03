@@ -1,37 +1,37 @@
 # PhreshOS Documentation
 
-The public documentation for understanding, building, and operating PhreshOS.
+The canonical public explanation of PhreshOS contracts and workflows.
 
-The repository contains the canonical user-facing model of the System, runtime,
-SDKs, CLI, and Program authoring workflow. Fumadocs renders the authored MDX
-content as a statically exported documentation application.
+[Read the documentation](https://docs.phreshos.com) ·
+[PhreshOS](https://github.com/PhreshOS) ·
+[Source](https://github.com/PhreshOS/docs)
 
-## Content
+## Role
+
+This repository explains the public System, runtime, SDK, CLI, and Program
+authoring contracts. Core and the owning runtime boundaries remain the source of
+truth for behavior; documentation represents those contracts and never creates
+a competing model.
+
+Content has four explicit domains:
 
 ```text
 content/docs/
-├── (start)
-├── runtime
-├── system
-└── sdks
+├── (start)  Orientation and ordered workflows
+├── runtime  Program, Process, Endpoint, Service, and Context
+├── system   Capabilities, authority, persistence, and Desktop
+└── sdks     Environment adapters and CLI
 ```
 
-Documentation describes the public model rather than repository history or
-private implementation. API names and examples must match the authoritative
-public contracts in Core and the environment contract they teach.
+The complete authoring contract is recorded in [AGENTS.md](AGENTS.md).
 
 ## Development
 
 ```sh
 bun install --frozen-lockfile
-bun run dev
-```
-
-Verify the type surface and production export:
-
-```sh
 bun run types:check
 bun run build
+bun run dev
 ```
 
 The static site is emitted to `out/`.
@@ -42,15 +42,17 @@ The static site is emitted to `out/`.
 bun run deploy
 ```
 
-Cloudflare Workers serves the static export. Set `NEXT_PUBLIC_SITE_URL` to the
-canonical deployed origin during production builds so generated metadata uses
-the public documentation address.
+Cloudflare Workers serves the static export. `NEXT_PUBLIC_SITE_URL` sets the
+canonical public origin used by generated metadata.
 
-## Repository boundary
+## Related repositories
 
-This repository owns public PhreshOS documentation and its presentation. It
-does not own the contracts or runtime behavior described by that documentation;
-those remain in their respective repositories.
+- [`@phreshos/core`](https://github.com/PhreshOS/core) is the source of truth
+  for shared public contracts.
+- [PhreshOS System](https://github.com/PhreshOS/system) owns authoritative
+  runtime behavior and Desktop implementation.
+- [PhreshOS Website](https://github.com/PhreshOS/website) owns the public
+  product presentation and directs readers here for technical material.
 
 ## License
 
