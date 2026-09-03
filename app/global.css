@@ -27,3 +27,18 @@ html > body[data-scroll-locked] {
 body {
   background-color: var(--color-fd-background);
 }
+
+.mental-model {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mental-model-runtime {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.dark .mental-model {
+  filter: invert(100%);
+}

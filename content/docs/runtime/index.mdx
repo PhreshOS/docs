@@ -6,17 +6,11 @@ icon: Cpu
 
 The Program is the domain root. Everything live belongs to this hierarchy:
 
-```text
-Program
-└── Process
-    ├── ServerEndpoint
-    │   ├── Context while executing
-    │   └── traffic
-    └── ClientEndpoint
-        ├── Context while executing
-        ├── traffic
-        └── Window
-```
+<img
+  src="/mental-models/runtime.png"
+  alt="A Program owns a Process with Server and Client Endpoints and their capabilities"
+  className="mental-model mental-model-runtime"
+/>
 
 `Program`, `Process`, `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, and
 `Service` are shared runtime classes. `Endpoint` is the common base of the two
