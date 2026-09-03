@@ -3,10 +3,12 @@
   "description": "Programs, Processes, Endpoints, and communication",
   "icon": "Cpu",
   "pages": [
+    "---Model---",
     "index",
     "programs",
     "processes",
     "endpoints",
+    "---Interaction---",
     "communication",
     "services"
   ]

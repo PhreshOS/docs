@@ -3,10 +3,12 @@
   "description": "Use PhreshOS from each execution environment",
   "icon": "Braces",
   "pages": [
+    "---Overview---",
     "index",
     "client-and-server",
     "react",
     "node",
+    "---Tooling---",
     "cli"
   ]
 }

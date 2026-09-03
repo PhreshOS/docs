@@ -3,6 +3,7 @@
   "description": "Operate the runtime and desktop",
   "icon": "MonitorCog",
   "pages": [
+    "---Operation---",
     "index",
     "desktop",
     "appearance",
