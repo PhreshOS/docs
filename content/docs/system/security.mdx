@@ -34,7 +34,8 @@ permissions: {
 values. When present, it grants every available Client permission, permits
 `program.permissions`, allows Desktop preference updates, and adds
 `allow-same-origin` to the Client iframe. Without it, Clients may read Desktop
-preferences but cannot change them.
+preferences but cannot change them. A Client may address Services belonging to
+its own Program; Services belonging to another Program require `all`.
 
 <Callout type="info">
   Self-hosting means authority and recovery remain with the machine owner. Keep
