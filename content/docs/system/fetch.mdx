@@ -27,5 +27,10 @@ request remains owned by the active System connection or execution Context.
 
 ## Authority
 
-A Client requires the `all` permission. Server and Node retain full System
-authority.
+A Client requires a `network` scope that covers the request URL, or the `all`
+permission. Server and Node retain full System authority. This governs only
+`system.fetch()`; it does not redefine the browser's native `fetch()`.
+
+The scope authorizes the target selected by the caller. Standard HTTP redirect
+handling remains part of that authorized request; this permission is a System
+capability boundary, not a packet-level network firewall.

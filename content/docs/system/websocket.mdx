@@ -30,5 +30,7 @@ closing its frame therefore ends the connection naturally.
 
 ## Authority
 
-A Client requires the `all` permission. Permission failure rejects the
-acquisition promise. Server and Node retain full System authority.
+A Client requires a `network` scope that covers the normalized WebSocket URL,
+or the `all` permission. Permission failure rejects the acquisition promise.
+Server and Node retain full System authority. This governs only
+`system.websocket()`; it does not redefine the browser's native constructor.

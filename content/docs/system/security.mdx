@@ -35,6 +35,7 @@ The current catalog is:
 | --- | --- | --- | --- |
 | `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs |
 | `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, resources, and Services |
+| `network` | Network scopes | `[]` | Every System request target, or only targets covered by the listed scopes |
 | `appearance` | None | `[]` | Update System Appearance |
 | `desktopPreferences` | None | `[]` | Update Desktop preferences |
 | `all` | None | `[]` | Every available permission and the final unrestricted Client capabilities |
@@ -43,6 +44,28 @@ For `services` and `programs`, an empty list means every Program; a non-empty
 list is an unordered set of selected Program identities. A `programs` grant
 also grants Services belonging to the same Programs. Creating or force-creating
 a Program and forking a Program require the unrestricted `programs: []` grant.
+
+For `network`, an empty list means every request target. A non-empty list contains
+canonical scopes used only by `system.fetch()` and `system.websocket()`:
+
+```ts
+permissions: {
+  network: [
+    "https://api.example.com",
+    "https://*.example.com/v1/**",
+    "http://localhost:*",
+    "wss://events.example.com/**",
+  ],
+}
+```
+
+Schemes are explicit. `*.` replaces complete leading hostname labels, `:*`
+selects every port, and a final `/**` selects a path subtree. A scope without a
+path selects its entire origin. Query strings and fragments do not define
+authority. Broader effective scopes satisfy narrower requests. This permission
+does not govern browser-native networking APIs and never requires an iframe
+reload. A change governs later System operations; it does not revoke a
+`Response` or `WebSocket` already returned to the Client.
 
 Value-less permissions use an empty list only as their canonical present value.
 For example:
@@ -55,8 +78,9 @@ permissions: {
 ```
 
 `true` is assignment and request shorthand for the permission's default value.
-It therefore selects every Program for `services` and `programs`, and the
-canonical present value for value-less permissions.
+It therefore selects every Program for `services` and `programs`, every request
+target for `network`, and the canonical present value for value-less
+permissions.
 
 When present, `all` grants every System capability, uniquely permits
 `program.permissions`, and adds `allow-same-origin` to the Client iframe.
