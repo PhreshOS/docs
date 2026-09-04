@@ -112,15 +112,16 @@ canonical present value for value-less permissions such as `uploads`.
 
 When present, `all` grants every System capability, uniquely permits
 `program.permissions`, and adds `allow-same-origin` to the Client iframe.
-Activating or removing that iframe capability requires a reload. The other
-permissions take effect without reloading.
 
 `context.permissions.get()` returns the stored user value.
 `context.permissions.allows()` checks the current Context's effective authority
 without prompting or changing it. It combines the Program's immutable
-declarations, stored assignments, and `all`.
-`context.permissions.request()` returns `{ permission, needReload }`; it returns
-an existing sufficient grant without prompting. Otherwise, the owner may grant
+declarations, stored assignments, and implied grants such as `programs` granting
+Service access and `all` granting every permission.
+`context.permissions.request()` returns only the permission: the requested
+canonical list when granted, `false` when denied, or `null` when unresolved.
+If existing authority covers the request, it returns exactly that requested
+scope without prompting or changing stored grants. Otherwise, the owner may grant
 the request for the Program, deny it, or leave it unresolved. Requests wait for
 up to two minutes by default, and `timeout()` selects another deadline.
 
@@ -128,7 +129,7 @@ up to two minutes by default, and `timeout()` selects another deadline.
 | --- | --- |
 | `get(name)` | Stored `string[]`, `false`, or `null` |
 | `allows(name, value?)` | Whether the effective permission covers the requested value |
-| `request(name, value?)` | Resolved `{ permission, needReload }` |
+| `request(name, value?)` | Requested canonical list, `false`, or `null` |
 | `timeout(milliseconds).request(...)` | The same request with another deadline |
 
 `program.permissions` is the authoritative stored-grant capability:
@@ -147,10 +148,12 @@ set. Arrays are canonicalized as unordered sets.
 
 `set()` and `delete()` are commands returning `Promise<void>`; failure rejects.
 The System propagates resulting access changes to every Client Process of that
-Program. `needReload` belongs only to `context.permissions.request()`:
-it is derived from that request's effective transition and is never stored as
-permission state. Program permission management from a Client is itself
+Program. Program permission management from a Client is itself
 available only with `all`.
+
+For example, if a Program already has `programs: []`, then
+`context.permissions.request("services", ["browser"])` returns `["browser"]`.
+The broader Program grant stays unchanged, and no separate Service grant is saved.
 
 Asynchronous operations reject with `Execution is not permitted` when authority
 is missing. Synchronous operations that cannot report failure remain silent.
