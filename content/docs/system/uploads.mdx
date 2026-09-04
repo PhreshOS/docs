@@ -35,4 +35,7 @@ bytes, and storage time as Unix milliseconds.
 | `json(file)` | Read and parse an upload as JSON |
 
 The contract intentionally exposes no listing, deletion, or clearing operation.
-A Client requires the `all` permission to access uploads.
+Completed uploads are public, so a Client can use `stat()`, `stream()`,
+`bytes()`, `text()`, and `json()` without a permission. Creating an upload with
+`write()` requires `uploads` or `all`. Exposing the native directory with
+`path()` requires a matching `storage` scope or `all`.

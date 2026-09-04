@@ -30,8 +30,8 @@ communication, and permission requests.
 A Client can access its own Program, Processes belonging to that Program, and
 Services belonging to that Program. System-wide capabilities and other
 Programs require an applicable `services`, `programs`, `network`, `appearance`,
-`desktopPreferences`, or `all` permission. Fabricating an identity, handle, or
-network scope cannot expand that authority.
+`storage`, `uploads`, `desktopPreferences`, or `all` permission. Fabricating an
+identity, handle, network scope, or Storage scope cannot expand that authority.
 
 `system.websocket()` first crosses the Desktop authority boundary, then returns
 the browser's native `WebSocket`; it does not introduce a Client-specific socket

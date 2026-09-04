@@ -36,6 +36,8 @@ The current catalog is:
 | `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs |
 | `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, resources, and Services |
 | `network` | Network scopes | `[]` | Every System request target, or only targets covered by the listed scopes |
+| `storage` | Storage scopes | `[]` | Every native path and operation, or selected operation-and-path scopes |
+| `uploads` | None | `[]` | Create values in the public uploads collection |
 | `appearance` | None | `[]` | Update System Appearance |
 | `desktopPreferences` | None | `[]` | Update Desktop preferences |
 | `all` | None | `[]` | Every available permission and the final unrestricted Client capabilities |
@@ -67,6 +69,33 @@ does not govern browser-native networking APIs and never requires an iframe
 reload. A change governs later System operations; it does not revoke a
 `Response` or `WebSocket` already returned to the Client.
 
+For `storage`, an empty list grants every operation over the native filesystem.
+A non-empty list combines an operation set with an exact path or a path subtree:
+
+```ts
+permissions: {
+  storage: [
+    "Documents/report.json",
+    "read:Documents/**",
+    "read,write:Downloads/**",
+    "delete:/var/shared/temporary/**",
+  ],
+}
+```
+
+A path without an operation prefix grants `read`, `write`, and `delete`.
+There is no `all:` prefix. Operations may be combined with commas and are
+treated as an unordered set. A final `/**` includes the named path and its descendants.
+Relative paths begin at `system.storage.path()`; absolute paths retain their
+native meaning.
+
+Every `path()` and `resolve()` operation on `system.storage`, Program `data`,
+Program `cache`, and System `uploads` needs a scope covering the returned native
+path under any granted operation. Native file content and metadata operations
+require `read`, `write()` requires `write`, and both `delete()` and `clear()`
+require `delete`. Storage grants do not require an iframe reload and affect only
+later operations.
+
 Value-less permissions use an empty list only as their canonical present value.
 For example:
 
@@ -79,8 +108,8 @@ permissions: {
 
 `true` is assignment and request shorthand for the permission's default value.
 It therefore selects every Program for `services` and `programs`, every request
-target for `network`, and the canonical present value for value-less
-permissions.
+target for `network`, every native path and operation for `storage`, and the
+canonical present value for value-less permissions such as `uploads`.
 
 When present, `all` grants every System capability, uniquely permits
 `program.permissions`, and adds `allow-same-origin` to the Client iframe.

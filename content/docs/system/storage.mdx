@@ -40,11 +40,15 @@ contract with different boundary policies.
 
 `system.storage` enters the native filesystem at the operating-system user's
 home directory. That entry point is not a containment boundary: absolute paths
-and resolved parent paths may address files elsewhere. Client access requires
-the `all` permission.
+and resolved parent paths may address files elsewhere. A Client requires a
+`storage` scope covering both the target path and operation, or the `all`
+permission.
 
 `path()` returns the entry point. `resolve(...parts)` resolves a path according
-to that Storage's boundary policy; it does not read the path.
+to that Storage's boundary policy; it does not read the path and therefore
+accepts any operation grant covering it. Reads and metadata require `read`,
+`write()` requires `write`, and `delete()` and `clear()` require `delete`.
+See [Security](/system/security#permissions) for the scope grammar.
 
 ## Program resources
 
@@ -61,7 +65,9 @@ Every Program handle exposes the same resource families in every SDK:
 Program `data` and `cache` are contained within their own roots. Their paths
 cannot traverse outside the root or pass through a symbolic link. A Client can
 access resources belonging to its own Program and to Programs granted by
-`programs`; `all` grants unrestricted access.
+`programs`; `all` grants unrestricted access. Returning a native path through
+their `path()` or `resolve()` operations additionally requires a matching
+`storage` scope or `all`.
 
 ## Program store
 
