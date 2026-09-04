@@ -24,10 +24,9 @@ nonexistent one; a hidden sender or destination is represented as `null`.
 Permissions come from the closed Core catalog. A Program cannot invent a
 permission name or a value outside that permission's value domain.
 
-Immutable initial grants are declared under `client.permissions`. Stored user
-grants belong to the Program, while one owner decision may grant access only to
-the current Process. The effective permission combines those three sources;
-`all` overrides every narrower grant.
+Immutable initial grants are declared under `client.permissions`, and stored
+user grants belong to the Program. The effective permission combines those two
+Program-owned sources; `all` overrides every narrower grant.
 
 The current catalog is:
 
@@ -118,13 +117,12 @@ permissions take effect without reloading.
 
 `context.permissions.get()` returns the stored user value.
 `context.permissions.allows()` checks the current Context's effective authority
-without prompting or changing it. It combines immutable declarations,
-persistent Program assignments, temporary Process assignments, and `all`.
+without prompting or changing it. It combines the Program's immutable
+declarations, stored assignments, and `all`.
 `context.permissions.request()` returns `{ permission, needReload }`; it returns
 an existing sufficient grant without prompting. Otherwise, the owner may grant
-the request for the current Process, store it for the Program, deny it, or leave
-it unresolved. Requests wait for up to two minutes by default, and `timeout()`
-selects another deadline.
+the request for the Program, deny it, or leave it unresolved. Requests wait for
+up to two minutes by default, and `timeout()` selects another deadline.
 
 | Context operation | Result |
 | --- | --- |
@@ -139,25 +137,20 @@ selects another deadline.
 | --- | --- |
 | `get(name)` | Stored canonical value |
 | `all()` | Stored values indexed by permission name |
-| `allows(name, value?)` | Whether this persistent layer covers the requested value |
+| `allows(name, value?)` | Whether the stored Program permissions cover the requested value |
 | `set(name, value)` | Completion |
 | `delete(name)` | Completion |
-
-`process.permissions` has the same operations over only the temporary grants
-belonging to that Process. Its assignments disappear when the Process exits.
-Its `allows()` operation includes a temporary `all` assignment but does not
-consult Program declarations or persistent Program values.
 
 `set()` accepts `true`, an allowed value set, or `false`; `null` belongs to
 `delete()`. A permission declaration accepts only `true` or an allowed value
 set. Arrays are canonicalized as unordered sets.
 
 `set()` and `delete()` are commands returning `Promise<void>`; failure rejects.
-The System propagates resulting access changes to affected Client
-representations. `needReload` belongs only to `context.permissions.request()`:
+The System propagates resulting access changes to every Client Process of that
+Program. `needReload` belongs only to `context.permissions.request()`:
 it is derived from that request's effective transition and is never stored as
-permission state. Program and Process permission management from a Client is
-itself available only with `all`.
+permission state. Program permission management from a Client is itself
+available only with `all`.
 
 Asynchronous operations reject with `Execution is not permitted` when authority
 is missing. Synchronous operations that cannot report failure remain silent.
