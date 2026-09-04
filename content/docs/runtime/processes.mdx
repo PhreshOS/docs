@@ -17,10 +17,17 @@ fixed for its lifetime.
 | `startedAt` | Creation instant as a `Date` |
 | `server` | Permanent Server Endpoint handle |
 | `client` | Permanent Client Endpoint handle |
+| `permissions` | Temporary permission assignments retained for this Process lifetime |
 
 `program()` returns the owning Program. `parent()` returns the Process whose
 creation call produced this Process, or `null`. `option(name)` reads one
 immutable string launch option or returns `undefined`.
+
+`process.permissions` reads and manages only this Process's temporary
+permission layer. `get()` and `all()` return assigned values, `allows()` checks
+coverage within this layer, and `set()` and `delete()` complete without
+returning state. Effective Client authority remains a Context question through
+`context.permissions.allows()`.
 
 An exited parent remains available as the same retained Process handle, whose
 `exited()` operation returns `true`. `null` means the Process never had a
