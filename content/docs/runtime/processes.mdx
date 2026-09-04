@@ -22,7 +22,9 @@ fixed for its lifetime.
 creation call produced this Process, or `null`. `option(name)` reads one
 immutable string launch option or returns `undefined`.
 
-`parent()` rejects when this Process or its retained parent no longer exists.
+An exited parent remains available as the same retained Process handle, whose
+`exited()` operation returns `true`. `null` means the Process never had a
+parent; it does not mean that its parent has exited.
 
 ## Program collection
 
