@@ -24,7 +24,7 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 
 | Field | Value |
 | --- | --- |
-| `background`, `foreground`, `accent` | Explicit light and dark colors |
+| `background`, `foreground`, `primary`, `secondary`, `success`, `warning`, `danger`, `info` | Explicit light and dark colors |
 | `spacing`, `radius` | One shared numeric value |
 | `surface` | Explicit light and dark Surface material |
 | `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
@@ -45,9 +45,24 @@ value. `standardAppearance` is the complete environment-neutral default, and
 | `saturation` | `1–2.6` |
 | `brightness` | `1–1.12` |
 
-The standard colors are background `#fffff5`/`#101418`, foreground
-`#183447`/`#edf8fc`, and accent `#4c9cff` in both themes. Standard spacing is
-`12`, radius is `10`, wallpapers are `null`, and Surface material is opaque
+Each color is an independent CSS value with explicit light and dark branches.
+
+| Color | Role | Light default | Dark default |
+| --- | --- | --- | --- |
+| `background` | Base background and surfaces | `#fffff5` | `#101418` |
+| `foreground` | Text and icons | `#183447` | `#edf8fc` |
+| `primary` | Main actions, selection, and emphasis | `#4c9cff` | `#4c9cff` |
+| `secondary` | Alternative emphasis | `#8b5cf6` | `#a78bfa` |
+| `success` | Successful or positive states | `#16a34a` | `#4ade80` |
+| `warning` | Caution | `#d97706` | `#fbbf24` |
+| `danger` | Errors and destructive actions | `#dc2626` | `#f87171` |
+| `info` | Informational states | `#0891b2` | `#22d3ee` |
+
+React UI's `useColor()` derives `subtle`, `soft`, `base`, `strong`, and `intense`
+treatments from a resolved color. Desktop text remains derived from
+`foreground`; status colors distinguish backgrounds, borders, and indicators.
+
+Standard spacing is `12`, radius is `10`, wallpapers are `null`, and Surface material is opaque
 with neutral brightness and saturation and every effect disabled.
 
 ## Theme resolution
@@ -78,5 +93,8 @@ available to Programs. `AppearanceProvider` supplies Appearance and Theme
 without rendering a container.
 
 Its direction is **freshlism**: simple, clear, responsive, and free from
-unjustified visual or DOM hierarchy. A container must frame real behavior or
-geometry; grouping children alone does not justify one.
+unjustified visual or DOM hierarchy. Containers can provide Grid or Flex
+layout, including arranging, aligning, and spacing children. Avoid a wrapper
+when its only child can carry the same properties and behavior without
+changing the result. Keep a separate container when its layout or behavior
+requires the parent-child relationship.
