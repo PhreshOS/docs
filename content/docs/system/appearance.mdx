@@ -49,7 +49,7 @@ Each color is an independent CSS value with explicit light and dark branches.
 
 | Color | Role | Light default | Dark default |
 | --- | --- | --- | --- |
-| `background` | Base background and surfaces | `#fffff5` | `#101418` |
+| `background` | Base background and surfaces | `#ffffff` | `#121a21` |
 | `foreground` | Text and icons | `#183447` | `#edf8fc` |
 | `primary` | Main actions, selection, and emphasis | `#4c9cff` | `#4c9cff` |
 | `secondary` | Alternative emphasis | `#8b5cf6` | `#a78bfa` |
@@ -62,8 +62,10 @@ React UI's `useColor()` derives `subtle`, `soft`, `base`, `strong`, and `intense
 treatments from a resolved color. Desktop text remains derived from
 `foreground`; status colors distinguish backgrounds, borders, and indicators.
 
-Standard spacing is `12`, radius is `10`, wallpapers are `null`, and Surface material is opaque
-with neutral brightness and saturation and every effect disabled.
+Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Surface
+material uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
+`0.35` in the dark branch, neutral brightness and saturation, and no grain or
+distortion.
 
 ## Theme resolution
 
@@ -73,6 +75,9 @@ Updates accept a direct `light` or `dark` theme, a boolean animation choice, or
 
 A consumer combines the Appearance snapshot with the effective theme and
 resolves only the property it needs.
+
+Theme names select branches; they do not determine a color's brightness. When
+a visual treatment depends on lightness, compare the resolved colors themselves.
 
 ## Client color scheme
 
