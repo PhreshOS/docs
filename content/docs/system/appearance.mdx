@@ -26,11 +26,14 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 | --- | --- |
 | `background`, `foreground`, `primary`, `secondary`, `success`, `warning`, `danger`, `info` | Explicit light and dark colors |
 | `spacing`, `radius` | One shared numeric value |
+| `shadow` | Explicit light and dark outer shadow values |
 | `surface` | Explicit light and dark Surface material |
 | `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
 
 Surface material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
 `distortion`, `waves`, `ripples`, `saturation`, and `brightness`.
+Shadow is independent of Surface material and contains `x`, `y`, `blur`,
+`spread` (CSS pixels), and `opacity`.
 `appearanceLimits` publishes the inclusive supported range for every numeric
 value. `standardAppearance` is the complete environment-neutral default, and
 `createAppearanceSnapshot()` creates a deeply immutable snapshot.
@@ -38,6 +41,10 @@ value. `standardAppearance` is the complete environment-neutral default, and
 | Value | Inclusive range |
 | --- | --- |
 | `spacing`, `radius` | `6–18` |
+| `shadow.x`, `shadow.y` | `-48–48` |
+| `shadow.blur` | `0–96` |
+| `shadow.spread` | `-24–24` |
+| `shadow.opacity` | `0–1` |
 | `grain`, `grainAmount`, `opacity` | `0–1` |
 | `backdrop` | `0–24` |
 | `distortion` | `0–140` |
@@ -66,6 +73,10 @@ Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Surface
 material uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
 `0.35` in the dark branch, neutral brightness and saturation, and no grain or
 distortion.
+
+Both shadow branches default to `{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`.
+Surface consumes this setting and derives the shadow color from the darker of
+the resolved background and foreground. Its inset material highlight is separate.
 
 ## Theme resolution
 
