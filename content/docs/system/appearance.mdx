@@ -31,7 +31,7 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 | `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
 
 Surface material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
-`distortion`, `waves`, `ripples`, `saturation`, and `brightness`.
+`distortion`, and `saturation`.
 Shadow is independent of Surface material and contains `x`, `y`, `blur`,
 `spread` (CSS pixels), and `opacity`.
 `appearanceLimits` publishes the inclusive supported range for every numeric
@@ -48,9 +48,7 @@ value. `standardAppearance` is the complete environment-neutral default, and
 | `grain`, `grainAmount`, `opacity` | `0–1` |
 | `backdrop` | `0–24` |
 | `distortion` | `0–140` |
-| `waves`, `ripples` | `0–40` |
 | `saturation` | `1–2.6` |
-| `brightness` | `1–1.12` |
 
 Each color is an independent CSS value with explicit light and dark branches.
 
@@ -71,8 +69,7 @@ treatments from a resolved color. Desktop text remains derived from
 
 Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Surface
 material uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
-`0.35` in the dark branch, neutral brightness and saturation, and no grain or
-distortion.
+`0.35` in the dark branch, neutral saturation, and no grain or distortion.
 
 Both shadow branches default to `{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`.
 Surface never consumes or renders this setting. A component that owns elevation
