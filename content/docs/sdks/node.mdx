@@ -25,9 +25,10 @@ operations; disconnecting ends that lifetime.
 
 ## Domain handles
 
-The SDK exports Core's `Program`, `Process`, `Endpoint`, `ServerEndpoint`,
-`ClientEndpoint`, `Service`, `ServerService`, and `ClientService` constructors.
-These preserve Core reference identity within this SDK context.
+Handles returned by Node implement Core's `Program`, `Process`, `Endpoint`, and
+`Service` contracts and inherit their Core constructors. Import those shared
+domains from `@phreshos/core`; the Node SDK exports its connected `System`
+creator, `Project`, and Node-owned utilities.
 
 ## Project
 

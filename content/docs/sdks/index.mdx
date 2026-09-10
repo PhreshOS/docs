@@ -42,13 +42,16 @@ domain model; each SDK implements or composes that model without redefining it.
 
 ## One domain model
 
-Client, Server, and Node expose the same `Program`, `Process`, `Endpoint`, and
-`Service` contracts from Core. Their transports and authority boundaries may
-differ, but the public entities do not. Repeated navigation to one live entity
-in the same SDK context returns the same canonical handle.
+Client, Server, and Node implement the same `Program`, `Process`, `Endpoint`,
+and `Service` contracts from Core. Their transports and authority boundaries
+may differ, but the public entities do not. Shared contracts have one import
+path; environment SDKs export only the roots and creators they own. Repeated
+navigation to one live entity in the same SDK context returns the same
+canonical handle.
 
 ```ts
-import { Program, System } from "@phreshos/node"
+import { Program } from "@phreshos/core"
+import { System } from "@phreshos/node"
 
 const system = await System.connect()
 const [program] = await system.program.list()

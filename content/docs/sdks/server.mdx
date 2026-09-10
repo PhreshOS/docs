@@ -38,9 +38,10 @@ System-owned Worker.
 
 ## Domain handles
 
-The SDK exports Core's `Program`, `Process`, `Endpoint`, `ServerEndpoint`,
-`ClientEndpoint`, `Service`, `ServerService`, and `ClientService` constructors.
-These preserve Core reference identity within this SDK context.
+Handles returned by the Server implement Core's `Program`, `Process`,
+`Endpoint`, and `Service` contracts and inherit their Core constructors. Import
+those shared domains from `@phreshos/core`; the Server SDK exports only
+`context` and `system`.
 
 See [Endpoints](/runtime/endpoints) for Server execution modes and
 [Communication](/runtime/communication) for questions, subscriptions, and

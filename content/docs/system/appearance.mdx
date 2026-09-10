@@ -27,15 +27,15 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 | `background`, `foreground`, `primary`, `secondary`, `success`, `warning`, `danger`, `info` | Explicit light and dark colors |
 | `spacing`, `radius` | One shared numeric value |
 | `shadow` | Explicit light and dark outer shadow values |
-| `surface` | Explicit light and dark Surface material |
+| `material` | Explicit light and dark visual-substance values |
 | `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
 
-Surface material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
+Material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
 `distortion`, and `saturation`.
-Shadow is independent of Surface material and contains `x`, `y`, `blur`,
+Shadow is independent of Material and contains `x`, `y`, `blur`,
 `spread` (CSS pixels), and `opacity`.
 `appearanceLimits` publishes the inclusive supported range for every numeric
-value. `standardAppearance` is the complete environment-neutral default, and
+value. `defaultAppearance` is the complete environment-neutral default, and
 `createAppearanceSnapshot()` creates a deeply immutable snapshot.
 
 | Value | Inclusive range |
@@ -67,13 +67,13 @@ React UI's `useColor()` derives `subtle`, `soft`, `base`, `strong`, and `intense
 treatments from a resolved color. Desktop text remains derived from
 `foreground`; status colors distinguish backgrounds, borders, and indicators.
 
-Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Surface
-material uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
+Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Material
+uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
 `0.35` in the dark branch, neutral saturation, and no grain or distortion.
 
 Both shadow branches default to `{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`.
-Surface never consumes or renders this setting. A component that owns elevation
-may resolve it independently; shadow is not part of the Surface material contract.
+Neither Material nor Surface consumes or renders this setting. A component that
+owns elevation may resolve it independently; shadow remains a separate contract.
 
 ## Theme resolution
 
@@ -102,8 +102,12 @@ React mounts; no hook races the first paint.
 ## Visual language
 
 `@phreshos/react-ui` is the visual language used inside the Desktop and
-available to Programs. `AppearanceProvider` supplies Appearance and Theme
-without rendering a container.
+available to Programs. Without a provider, it uses Core's `defaultAppearance`
+and reactively follows the browser color scheme. `AppearanceProvider` can
+override Appearance, Theme, or both without rendering a container; omitted
+values inherit from its parent. The System supplies its resolved live
+Appearance and Desktop theme explicitly without making React UI depend on
+System domain objects.
 
 Its direction is **freshlism**: simple, clear, responsive, and free from
 unjustified visual or DOM hierarchy. Containers can provide Grid or Flex
