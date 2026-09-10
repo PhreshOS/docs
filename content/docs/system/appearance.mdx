@@ -75,8 +75,8 @@ material uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
 distortion.
 
 Both shadow branches default to `{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`.
-Surface consumes this setting and derives the shadow color from the darker of
-the resolved background and foreground. Its inset material highlight is separate.
+Surface never consumes or renders this setting. A component that owns elevation
+may resolve it independently; shadow is not part of the Surface material contract.
 
 ## Theme resolution
 
