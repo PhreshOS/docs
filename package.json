@@ -21,6 +21,7 @@
     "types:check": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@phreshos/react-ui": "^0.1.17",
     "cnfast": "^0.1.0",
     "fumadocs-core": "16.14.4",
     "fumadocs-mdx": "15.2.3",

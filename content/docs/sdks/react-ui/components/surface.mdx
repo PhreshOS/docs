@@ -23,15 +23,21 @@ owns the material.
 | `distortion` | `ScaleLevel \| number` | Appearance material value | Refraction displacement |
 | `saturation` | `ScaleLevel \| number` | Appearance material value | Backdrop saturation multiplier |
 
-`ScaleLevel` is `"xsmall"`, `"small"`, `"medium"`, `"large"`, or
-`"xlarge"`. A semantic level derives a value from the current Appearance;
-a number supplies the value directly. Numeric material values are finite and
-clamped to Core's published [Appearance limits](/system/appearance#values).
+A [numeric level](/sdks/react-ui/appearance#numeric-levels) derives a value
+from the current Appearance; a number supplies the value directly. Numeric
+material values are finite and clamped to Core's published
+[Appearance limits](/system/appearance#values).
 
 The selected host's native properties and ref type remain available. Surface
 also accepts `children`, `className`, and `style` through that host contract.
 
 ## Default Surface
+
+<ComponentPreview>
+  <Surface style={{ padding: 16 }}>
+    Material content
+  </Surface>
+</ComponentPreview>
 
 ```tsx
 import { Surface } from "@phreshos/react-ui"
@@ -54,16 +60,22 @@ preserved.
 
 ## Color and radius
 
-A semantic color combines an Appearance color with a resting level:
+A [semantic color](/sdks/react-ui/appearance#color-levels) combines an
+Appearance color with a resting level:
+
+<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(10rem, 1fr))", gap: "1rem" }}>
+  <Surface color="primary:soft" radius="large" style={{ padding: 16 }}>
+    Semantic color
+  </Surface>
+  <Surface color="oklch(72% 0.14 190)" radius="1.25rem" style={{ padding: 16 }}>
+    Direct color
+  </Surface>
+</ComponentPreview>
 
 ```tsx
-<Surface color="primary:soft" radius="large" />
-<Surface color="oklch(72% 0.14 190)" radius="1.25rem" />
+<Surface color="primary:soft" radius="large">Semantic color</Surface>
+<Surface color="oklch(72% 0.14 190)" radius="1.25rem">Direct color</Surface>
 ```
-
-Available Appearance color names are `background`, `foreground`, `primary`,
-`secondary`, `success`, `warning`, `danger`, and `info`. Available levels are
-`subtle`, `soft`, `base`, `strong`, and `intense`.
 
 The material edge is part of Surface and follows the actual resolved colors;
 it does not assume that Theme names describe their luminance. Radius applies
@@ -72,6 +84,21 @@ to the host and all material layers through one inherited geometry.
 ## Material customization
 
 Supply only the values that differ from the current Appearance:
+
+<ComponentPreview>
+  <Surface
+    color="background:soft"
+    opacity="large"
+    backdrop={18}
+    grain="small"
+    grainAmount={0.2}
+    distortion={24}
+    saturation={1.15}
+    style={{ padding: 20 }}
+  >
+    Customized material
+  </Surface>
+</ComponentPreview>
 
 ```tsx
 <Surface
@@ -96,6 +123,12 @@ layers so one effect does not replace the other.
 ## Host another element
 
 `as` changes the host without introducing another wrapper:
+
+<ComponentPreview>
+  <Surface as="button" type="button" style={{ padding: 16 }}>
+    Continue
+  </Surface>
+</ComponentPreview>
 
 ```tsx
 import { useRef } from "react"

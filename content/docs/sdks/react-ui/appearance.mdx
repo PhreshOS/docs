@@ -31,7 +31,85 @@ An inner provider inherits each omitted value independently. Overriding Theme
 does not copy or replace Appearance, and overriding Appearance does not stop
 the inherited Theme from changing.
 
+## Numeric levels
+
+`ScaleLevel` lets components derive related values from one Appearance value
+without adding five independent theme settings.
+
+| Level | Factor | Meaning |
+| --- | ---: | --- |
+| `xsmall` | `0.25` | One quarter of the source value |
+| `small` | `0.5` | One half of the source value |
+| `medium` | `1` | The source value unchanged |
+| `large` | `1.5` | One and a half times the source value |
+| `xlarge` | `2` | Twice the source value |
+
+Components use these levels for material values, dimensions, spacing, radius,
+and control size where their contracts accept `ScaleLevel`. A component may
+also accept a direct number or CSS value when its domain supports one.
+
+`useScale(value)` returns the complete numeric scale derived from a concrete
+number:
+
+```tsx
+import { useScale } from "@phreshos/react-ui"
+
+export function SpacingSummary() {
+  const spacing = useScale(12)
+
+  return <p>{spacing.small}px · {spacing.medium}px · {spacing.large}px</p>
+}
+```
+
+This produces `6`, `12`, and `18`. Saturation is the one material value that
+scales around its neutral value of `1`; semantic levels scale only its distance
+from that neutral value.
+
+## Color levels
+
+`Color` accepts either a direct CSS color or a semantic value in the form
+`appearanceColor:level`. The color name selects one value from
+`appearance.colors`; the level selects one treatment derived from that value.
+
+<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))", gap: "0.75rem" }}>
+  <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
+  <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
+  <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
+  <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
+  <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
+</ComponentPreview>
+
+| Level | Derivation |
+| --- | --- |
+| `subtle` | 25% source color mixed toward white |
+| `soft` | 60% source color mixed toward white |
+| `base` | Source color unchanged |
+| `strong` | 82% source color mixed toward black |
+| `intense` | 68% source color mixed toward black |
+
+The named Appearance colors are `background`, `foreground`, `primary`,
+`secondary`, `success`, `warning`, `danger`, and `info`. For example,
+`primary:soft` derives the soft treatment from the active Theme branch of
+`appearance.colors.primary`.
+
+`useColor(value)` derives the complete `subtle`, `soft`, `base`, `strong`, and
+`intense` scale from one concrete CSS color. Supplying a direct CSS color to a
+component bypasses semantic name and level resolution.
+
 ## Provide a subtree
+
+<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "1rem" }}>
+  <AppearanceProvider theme="light">
+    <Surface style={{ padding: 16 }}>
+      Light Theme
+    </Surface>
+  </AppearanceProvider>
+  <AppearanceProvider theme="dark">
+    <Surface style={{ padding: 16 }}>
+      Dark Theme
+    </Surface>
+  </AppearanceProvider>
+</ComponentPreview>
 
 ```tsx
 import {

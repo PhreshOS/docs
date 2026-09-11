@@ -28,6 +28,21 @@ body {
   background-color: var(--color-fd-background);
 }
 
+.react-ui-component-preview {
+  display: grid;
+  min-height: 12rem;
+  padding: 1.5rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 0.75rem;
+  background: var(--color-fd-secondary);
+}
+
+.react-ui-component-preview > * {
+  max-width: 100%;
+}
+
 .mental-model {
   display: block;
   width: 100%;

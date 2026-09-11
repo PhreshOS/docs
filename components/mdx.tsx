@@ -6,6 +6,8 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 import * as TabsComponents from 'fumadocs-ui/components/tabs';
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps } from 'react';
+import { ComponentPreview } from './component-preview';
+import { AppearanceProvider, Surface } from './react-ui';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -14,8 +16,11 @@ export function getMDXComponents(components?: MDXComponents) {
     ...TabsComponents,
     Accordion,
     Accordions,
+    AppearanceProvider,
+    ComponentPreview,
     Step,
     Steps,
+    Surface,
     img: (props) => (
       <ImageZoom {...(props as ComponentProps<typeof ImageZoom>)} />
     ),

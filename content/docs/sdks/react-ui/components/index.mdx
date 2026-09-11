@@ -29,11 +29,18 @@ its own domain.
 Use a component when it owns behavior or material. Continue to use semantic
 HTML and ordinary CSS for application-specific structure.
 
+<ComponentPreview>
+  <Surface style={{ width: 320, padding: 16 }}>
+    <h2 style={{ margin: 0 }}>Connection</h2>
+    <p style={{ marginBottom: 0 }}>Ready</p>
+  </Surface>
+</ComponentPreview>
+
 ```tsx
 import { Surface } from "@phreshos/react-ui"
 
 export default function Status() {
-  return <Surface style={{ padding: 16 }}>
+  return <Surface style={{ width: 320, padding: 16 }}>
     <h2>Connection</h2>
     <p>Ready</p>
   </Surface>
