@@ -41,5 +41,8 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "wrangler": "4.124.0"
+  },
+  "overrides": {
+    "next-themes": "npm:@teispace/next-themes@3.0.2"
   }
 }
