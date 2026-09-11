@@ -24,7 +24,7 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 
 | Field | Value |
 | --- | --- |
-| `background`, `foreground`, `primary`, `secondary`, `success`, `warning`, `danger`, `info` | Explicit light and dark colors |
+| `colors` | Named colors, each with explicit light and dark values |
 | `spacing`, `radius` | One shared numeric value |
 | `shadow` | Explicit light and dark outer shadow values |
 | `material` | Explicit light and dark visual-substance values |
@@ -50,7 +50,8 @@ value. `defaultAppearance` is the complete environment-neutral default, and
 | `distortion` | `0–140` |
 | `saturation` | `1–2.6` |
 
-Each color is an independent CSS value with explicit light and dark branches.
+Each member of `appearance.colors` is an independent CSS value with explicit
+light and dark branches.
 
 | Color | Role | Light default | Dark default |
 | --- | --- | --- | --- |
@@ -63,9 +64,11 @@ Each color is an independent CSS value with explicit light and dark branches.
 | `danger` | Errors and destructive actions | `#dc2626` | `#f87171` |
 | `info` | Informational states | `#0891b2` | `#22d3ee` |
 
-React UI's `useColor()` derives `subtle`, `soft`, `base`, `strong`, and `intense`
-treatments from a resolved color. Desktop text remains derived from
-`foreground`; status colors distinguish backgrounds, borders, and indicators.
+React UI's color contract combines a member and resting level, such as
+`background:base` or `primary:soft`. `useColor()` derives the `subtle`, `soft`,
+`base`, `strong`, and `intense` treatments from a resolved color. Desktop text
+remains derived from `colors.foreground`; status colors distinguish backgrounds,
+borders, and indicators.
 
 Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Material
 uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
@@ -115,3 +118,9 @@ layout, including arranging, aligning, and spacing children. Avoid a wrapper
 when its only child can carry the same properties and behavior without
 changing the result. Keep a separate container when its layout or behavior
 requires the parent-child relationship.
+
+Color and Material remain separate inputs. `appearance.colors` defines paint;
+`appearance.material` defines opacity, backdrop, grain, distortion, and
+saturation. React UI's `Material` and every Material-bearing component expose
+`color` beside `material`, never inside it. `Material` defaults to
+`background:base`, and `Surface` is the standard `div` that hosts it.
