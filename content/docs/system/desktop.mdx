@@ -66,7 +66,11 @@ representation of that Window:
 | `move(position)` | Move only the local representation |
 | `resize(size)` | Resize only the local representation |
 | `setGeometry(geometry)` | Change local position and size together |
-| `transaction(transaction)` | Return the same operations bound to visual timing |
+| `minimize(minimized?)` | Minimize or restore only the local representation |
+| `follow(window)` | Follow another permitted Window's geometry and minimized state |
+| `unfollow()` | Return to the representation held before following |
+| `raise()` | Bring the representation to the front of its current layer |
+| `transaction(transaction)` | Bind surface, geometry, minimize, and follow operations to visual timing |
 
 A transaction requires `duration`, `easing`, or both; `wait` optionally makes
 an operation resolve after the transition. Easing accepts the standard CSS
@@ -75,4 +79,7 @@ names or a four-number cubic Bézier tuple.
 Local operations publish no authoritative Window events and are accepted only
 for `under` or `over` Windows. Pointer gestures, measurements, snap previews,
 iframe references, and animation state remain local. Continuous dragging and
-resizing commit one authoritative request at the end.
+resizing commit one authoritative request at the end. `raise()` has no
+transaction form because ordering is an immediate local fact rather than a
+visual interpolation. Direct local geometry or minimized-state changes end an
+active following relationship.

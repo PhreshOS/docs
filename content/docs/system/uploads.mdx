@@ -10,25 +10,25 @@ operations.
 
 ## Upload records
 
-`write(value)` stores one supported value under an opaque generated key and
+`write(content)` stores one `WritableContent` value under an opaque generated key and
 returns its complete upload record:
 
 ```ts
 const upload = await system.uploads.write("Hello from PhreshOS")
 
-console.log(upload.file, upload.type, upload.size, upload.time)
+console.log(upload.file, upload.size, upload.modifiedAt)
 ```
 
-The record contains the opaque file key, detected media type or `null`, size in
-bytes, and storage time as Unix milliseconds.
+The record combines the opaque file key with the same `FileStat` returned by a
+Storage file: size in bytes and last modification time as Unix milliseconds.
 
 ## Operations
 
 | Operation | Contract |
 | --- | --- |
 | `path()` | Return the collection's absolute directory |
-| `write(value)` | Store a value and return its upload record |
-| `stat(file)` | Return one upload record or `null` |
+| `write(content)` | Store `WritableContent` and return its upload record |
+| `stat(file)` | Return `FileStat` or `null` |
 | `stream(file)` | Open an upload as a byte stream |
 | `bytes(file)` | Read an upload as bytes |
 | `text(file)` | Read an upload as UTF-8 text |

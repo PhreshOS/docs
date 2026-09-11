@@ -31,10 +31,12 @@ import {
 | Desktop | Surface and effective preferences of one graphical environment |
 | Window | Authoritative Client presentation state |
 | Local Window | One Desktop's physical Window representation |
+| Storage | One directory location within a private filesystem boundary |
+| StorageFile | One file location within that same boundary |
 
 Core exports the runtime constructors `Program`, `Process`, `Endpoint`,
 `ServerEndpoint`, `ClientEndpoint`, `Service`, `ServerService`, and
-`ClientService`. Environment SDKs implement their contracts and reuse those
+`ClientService`, `Storage`, and `StorageFile`. Environment SDKs implement their contracts and reuse those
 constructors so `instanceof` and canonical handle identity remain meaningful.
 
 ## Communication contracts

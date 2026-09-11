@@ -88,12 +88,13 @@ treated as an unordered set. A final `/**` includes the named path and its desce
 Relative paths begin at `system.storage.path()`; absolute paths retain their
 native meaning.
 
-Every `path()` and `resolve()` operation on `system.storage`, Program `data`,
-Program `cache`, and System `uploads` needs a scope covering the returned native
-path under any granted operation. Native file content and metadata operations
-require `read`, `write()` requires `write`, and both `delete()` and `clear()`
-require `delete`. Storage grants do not require an iframe reload and affect only
-later operations.
+Every `path()` operation on `system.storage`, Program `data`, Program `cache`,
+and System `uploads` needs a scope covering the returned native path under any
+granted operation. `navigate()` and `file()` only select locations and perform
+no access. Native reads, metadata, listing, space, and watching require `read`;
+directory creation, file writing, and appending require `write`; deleting and
+clearing require `delete`. Storage grants do not require an iframe reload and
+affect only later operations.
 
 Value-less permissions use an empty list only as their canonical present value.
 For example:

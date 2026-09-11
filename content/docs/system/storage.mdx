@@ -19,22 +19,46 @@ the System is running, the home also determines its local gateway address.
 
 ## Storage contract
 
-Native storage and Program `data` and `cache` implement the same filesystem
-contract with different boundary policies.
+Native storage and Program `data` and `cache` expose the same two domain
+objects with different private boundary policies. A `Storage` is a directory
+location. A `StorageFile` is a file location. Selecting either location is
+synchronous and performs no filesystem operation:
 
-| Operation | Contract |
+```ts
+const reports = system.storage.navigate("Documents", "reports")
+const report = reports.file("today.json")
+```
+
+The declarative boundary remains attached to every derived object and is not
+part of the public API. `navigate()` changes only the current directory entry
+point; it cannot widen that boundary.
+
+| `Storage` operation | Contract |
 | --- | --- |
-| `path()` | Return the configured entry point |
-| `resolve(...parts)` | Resolve a path without reading it |
-| `stream(...parts)`, `bytes(...parts)`, `text(...parts)`, `json(...parts)` | Read one file in the selected representation |
-| `write(...parts, value)` | Atomically write one supported value |
-| `stat(...parts)` | Return entry metadata or `null` |
-| `list(...parts)` | Return the sorted immediate child names |
-| `delete(...parts)` | Recursively remove an entry |
-| `clear(...parts)` | Empty a directory while preserving it |
+| `name()`, `path()` | Return the selected directory's name or absolute path |
+| `navigate(...parts)` | Select a directory and return another `Storage` |
+| `file(...parts)` | Select a file and return a `StorageFile` |
+| `create()` | Create the directory and missing ancestors |
+| `stat()` | Return directory metadata or `null` |
+| `list(options?)` | Return sorted `Storage` and `StorageFile` children; recursion and depth are optional |
+| `copy(destination, options?)`, `move(destination, options?)` | Copy or move to an exact `Storage` destination |
+| `delete()`, `clear()` | Remove the directory, or empty it while preserving it |
+| `space()` | Return filesystem capacity, available, and used bytes |
+| `watch(options?)` | Yield ordered `change` and `rename` events until cancelled |
 
-`stat()` discriminates results by `kind`. Files include `size` and
-`modifiedAt`; directories and other entries include `modifiedAt`.
+| `StorageFile` operation | Contract |
+| --- | --- |
+| `name()`, `path()` | Return the selected file's name or absolute path |
+| `stat()` | Return file size and modification time, or `null` |
+| `stream(options?)`, `bytes(options?)`, `text(options?)` | Read the complete file or a byte range |
+| `json()` | Read and parse the complete file as JSON |
+| `write(content, options?)`, `append(content)` | Replace atomically or append typed `WritableContent` |
+| `copy(destination, options?)`, `move(destination, options?)` | Copy or move to an exact `StorageFile` destination |
+| `delete()` | Remove the file; absence is accepted |
+
+`WritableContent` is JSON data, a `Blob`, an `ArrayBuffer`, an
+`ArrayBufferView`, or a `ReadableStream<Uint8Array>`. No operation accepts
+`unknown` as file content.
 
 ## Native storage
 
@@ -44,10 +68,11 @@ and resolved parent paths may address files elsewhere. A Client requires a
 `storage` scope covering both the target path and operation, or the `all`
 permission.
 
-`path()` returns the entry point. `resolve(...parts)` resolves a path according
-to that Storage's boundary policy; it does not read the path and therefore
-accepts any operation grant covering it. Reads and metadata require `read`,
-`write()` requires `write`, and `delete()` and `clear()` require `delete`.
+`path()` returns the current entry point. `navigate()` and `file()` create
+handles without accessing the filesystem. Reading either handle's `path()`
+accepts any operation grant covering it. Reads, metadata, listing, space, and
+watching require `read`; creating, writing, and appending require `write`;
+deleting and clearing require `delete`.
 See [Security](/system/security#permissions) for the scope grammar.
 
 ## Program resources
@@ -66,8 +91,8 @@ Program `data` and `cache` are contained within their own roots. Their paths
 cannot traverse outside the root or pass through a symbolic link. A Client can
 access resources belonging to its own Program and to Programs granted by
 `programs`; `all` grants unrestricted access. Returning a native path through
-their `path()` or `resolve()` operations additionally requires a matching
-`storage` scope or `all`.
+their `path()` operation additionally requires a matching `storage` scope or
+`all`.
 
 ## Program store
 
