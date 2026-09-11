@@ -1,5 +1,5 @@
 ---
-title: SDKs
+title: Overview
 description: One domain model adapted to each PhreshOS environment.
 icon: Braces
 ---
@@ -8,6 +8,11 @@ PhreshOS separates contracts from environment adapters. Core defines the
 domain model; each SDK implements or composes that model without redefining it.
 
 <Cards>
+  <Card
+    title="CLI"
+    description="Operate the same model from a terminal."
+    href="/sdks/cli"
+  />
   <Card
     title="Core"
     description="Shared contracts, schemas, constructors, and Program configuration."
@@ -24,19 +29,14 @@ domain model; each SDK implements or composes that model without redefining it.
     href="/sdks/server"
   />
   <Card
-    title="React"
-    description="Core contracts and explicit subscriptions adapted to React."
-    href="/sdks/react"
-  />
-  <Card
     title="Node"
     description="Connect external tools and compose local Program projects."
     href="/sdks/node"
   />
   <Card
-    title="CLI"
-    description="Operate the same model from a terminal."
-    href="/sdks/cli"
+    title="React"
+    description="Core contracts and explicit subscriptions adapted to React."
+    href="/sdks/react"
   />
 </Cards>
 

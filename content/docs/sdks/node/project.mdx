@@ -1,0 +1,117 @@
+---
+title: Project
+description: Load, build, run, develop, install, and package a Program project.
+icon: PackageOpen
+---
+
+`Project` owns local authoring concerns around one `phresh.config.ts`. It turns
+that configuration into a runtime definition before asking a supplied System
+to create or install anything.
+
+## Open a project
+
+```ts
+import { Project } from "@phreshos/node"
+
+const project = await Project.open()
+```
+
+`Project.open(source?)` accepts the current directory by default, a directory,
+or a `phresh.config.ts` path. It loads the default export, validates the
+configuration, and sets `project.directory` to the absolute project root.
+
+`Project.define(config, options?)` creates the same Project from an already
+loaded configuration:
+
+```ts
+const project = Project.define(config, { directory: "/absolute/project" })
+```
+
+The directory defaults to the current working directory.
+
+## Inspect the project
+
+| Operation | Result |
+| --- | --- |
+| `manifest()` | Validated `package.json` manifest |
+| `productionDefinition()` | Resolved production `ProgramDefinition` |
+| `developmentDefinition()` | Resolved development `ProgramDefinition` |
+| `build()` | Completion of the optional `buildCommand` |
+
+Definitions resolve project-relative resources into absolute paths. They are
+available when an application wants to compose the System operations itself.
+
+## Start production
+
+```ts
+import { Project, System } from "@phreshos/node"
+
+const project = await Project.open()
+const system = await System.connect()
+const lifecycle = await project.start(system)
+
+for await (const event of lifecycle) {
+  console.log(event)
+}
+```
+
+`start(system, options?)` runs the optional build, force-creates the production
+Program, and returns its attached Process lifecycle generator. Await the method
+before iterating the generator.
+
+`options.options` supplies immutable Process launch options. `options.signal`
+aborts the attached Process and iteration.
+
+## Start development
+
+```ts
+const lifecycle = await project.dev(system, {
+  options: { document: "example.txt" },
+})
+
+for await (const event of lifecycle) console.log(event)
+```
+
+`dev()` uses the development endpoint declarations. When a Client development
+declaration has a `startCommand` without a fixed URL, Project selects an
+available local port, passes `PHRESHOS_CLIENT_PORT` and
+`PHRESHOS_CLIENT_BASE`, waits for the Client, then starts the Process.
+
+Closing the generator, aborting its signal, or disconnecting the supplied
+System ends the attached lifecycle.
+
+## Install
+
+```ts
+const installation = await project.install(system)
+
+for await (const output of installation) {
+  console.log(output.stream, output.text)
+}
+```
+
+`install()` builds, force-creates the production Program, and returns the
+Program installation generator. Installation output remains streamed rather
+than being consumed internally by Project.
+
+## Package a release
+
+```ts
+const packed = await project.pack()
+
+console.log(packed.archivePath)
+console.log(packed.digest)
+```
+
+`pack()` builds and writes:
+
+- `program.json`, the resolved release declaration;
+- `<identity>@<version>.zip`, the Program archive; and
+- `<identity>@<version>.zip.sha256`, its SHA-256 checksum.
+
+The returned `PackedProject` contains `archive`, `archivePath`,
+`declarationPath`, `checksumPath`, and `digest`. A Client release must contain
+`client/index.html`; missing declared files reject packaging.
+
+[Program configuration](/sdks/core/program-configuration) defines every
+authoring field consumed by Project.

@@ -1,12 +1,12 @@
 ---
 title: Storage
-description: Access native files, System state, and Program resources.
+description: Access native files, uploads, System state, and Program resources.
 icon: Database
 ---
 
-Storage is divided by ownership. System state, native filesystem access, and
-Program resources are separate capabilities even when they share similar read
-and write operations.
+This page owns PhreshOS file persistence: System state, native filesystem
+access, Program resources, and the flat upload collection. These remain
+separate contracts even where they follow the same file-operation conventions.
 
 ## System state
 
@@ -14,7 +14,7 @@ Production state lives beneath `~/.phreshos` by default. `PHRESHOS_HOME`
 selects another root for that state.
 
 The System home contains owner credentials, the System database, installed
-Program files, Program resources, [uploads](/system/uploads), and logs. While
+Program files, Program resources, uploads, and logs. While
 the System is running, the home also determines its local gateway address.
 
 ## Storage contract
@@ -74,6 +74,40 @@ accepts any operation grant covering it. Reads, metadata, listing, space, and
 watching require `read`; creating, writing, and appending require `write`;
 deleting and clearing require `delete`.
 See [Security](/system/security#permissions) for the scope grammar.
+
+## Uploads
+
+`system.uploads` is a flat collection of public files owned by the System. It
+is a distinct contract from `Storage`; similarity in its read operations does
+not give it directory navigation or native filesystem semantics.
+
+`write(content)` stores one `WritableContent` value under an opaque generated
+key and returns its complete upload record:
+
+```ts
+const upload = await system.uploads.write("Hello from PhreshOS")
+
+console.log(upload.file, upload.size, upload.modifiedAt)
+```
+
+The record combines the opaque file key with the same `FileStat` returned by a
+Storage file: size in bytes and last modification time as Unix milliseconds.
+
+| Upload operation | Contract |
+| --- | --- |
+| `path()` | Return the collection's absolute directory |
+| `write(content)` | Store `WritableContent` and return its upload record |
+| `stat(file)` | Return `FileStat` or `null` |
+| `stream(file)` | Open an upload as a byte stream |
+| `bytes(file)` | Read an upload as bytes |
+| `text(file)` | Read an upload as UTF-8 text |
+| `json(file)` | Read and parse an upload as JSON |
+
+The contract intentionally exposes no listing, deletion, or clearing
+operation. Completed uploads are public, so a Client can use `stat()`,
+`stream()`, `bytes()`, `text()`, and `json()` without a permission. Creating an
+upload with `write()` requires `uploads` or `all`. Exposing the native directory
+with `path()` requires a matching `storage` scope or `all`.
 
 ## Program resources
 

@@ -1,0 +1,75 @@
+---
+title: System access
+description: Use the complete System contract through Client authority.
+icon: MonitorCog
+---
+
+`system` has the same public contract in Client, Server, and Node. The Client
+implementation does not remove members from its TypeScript shape; authority
+determines whether a particular operation may execute.
+
+```ts
+import { context, system } from "@phreshos/client"
+```
+
+## Capabilities
+
+| Member | Capability |
+| --- | --- |
+| `program` | List, find, create, and observe Programs |
+| `process` | List, find, and observe Processes |
+| `service(key)` | Address one Server or Client Service |
+| `storage` | Access the native filesystem |
+| `uploads` | Read or create System uploads |
+| `appearance` | Read or replace System Appearance |
+| `fetch()` | Perform an outbound standard request |
+| `websocket()` | Open a standard WebSocket |
+| `shell()` | Stream an operating-system command |
+
+Every capability's complete operation contract lives under [System](/system).
+This page defines only what changes at the Client boundary.
+
+## Default authority
+
+Without additional permissions, a Client can access its own Program, Processes
+and resources belonging to that Program, and Services whose owning Program is
+that Program. It may read Appearance, Desktop state, and existing uploads.
+
+Access to other Programs, broader Services, native Storage, outbound System
+networking, upload creation, Appearance updates, Desktop preference updates,
+shell execution, and unrestricted Program permission management requires the
+corresponding permission.
+
+```ts
+if (await context.permissions.allows("network", ["https://api.example.com"])) {
+  const response = await system.fetch("https://api.example.com/status")
+  console.log(await response.json())
+}
+```
+
+## Standard platform results
+
+`system.fetch()` accepts standard `RequestInfo | URL` and `RequestInit`, then
+returns a standard `Response`. `system.websocket()` returns the platform's
+standard `WebSocket` after its asynchronous authority boundary.
+
+```ts
+const socket = await system.websocket("wss://events.example.com")
+
+socket.addEventListener("message", event => {
+  console.log(event.data)
+})
+```
+
+The asynchronous factory is the only difference from `new WebSocket()`.
+Once returned, the socket uses the standard interface.
+
+## Failure behavior
+
+An asynchronous operation rejected by Client authority fails with
+`Execution is not permitted`. A synchronous operation that cannot represent
+failure remains silent. Fabricating a Program identity, path, scope, or handle
+does not expand authority, and inaccessible handles behave as nonexistent.
+
+A permission change governs later System operations. It does not retroactively
+revoke a `Response` or `WebSocket` already returned to the Client.

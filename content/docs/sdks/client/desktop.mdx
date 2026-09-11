@@ -1,0 +1,43 @@
+---
+title: Desktop
+description: Read and update the Desktop containing the current Client.
+icon: PanelsTopLeft
+---
+
+`desktop` represents the graphical environment containing this Client
+Endpoint. It exposes the Desktop surface and its effective preferences without
+exposing Desktop implementation details.
+
+```ts
+import { desktop } from "@phreshos/client"
+```
+
+## Surface
+
+```ts
+const { size } = await desktop.surface.snapshot()
+console.log(size.width, size.height)
+
+const cleanup = desktop.surface.subscribe("resize", snapshot => {
+  console.log(snapshot.size)
+})
+```
+
+The snapshot contains the current Desktop dimensions in CSS pixels. A
+subscription observes future resizes and does not replay the snapshot.
+
+## Preferences
+
+```ts
+const preferences = await desktop.preferences.snapshot()
+console.log(preferences.theme, preferences.animations)
+
+await desktop.preferences.update({ theme: "default" })
+```
+
+Preferences describe the effective theme and animation choices for this
+Desktop. Updating them requires `desktopPreferences` or `all`; reading them is
+part of normal Client access.
+
+`desktop` is not a global Window registry. The current Client's authoritative
+and local Window values remain under [Context](/sdks/client/context).

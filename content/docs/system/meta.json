@@ -7,9 +7,7 @@
     "desktop",
     "appearance",
     "storage",
-    "uploads",
-    "fetch",
-    "websocket",
+    "network",
     "shell",
     "security"
   ]

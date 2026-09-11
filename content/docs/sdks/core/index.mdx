@@ -1,0 +1,79 @@
+---
+title: Overview
+description: Use the authoritative PhreshOS contracts and immutable contract data.
+icon: Boxes
+---
+
+`@phreshos/core` defines the public meaning shared by every PhreshOS
+environment. It contains domain constructors, TypeScript contracts, Program
+configuration, immutable defaults, and pure validation. It does not connect to
+a System, cross a transport, persist data, execute commands, or render UI.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install @phreshos/core
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add @phreshos/core
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add @phreshos/core
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn add @phreshos/core
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  Core has no peer dependencies.
+</Callout>
+
+Environment SDKs declare Core as a peer dependency so an application uses one
+shared set of constructors and contracts.
+
+```ts
+import { Program } from "@phreshos/core"
+import { System } from "@phreshos/node"
+
+const system = await System.connect()
+const program = await system.program.find("terminal")
+
+console.log(program instanceof Program)
+```
+
+## Public surface
+
+| Area | Core owns |
+| --- | --- |
+| Configuration | `defineConfig()` and authoring contracts for `phresh.config.ts` |
+| Runtime domains | Program, Process, Endpoint, Service, Context, and communication contracts |
+| System domains | System, Storage, Uploads, Desktop, Window, permissions, and Appearance contracts |
+| Contract data | Permission catalog, Window layers, Appearance limits, and default Appearance |
+| Validation | Guards and parsers for values entering from untyped boundaries |
+
+Core exports shared domain constructors. Client, Server, and Node return
+instances inheriting those constructors rather than defining consumer-specific
+versions of the same domains.
+
+<Cards>
+  <Card title="Program configuration" description="Declare production and development Program endpoints." href="/sdks/core/program-configuration" />
+  <Card title="Domain contracts" description="Understand the shared entities and capability traits." href="/sdks/core/domain-contracts" />
+  <Card title="Validation and utilities" description="Validate untyped values against Core's closed contracts." href="/sdks/core/validation-and-utilities" />
+</Cards>
+
+## Dependency boundary
+
+Core describes valid values and behavior. An SDK implements those contracts for
+one environment. A transport decides how values cross a boundary. Keeping these
+roles separate means changing a connection mechanism cannot change what a
+Program, Process, Endpoint, or Service means.

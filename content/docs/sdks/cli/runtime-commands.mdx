@@ -1,0 +1,101 @@
+---
+title: Runtime commands
+description: Inspect and operate Programs, Processes, Endpoints, and Windows.
+icon: Workflow
+---
+
+Runtime commands follow the ownership hierarchy of the shared domain model.
+They connect to the running System, resolve the requested handles, execute one
+operation, and close their Node connection.
+
+## Program
+
+| Command | Operation |
+| --- | --- |
+| `program list` | List Programs with installed, search, limit, and offset filters |
+| `program inspect` | Read one Program declaration and installation state |
+| `program agent` | Read the Program's own agent documentation |
+| `program wait` | Wait for `create`, `forget`, `install`, or `uninstall` |
+
+```sh
+phresh program list --installed-only
+phresh program inspect --program terminal --json
+phresh program wait --event uninstall --program terminal
+```
+
+## Process
+
+| Command | Operation |
+| --- | --- |
+| `process list` | List live Processes, optionally within one Program |
+| `process inspect` | Read one Process and its Endpoint state |
+| `process create` | Create a Process from launch flags |
+| `process findOrCreate` | Find the named Process or create it atomically |
+| `process exit` | End one Process or every Process of a Program |
+| `process wait` | Wait for Process creation or exit |
+
+```sh
+phresh process create \
+  --program terminal \
+  --name main \
+  --server \
+  --client
+```
+
+Launch flags preserve the human-facing syntax and are translated into Core's
+`Launch` contract. `--server-service` and `--client-service` select Service
+incarnations. `--no-server` and `--no-client` disable an Endpoint for that
+Process. Run options use repeatable `--option name=value` values.
+
+## Endpoint
+
+| Command | Operation |
+| --- | --- |
+| `endpoint inspect` | Read existence, readiness, Service state, and coordinates |
+| `endpoint start` | Start a new Endpoint incarnation |
+| `endpoint stop` | Stop the current incarnation |
+| `endpoint waitReady` | Wait until the Endpoint is ready |
+| `endpoint waitLifecycle` | Wait for lifecycle `start` or `stop` |
+| `endpoint ask` | Ask a Server Endpoint and print its answer |
+| `endpoint publish` | Publish one event without awaiting delivery |
+| `endpoint wait` | Wait for one future Endpoint event |
+
+```sh
+phresh endpoint ask \
+  --program terminal \
+  --process main \
+  --endpoint server \
+  --event status.read \
+  --json
+```
+
+Endpoint coordinates require `--process` and `--endpoint server|client`.
+`--program` disambiguates a Program-local Process name. Payloads are JSON at
+the CLI boundary even though SDK communication supports richer binary values.
+
+## Window
+
+| Command | Operation |
+| --- | --- |
+| `window inspect` | Read the complete authoritative Window state |
+| `window move` | Change position |
+| `window resize` | Change size |
+| `window setGeometry` | Change position and size atomically |
+| `window minimize` | Minimize, or restore with `--restore` |
+| `window changeTitle` | Replace the Window title |
+| `window raise` | Raise within the current layer |
+| `window wait` | Wait for a future Window event |
+
+```sh
+phresh window set-geometry \
+  --program terminal \
+  --process main \
+  --x 0 \
+  --y 0 \
+  --width 100% \
+  --height 100%
+```
+
+Geometry accepts pixels or the same workspace-relative expressions as the Core
+Window contract. Camel-case command names also expose kebab-case aliases where
+shown by `phresh describe`.

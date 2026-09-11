@@ -1,0 +1,62 @@
+---
+title: Validation and utilities
+description: Validate untyped values against Core's public contracts.
+icon: BadgeCheck
+---
+
+Core validation functions are pure boundary helpers. They turn unknown input
+into one canonical contract value or reject it; they do not contact the System.
+
+## Guards and parsers
+
+| Operation | Result |
+| --- | --- |
+| `isServiceKey(value)` | Whether a value contains complete Service coordinates |
+| `isUploadFile(value)` | Whether text has the opaque upload-key grammar |
+| `isRelativeValue(value)` | Whether a value follows Window geometry grammar |
+| `parseRelativeValue(value)` | Relative and pixel coefficients for one geometry value |
+| `isPermissionName(value)` | Whether a value names a permission in the closed catalog |
+| `parsePermissionName(value)` | One permission name or an error |
+| `parsePermission(name, value)` | Canonical value for one exact permission |
+| `parseClientPermissions(value)` | Immutable declared Client grants |
+| `parsePermissions(value)` | Stored Program grants |
+| `parseNetworkScope(value)` | Canonical network scope |
+| `networkScopeCovers(grant, request)` | Whether one network scope contains another |
+| `parseStorageScope(value)` | Canonical operation-and-path scope |
+| `describeStorageScope(value)` | Operations and path represented by a Storage scope |
+| `parseShellEvent(value)` | Canonical shell lifecycle event |
+| `createAppearanceSnapshot(value)` | Deeply frozen Appearance snapshot |
+
+```ts
+import {
+  isPermissionName,
+  parsePermission,
+} from "@phreshos/core"
+
+function readPermission(name: unknown, value: unknown) {
+  if (!isPermissionName(name)) throw new Error("Unknown permission")
+  return parsePermission(name, value)
+}
+```
+
+Parsers are useful where JavaScript, files, user input, or transport traffic can
+bypass static TypeScript checking. Already typed application values do not need
+to be repeatedly parsed.
+
+## Immutable contract data
+
+| Export | Meaning |
+| --- | --- |
+| `clientPermissionCatalog` | Every permission name and its accepted value domain |
+| `layers` | Valid Window layers in their ordering vocabulary |
+| `appearanceLimits` | Valid numerical Appearance ranges |
+| `defaultAppearance` | Complete default Appearance source value |
+
+```ts
+import { clientPermissionCatalog, defaultAppearance } from "@phreshos/core"
+
+console.log(clientPermissionCatalog.network)
+console.log(defaultAppearance.radius.light)
+```
+
+These values are contract data, not mutable application configuration.

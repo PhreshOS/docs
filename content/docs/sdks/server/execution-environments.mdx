@@ -1,0 +1,53 @@
+---
+title: Execution environments
+description: Run one Server SDK contract in a host process or System-owned Worker.
+icon: Cpu
+---
+
+A Server declaration chooses how the System executes its entry point. Both
+environments expose the same `context` and `system` roots from
+`@phreshos/server`.
+
+## Host process
+
+```ts
+server: {
+  location: "dist/server",
+  startCommand: "node main.js",
+}
+```
+
+The System supervises an operating-system process started by `startCommand`.
+The SDK connects through the process IPC channel supplied by the System.
+
+## System-owned Worker
+
+```ts
+server: {
+  location: "dist/server",
+  entryFile: "main.js",
+}
+```
+
+The System loads `entryFile` in a Node.js Worker it owns. The SDK connects
+through the Worker's parent channel.
+
+## Same observable contract
+
+Application code imports and uses the SDK identically in both environments:
+
+```ts
+import { context, system } from "@phreshos/server"
+
+console.log((await context.program()).identity)
+console.log(await system.uploads.path())
+```
+
+The connection adapter differs because the host primitives differ. Context
+identity, domain handles, subscriptions, transferable values, System
+capabilities, and lifetime semantics do not. Code should not branch on the
+execution environment to access PhreshOS.
+
+Ending the host process or Worker ends the Server Endpoint incarnation. The
+System then publishes the same Endpoint lifecycle regardless of which
+mechanism executed it.

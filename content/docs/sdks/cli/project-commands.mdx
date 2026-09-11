@@ -1,0 +1,90 @@
+---
+title: Project commands
+description: Create, configure, run, install, and package Program projects.
+icon: FolderCode
+---
+
+Project commands operate on source code, `phresh.config.ts`, or a Program
+release. Commands requiring a running System establish their own temporary Node
+SDK connection.
+
+## Command reference
+
+| Command | Outcome |
+| --- | --- |
+| `phresh create [directory]` | Create a complete Program project from the maintained template |
+| `phresh init` | Add `phresh.config.ts` to an existing project |
+| `phresh dev` | Run the development Program attached to this terminal |
+| `phresh start` | Build and run the production Program without installing |
+| `phresh install [name]` | Install this project or one official Program |
+| `phresh uninstall [name]` | Uninstall this project or one installed Program |
+| `phresh pack` | Build and produce the release declaration, archive, and checksum |
+
+## Create and initialize
+
+```sh
+phresh create example-program --package-manager bun
+cd example-program
+```
+
+Without enough arguments in an interactive terminal, `create` asks for the
+missing choices. `--no-install` creates the files without installing package
+dependencies.
+
+```sh
+phresh init --server --client
+```
+
+`init` reads identity, version, and description from `package.json`, then
+creates a typed Program configuration. Endpoint flags select production and
+development locations or execution commands. `--force` replaces an existing
+configuration.
+
+## Development and production
+
+```sh
+phresh dev
+phresh start
+```
+
+Both commands attach the created Process to the terminal. Endpoint output is
+written here, ending the command stops the attached Process, and its exit status
+becomes the command status. `start` runs the optional production build first;
+`dev` uses development declarations and waits up to 15 seconds for a declared
+Client URL.
+
+Launch options use the open `--run-option-<name>=<value>` grammar:
+
+```sh
+phresh dev --run-option-document=example.txt
+```
+
+## Install and uninstall
+
+```sh
+phresh install
+phresh install terminal --run
+```
+
+Without a name, `install` builds and installs the current project. A name
+selects a verified official release. `--run` creates a Process after successful
+installation.
+
+```sh
+phresh uninstall
+phresh uninstall terminal --everything
+```
+
+Uninstalling normally removes installed files while preserving Processes, data,
+and retained runtime state. `--everything` removes those Program-owned values
+as well.
+
+## Package
+
+```sh
+phresh pack
+```
+
+`pack` runs `buildCommand`, validates declared endpoint files, then writes the
+canonical `program.json`, release archive, and SHA-256 checksum described by
+[Node Project](/sdks/node/project).

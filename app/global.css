@@ -36,10 +36,6 @@ body {
   margin-inline: auto;
 }
 
-.mental-model-runtime {
-  max-width: 20rem;
-}
-
 .dark .mental-model {
   filter: invert(100%);
 }

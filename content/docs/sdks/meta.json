@@ -4,11 +4,11 @@
   "icon": "Braces",
   "pages": [
     "index",
+    "cli",
     "core",
     "client",
     "server",
-    "react",
     "node",
-    "cli"
+    "react"
   ]
 }

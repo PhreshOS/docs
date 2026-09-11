@@ -1,0 +1,68 @@
+---
+title: Overview
+description: Access PhreshOS from the currently executing Server Endpoint.
+icon: Server
+---
+
+`@phreshos/server` implements the shared PhreshOS contracts for a Program's
+currently executing Server Endpoint.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install @phreshos/server
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add @phreshos/server
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add @phreshos/server
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn add @phreshos/server
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  Server requires `@phreshos/core`.
+</Callout>
+
+```ts
+import { context, system } from "@phreshos/server"
+import { Program, Process } from "@phreshos/core"
+```
+
+Core is a peer dependency. The Server package exports only its environment
+roots; domain constructors and shared types retain their Core import path.
+
+## Public surface
+
+| Export | Contract | Reference |
+| --- | --- | --- |
+| `context` | Current Server execution Context | [Context](/sdks/server/context) |
+| `system` | Complete owner-level System contract | [System access](/sdks/server/system-access) |
+
+Handles returned through either root implement Core's Program, Process,
+Endpoint, and Service contracts and inherit their Core constructors.
+
+## Execution boundary
+
+The Server Context belongs to one Endpoint incarnation. Its registrations and
+pending operations end when that incarnation stops. The `system` root remains
+the same complete contract whether this SDK executes in a supervised host
+process or a System-owned Worker.
+
+<Cards>
+  <Card title="Context" description="Use execution identity, paired Client communication, and answerers." href="/sdks/server/context" />
+  <Card title="System access" description="Use the complete System contract with Server authority." href="/sdks/server/system-access" />
+  <Card title="Execution environments" description="Run the same SDK in a host process or System-owned Worker." href="/sdks/server/execution-environments" />
+</Cards>

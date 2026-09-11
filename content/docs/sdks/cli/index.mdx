@@ -1,0 +1,81 @@
+---
+title: Overview
+description: Create Programs and operate PhreshOS from a terminal.
+icon: Terminal
+---
+
+The `phresh` CLI presents Project workflows, running-System operations, and
+native System lifecycle management as human-facing commands. Its command tree
+translates into the same contracts used by the SDKs.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add --global @phreshos/cli
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn global add @phreshos/cli
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  CLI has no peer dependencies; its global installation includes its runtime dependencies.
+</Callout>
+
+```sh
+phresh --version
+phresh --help
+```
+
+## Command surface
+
+| Area | Commands | Reference |
+| --- | --- | --- |
+| Project | `create`, `init`, `dev`, `start`, `install`, `uninstall`, `pack` | [Project commands](/sdks/cli/project-commands) |
+| Runtime | `program`, `process`, `endpoint`, `window` | [Runtime commands](/sdks/cli/runtime-commands) |
+| System lifecycle | `system install`, `uninstall`, `status`, `version`, `start`, `stop`, `enable`, `disable` | [System commands](/sdks/cli/system-commands) |
+| Discovery | `describe` | [Contract discovery](/sdks/cli/contract-discovery) |
+
+Unknown commands, options, and malformed values reject instead of being
+guessed. Run `phresh <path> --help` for human guidance or `phresh describe` for
+the machine-readable contract.
+
+## Human and automation output
+
+Commands render for the terminal by default. Collections use responsive tables,
+single values use labeled fields, and narrow terminals wrap or switch to
+vertical records without discarding data. Mutations show only the fields needed
+to understand their outcome. Runtime inspection and observation commands accept
+`--json` and write the complete result as one machine-readable JSON value on one
+line.
+
+```sh
+phresh program list --installed-only
+phresh program list --installed-only --json
+```
+
+Searchable lists use `--search`, `--limit`, and `--offset`. Human output reports
+how many results are shown. Their JSON result is `{ data, total, truncated }`,
+making bounded automation explicit.
+
+<Cards>
+  <Card title="Project commands" description="Create, configure, run, install, and package Programs." href="/sdks/cli/project-commands" />
+  <Card title="Runtime commands" description="Inspect and operate Programs, Processes, Endpoints, and Windows." href="/sdks/cli/runtime-commands" />
+  <Card title="System commands" description="Install and manage the native PhreshOS service." href="/sdks/cli/system-commands" />
+  <Card title="Contract discovery" description="Read exact commands, options, examples, and output schemas." href="/sdks/cli/contract-discovery" />
+</Cards>

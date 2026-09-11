@@ -1,0 +1,68 @@
+---
+title: Domain contracts
+description: Use the shared entities and behavior contracts implemented by every SDK.
+icon: Network
+---
+
+Core defines one domain model used by Client, Server, and Node. An environment
+may implement a method locally or across a boundary, but it cannot give the
+domain a different public shape.
+
+## Runtime domains
+
+| Domain | Meaning | Canonical reference |
+| --- | --- | --- |
+| Program | Stable definition owning resources, permissions, startup, and Processes | [Programs](/runtime/programs) |
+| Process | One live execution of a Program | [Processes](/runtime/processes) |
+| Endpoint | Permanent Server or Client execution address within a Process | [Endpoints](/runtime/endpoints) |
+| Service | Stable address selecting a Service incarnation | [Services](/runtime/services) |
+| Context | Capabilities belonging to the currently executing Endpoint | [Context](/runtime/context) |
+
+```ts
+import {
+  ClientEndpoint,
+  Endpoint,
+  Process,
+  Program,
+  ServerEndpoint,
+  Service,
+} from "@phreshos/core"
+```
+
+The constructors make runtime identity testable with `instanceof`. Their
+interfaces define the operations; concrete SDKs provide the implementations.
+
+## System domains
+
+| Domain | Meaning | Canonical reference |
+| --- | --- | --- |
+| System | Global capability root | [System](/system) |
+| Storage and StorageFile | Directory and file locations within one filesystem boundary | [Storage](/system/storage) |
+| Desktop | One graphical environment's surface and preferences | [Desktop](/system/desktop) |
+| Window and LocalWindow | Authoritative and local Client presentation | [Desktop](/system/desktop) |
+| Appearance | Shared visual source value | [Appearance](/system/appearance) |
+| Uploads | Flat System-owned upload collection | [Storage](/system/storage#uploads) |
+
+## Communication traits
+
+`Publishable`, `Subscribable`, `Askable`, and `Timeoutable` define reusable
+behavior without inventing new entities. Their event, capture, question,
+answer, option, and cleanup types preserve correlation and TypeScript inference.
+
+```ts
+const cleanup = endpoint.subscribe("changed", value => {
+  console.log(value)
+})
+
+cleanup()
+```
+
+[Communication](/runtime/communication) defines publications, subscriptions,
+iterators, questions, answers, traffic, and transferable boundary values.
+
+## Visual capability traits
+
+`Colorable`, `Sizable`, `Shapeable`, `Variantable`, and `Elevatable` describe
+semantic visual choices. They do not render components or define a styling
+system; a UI package selects the value domain accepted by each concrete
+component.

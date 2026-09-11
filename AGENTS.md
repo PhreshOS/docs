@@ -92,6 +92,12 @@ copyable. Preserve the real asynchronous shape: do not hide a Promise, consume
 a generator on the reader's behalf, or imply that a subscription returns
 current state.
 
+An example exists to make one contract obvious. Do not burden it with
+production hardening, defensive lifecycle bookkeeping, exhaustive error
+handling, or abstractions unrelated to that contract. Include those mechanics
+only when they are the subject being explained. An example must work under its
+stated conditions; it does not need to model an entire production application.
+
 Use neutral identities and paths. Never use a contributor's name, machine,
 home directory, secret, private URL, or unpublished internal import. Do not add
 compatibility syntax, imaginary convenience methods, or implementation objects

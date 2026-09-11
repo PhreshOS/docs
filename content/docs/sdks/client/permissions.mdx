@@ -1,0 +1,70 @@
+---
+title: Permissions
+description: Inspect effective Client authority and request owner grants.
+icon: ShieldCheck
+---
+
+Client permissions expand authority for later Client operations. Permission
+names and their value domains come from Core's closed catalog; a Program cannot
+invent either one.
+
+## Context permissions
+
+`context.permissions` combines immutable Program declarations, stored owner
+grants, and implied authority when checking the current execution.
+
+| Operation | Result |
+| --- | --- |
+| `get(name)` | Stored user value only: a canonical list, `false`, or `null` |
+| `allows(name, value?)` | Whether effective authority covers the request |
+| `request(name, value?)` | Requested canonical list, `false`, or `null` |
+| `timeout(milliseconds).request(...)` | The same request with another deadline |
+
+```ts
+import { context } from "@phreshos/client"
+
+const scope = ["https://api.example.com"] as const
+
+if (!await context.permissions.allows("network", scope)) {
+  const granted = await context.permissions.request("network", scope)
+  console.log(granted)
+}
+```
+
+Requests wait for up to two minutes by default. If existing authority already
+covers a narrower request, `request()` returns exactly the requested canonical
+scope without prompting or changing stored grants.
+
+## Program permissions
+
+`program.permissions` manages stored owner grants belonging to that Program.
+It does not include immutable declarations or temporary Context state.
+
+| Operation | Result |
+| --- | --- |
+| `get(name)` | Stored canonical value |
+| `all()` | Every stored value indexed by permission name |
+| `allows(name, value?)` | Whether stored values cover the request |
+| `set(name, value)` | `Promise<void>` |
+| `delete(name)` | `Promise<void>` |
+
+```ts
+const program = await context.program()
+
+await program.permissions.set("network", ["https://api.example.com"])
+console.log(await program.permissions.get("network"))
+await program.permissions.delete("network")
+```
+
+Client access to `program.permissions` itself requires `all`. Server and Node
+retain owner-level System access.
+
+## Canonical values
+
+`true` is assignment and request shorthand for a permission's default list. It
+is resolved before storage or return. Arrays are unordered sets and duplicate
+values are removed. `false` records denial, while `null` represents the absence
+of a resolved stored value and belongs to `delete()` rather than `set()`.
+
+[Security](/system/security) defines every permission, its value grammar,
+implied grants, declarations, and exact operation coverage.

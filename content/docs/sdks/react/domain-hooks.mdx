@@ -1,0 +1,112 @@
+---
+title: Domain hooks
+description: Read and follow Program, Process, Endpoint, Service, and Window state through React.
+icon: Activity
+---
+
+React state hooks combine an explicit read from one domain handle with that
+same handle's future events. They expose live render state without creating a
+second authority for the domain.
+
+## Shared contract
+
+Every state hook accepts one existing Core handle. Its first render returns
+`undefined` while the snapshot is being read. Once resolved, it returns the
+complete state shape listed below.
+
+| Hook | Result |
+| --- | --- |
+| `useProgramState(program)` | `{ installed, processes }` |
+| `useProcessState(process)` | `{ exited }` |
+| `useEndpointState(endpoint)` | `{ exists }` |
+| `useServiceState(service)` | `{ exists }` |
+| `useWindowState(window)` | `{ title, position, size, minimized, front, layer, location }` |
+
+The hook subscribes before requesting the initial snapshot. Events received
+while the read is pending are applied after it, preventing an older read from
+overwriting newer state.
+
+## Program state
+
+```tsx
+import { useProgram, useProgramState } from "@phreshos/react"
+
+function CurrentProgram() {
+  const program = useProgram()
+  const state = useProgramState(program)
+
+  if (!state) return <p>Reading Program…</p>
+
+  return <p>
+    {program.name} · {state.installed ? "installed" : "not installed"}
+    {` · ${state.processes.length} Processes`}
+  </p>
+}
+```
+
+The initial snapshot reads `program.installed()` and
+`program.process.list()` concurrently. The hook then follows Process creation,
+Process exit, and Program uninstall. Repeated creation events for the same
+canonical Process handle do not duplicate it in the array.
+
+## Process state
+
+```tsx
+const state = useProcessState(process)
+
+if (!state) return <p>Reading Process…</p>
+return <p>{state.exited ? "Exited" : "Running"}</p>
+```
+
+Process state contains only `{ exited }`. Server and Client Endpoint existence
+belong to the Endpoint lifecycle and are deliberately not folded into Process
+state.
+
+## Endpoint and Service state
+
+```tsx
+const endpointState = useEndpointState(process.client)
+const serviceState = useServiceState(service)
+```
+
+Both hooks return `{ exists }`. They explicitly read `exists()` and follow the
+target's lifecycle `start` and `stop` events. A permanent Endpoint or Service
+handle can therefore remain stable while its current incarnation appears or
+disappears.
+
+## Window state
+
+```tsx
+import { useWindowState } from "@phreshos/react"
+
+function WindowStatus({ window }: { window: Window }) {
+  const state = useWindowState(window)
+
+  if (!state) return <p>Reading Window…</p>
+
+  return <p>
+    {state.title} · {state.size.width} × {state.size.height}
+    {state.minimized ? " · minimized" : ""}
+  </p>
+}
+```
+
+The initial snapshot reads title, position, size, minimized state, front state,
+layer, and location concurrently. The hook follows move, resize, minimize,
+title, and front changes. Layer and location are read as stable properties of
+the current Window.
+
+## Lifetime and failures
+
+State observation begins when React mounts the hook's external-store
+subscription and ends when its last mounted consumer is removed. Mounting again
+performs a fresh read; a previous hook instance is not treated as authoritative
+cache.
+
+Changing the supplied handle creates a new state lifetime. Updates from the old
+handle are ignored after that change. If initial reading or event registration
+fails, the hook throws the original error to the nearest React error boundary
+instead of manufacturing a state value.
+
+State hooks need no provider when a handle is supplied directly. The handle's
+own SDK connection, visibility, and permission rules still apply.

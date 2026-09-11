@@ -1,0 +1,113 @@
+---
+title: Program configuration
+description: Declare Program metadata, endpoints, development, and initial Client authority.
+icon: FileCode
+---
+
+`defineConfig()` adds contextual typing to `phresh.config.ts` and returns the
+same configuration unchanged. A configuration describes a Program project; it
+does not create a runtime Program.
+
+```ts title="phresh.config.ts"
+import { defineConfig } from "@phreshos/core"
+
+export default defineConfig({
+  identity: "example-program",
+  name: "Example Program",
+  version: "1.0.0",
+  server: {
+    location: "dist/server",
+    entryFile: "main.js",
+  },
+  client: {
+    location: "dist/client",
+    title: "Example",
+  },
+})
+```
+
+## Program fields
+
+| Field | Contract |
+| --- | --- |
+| `identity` | Required kebab-case public identity |
+| `name` | Human-readable name |
+| `version` | Program release version |
+| `description` | Human-readable purpose |
+| `icon` | Program-relative PNG from 128 to 2,048 pixels and at most 5 MiB |
+| `agent` | Program-relative `agent.md` path |
+| `categories`, `keywords`, `website` | Catalog metadata |
+| `buildCommand` | Command executed before production start, install, and pack |
+| `server`, `client` | Endpoint declarations; at least one is required |
+
+## Server declaration
+
+A Server declares one production location and exactly one execution mechanism:
+
+```ts
+server: {
+  location: "dist/server",
+  entryFile: "main.js",
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `location` | Directory containing production Server resources |
+| `entryFile` | Module loaded in a System-owned Worker |
+| `startCommand` | Supervised operating-system command; mutually exclusive with `entryFile` |
+| `start` | Whether a default Process starts this Endpoint; defaults to `true` |
+| `service` | Whether the Endpoint starts as a Service; defaults to `false` |
+| `installCommand`, `uninstallCommand` | Optional installation preparation commands |
+| `development` | Development `entryFile` or `startCommand` |
+
+```ts
+server: {
+  location: "dist/server",
+  startCommand: "node main.js",
+  development: {
+    startCommand: "vite-node server/main.ts",
+  },
+}
+```
+
+## Client declaration
+
+```ts
+client: {
+  location: "dist/client",
+  title: "Example",
+  size: { width: 800, height: 600 },
+  permissions: {
+    network: ["https://api.example.com"],
+  },
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `location` | Directory containing production Client resources |
+| `title`, `size`, `position`, `layer`, `minimize` | Initial Window values |
+| `start` | Whether a default Process starts this Endpoint; defaults to `true` |
+| `service` | Whether the Endpoint starts as a Service; defaults to `false` |
+| `permissions` | Immutable initial Client grants from the closed permission catalog |
+| `development.url` | Fixed HTTP or HTTPS development address |
+| `development.startCommand` | Command that starts the development Client |
+
+When development supplies a `startCommand` without a URL, Project selects the
+Client port and passes `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE` to the
+command.
+
+## Authoring and runtime definitions
+
+`Config` is the project authoring contract. `ProgramDefinition` is the resolved
+runtime input accepted by `system.program.create()` and
+`system.program.forceCreate()`.
+
+Project resolves relative paths, development choices, and build concerns before
+creating a runtime definition. The resulting definition contains absolute
+storage and endpoint paths. A Client location may instead be an HTTP or HTTPS
+URL. The System never interprets `phresh.config.ts` or project-relative paths.
+
+See [Node Project](/sdks/node/project) for loading, building, developing,
+installing, and packaging a configuration.

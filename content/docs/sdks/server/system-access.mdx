@@ -1,0 +1,68 @@
+---
+title: System access
+description: Use the complete System contract from a Server Endpoint.
+icon: MonitorCog
+---
+
+`system` provides the complete shared System contract with Server authority.
+Unlike Client access, it is not narrowed through Program permissions.
+
+```ts
+import { system } from "@phreshos/server"
+```
+
+## Capabilities
+
+| Member | Capability |
+| --- | --- |
+| `program` | List, find, create, and observe Programs |
+| `process` | List, find, and observe Processes |
+| `service(key)` | Address one Server or Client Service |
+| `storage` | Access the native filesystem |
+| `uploads` | Read and create uploads |
+| `appearance` | Read and replace System Appearance |
+| `fetch()` | Perform an outbound standard request |
+| `websocket()` | Open a standard WebSocket |
+| `shell()` | Stream an operating-system command |
+
+```ts
+const terminal = await system.program.find("terminal")
+const processes = await system.process.list()
+
+console.log(terminal?.name, processes.length)
+```
+
+The operation contracts, defaults, and errors are documented under
+[System](/system). They do not acquire a Server-specific shape.
+
+## Local execution
+
+`fetch()`, `websocket()`, and `shell()` execute through native facilities of the
+Server environment when that preserves the shared result. They still belong to
+the Server boundary: stopping the endpoint aborts attached requests, sockets,
+streams, and command trees.
+
+```ts
+for await (const event of system.shell("node --version")) {
+  if (event.event === "output") console.log(event.text)
+}
+```
+
+Storage and upload implementations may also use direct filesystem access. This
+is an implementation choice, not a second public interface.
+
+## Services
+
+```ts
+const browser = system.service({
+  program: "browser",
+  process: "main",
+  endpoint: "server",
+})
+
+const status = await browser.ask("status.read")
+```
+
+The `endpoint` coordinate determines whether TypeScript returns a
+`ServerService` or `ClientService`. Server Services can ask questions; Client
+Services cannot.

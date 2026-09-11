@@ -1,0 +1,69 @@
+---
+title: Connection
+description: Connect Node.js code to one owner-local PhreshOS System.
+icon: Cable
+---
+
+`System.connect()` creates a complete System implementation tied to one Node
+connection.
+
+```ts
+import { System } from "@phreshos/node"
+
+const system = await System.connect()
+console.log(await system.program.list())
+await system.disconnect()
+```
+
+The static factory is Node-owned and is not part of Core's connected `System`
+interface. The instance adds only `disconnect()` to that shared contract.
+
+## Select the System home
+
+```ts
+const defaultSystem = await System.connect()
+const selectedSystem = await System.connect("/absolute/system/home")
+```
+
+Selection follows this order:
+
+1. The absolute `home` argument passed to `connect()`.
+2. The absolute `PHRESHOS_HOME` environment value.
+3. `.phreshos` under the operating-system user's home directory.
+
+Relative custom paths reject. Existing paths are canonicalized through their
+real filesystem location.
+
+`resolveHome(home?)` exposes the same selection logic without connecting:
+
+```ts
+import { resolveHome } from "@phreshos/node"
+
+console.log(resolveHome())
+```
+
+## Gateway address
+
+`gatewayAddress(home)` derives the owner-local connection address for an
+already resolved home. POSIX uses `gateway.sock` inside that home. Windows uses
+a named pipe derived from the canonical home identity.
+
+```ts
+import { gatewayAddress, resolveHome } from "@phreshos/node"
+
+const address = gatewayAddress(resolveHome())
+console.log(address)
+```
+
+This address is a connection detail, not a second System API. Most consumers
+need only `System.connect()`.
+
+## Connection lifetime
+
+One connection owns the handles, pending operations, event registrations,
+requests, sockets, command streams, and local capability work obtained through
+it. `disconnect()` closes the gateway and aborts that attached work.
+
+Calling a connected operation after disconnection rejects with
+`This System connection is closed`. Disconnecting does not stop the PhreshOS
+System service or delete any Program state.

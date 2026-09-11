@@ -1,0 +1,11 @@
+{
+  "title": "Core",
+  "description": "Use the authoritative PhreshOS contracts",
+  "icon": "Boxes",
+  "pages": [
+    "index",
+    "program-configuration",
+    "domain-contracts",
+    "validation-and-utilities"
+  ]
+}

@@ -1,0 +1,67 @@
+---
+title: Contract discovery
+description: Read the CLI command contract as human guidance or structured data.
+icon: ScanSearch
+---
+
+Every CLI command is registered from an explicit command contract containing
+its name, aliases, arguments, options, guidance, examples, System requirement,
+and output schema.
+
+## Human guidance
+
+```sh
+phresh process create --help
+```
+
+Help renders the contract for a person at the terminal. Invalid commands and
+options show the relevant help path instead of guessing intent.
+
+## Machine-readable contract
+
+```sh
+phresh describe
+phresh describe process create
+phresh describe --all --json
+```
+
+`describe [path...]` returns the selected command. `--all` recursively includes
+every descendant. `--json` emits the result as one JSON value.
+
+The result includes:
+
+```ts
+{
+  path,
+  name,
+  aliases,
+  description,
+  arguments,
+  options,
+  guidance,
+  examples,
+  requiresSystem,
+  output,
+  commands,
+}
+```
+
+Each option identifies whether its value is absent, optional, or required,
+whether it repeats, its choices, and any default. Data output includes its
+description, structured value schema, and human presentation contract. The
+presentation declares tables, labeled fields, documents, or unrestricted
+values without changing the returned data.
+
+## One contract for people and agents
+
+`--help` and `describe` read the same command declarations. Agent tooling does
+not maintain a second CLI grammar, and a Program's `agent.md` documents only
+that Program's own commands rather than redefining this System-wide CLI.
+
+```sh
+phresh describe endpoint ask --json
+```
+
+Contract discovery requires no running System. The selected command may still
+declare `requiresSystem: true`, allowing automation to decide whether it can
+execute it before making the attempt.

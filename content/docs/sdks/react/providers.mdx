@@ -1,0 +1,164 @@
+---
+title: Providers
+description: Supply Context, System, and Desktop contracts to a React tree.
+icon: Boxes
+---
+
+Providers make an existing PhreshOS root available to a React subtree. Each
+provider owns the resolution and observation required for its root, but never
+owns or replaces the root itself.
+
+## Shared contract
+
+Every provider accepts `children`, its corresponding contract, and an optional
+`fallback`. The fallback defaults to `null` and is rendered until all initial
+values owned by that provider resolve.
+
+If an initial read rejects, the provider throws the same error to the nearest
+React error boundary. Changing the supplied contract creates a new provider
+lifetime: the old subscriptions are removed, the new values resolve, and only
+then are the children rendered again.
+
+| Provider | Required contract | Values resolved before children |
+| --- | --- | --- |
+| `ContextProvider` | `ClientContext` | Program, Process, and parent Process |
+| `SystemProvider` | `System` | System Appearance |
+| `DesktopProvider` | `Desktop` | Desktop surface and effective preferences |
+
+## ContextProvider
+
+```tsx
+<ContextProvider context={context} fallback={<Loading />}>
+  <Application />
+</ContextProvider>
+```
+
+| Hook | Returned value |
+| --- | --- |
+| `useContext()` | The complete supplied `ClientContext` |
+| `useProgram()` | `await context.program()` |
+| `useProcess()` | `await context.process()` |
+| `useParent()` | `await context.parent()`, including `null` |
+
+The Program, Process, and parent are fixed facts of one Client Context. The
+provider resolves them once for that Context rather than representing them as
+independent global state.
+
+```tsx
+import { useContext, useParent, useProcess, useProgram } from "@phreshos/react"
+
+function ExecutionIdentity() {
+  const context = useContext()
+  const program = useProgram()
+  const process = useProcess()
+  const parent = useParent()
+
+  async function stop() {
+    await context.stop()
+  }
+
+  return <section>
+    <p>{program.identity} · {process.name ?? process.identity}</p>
+    <p>Parent: {parent?.name ?? parent?.identity ?? "none"}</p>
+    <button onClick={stop}>Stop this Client Endpoint</button>
+  </section>
+}
+```
+
+`useContext()` returns the complete execution contract, including permissions,
+the paired Server Endpoint, authoritative Window, Local Window, options,
+publication, and observation. See [Context](/runtime/context) for the behavior
+of those capabilities.
+
+## SystemProvider
+
+```tsx
+<SystemProvider system={system} fallback={<Loading />}>
+  <Application />
+</SystemProvider>
+```
+
+| Hook | Returned value |
+| --- | --- |
+| `useSystem()` | The complete supplied `System` contract |
+| `useSystemAppearance()` | Current `Appearance`, followed through `change` events |
+
+`SystemProvider` subscribes to Appearance changes before requesting the initial
+snapshot. A change received while the read is pending therefore cannot be
+overwritten by an older snapshot.
+
+```tsx
+import { useSystem, useSystemAppearance } from "@phreshos/react"
+
+function SystemSummary() {
+  const system = useSystem()
+  const appearance = useSystemAppearance()
+
+  async function listPrograms() {
+    console.log(await system.program.list())
+  }
+
+  return <button onClick={listPrograms}>
+    List Programs · light opacity {appearance.material.light.opacity}
+  </button>
+}
+```
+
+The provider does not turn every System operation into a hook. Use
+`useSystem()` for commands and explicit reads. Use `useSystemAppearance()` only
+when rendering must follow Appearance changes.
+
+## DesktopProvider
+
+```tsx
+<DesktopProvider desktop={desktop} fallback={<Loading />}>
+  <Application />
+</DesktopProvider>
+```
+
+| Hook | Returned value |
+| --- | --- |
+| `useDesktop()` | The complete supplied `Desktop` contract |
+| `useDesktopSurface()` | Current `{ size }`, followed through `resize` events |
+| `useDesktopPreferences()` | Current effective preferences, followed through `change` events |
+
+```tsx
+import {
+  useDesktop,
+  useDesktopPreferences,
+  useDesktopSurface,
+} from "@phreshos/react"
+
+function DesktopState() {
+  const desktop = useDesktop()
+  const { size } = useDesktopSurface()
+  const preferences = useDesktopPreferences()
+
+  async function useSystemTheme() {
+    await desktop.preferences.update({ theme: "default" })
+  }
+
+  return <section>
+    <p>{size.width} × {size.height} · {preferences.theme}</p>
+    <button onClick={useSystemTheme}>Use System theme</button>
+  </section>
+}
+```
+
+These hooks expose effective Desktop state. They do not read browser globals or
+create another preference store. Updating preferences still follows the
+authority of the supplied Desktop implementation.
+
+## Provider boundaries
+
+Calling a provider hook outside its matching provider throws immediately:
+
+| Hook family | Required provider |
+| --- | --- |
+| `useContext`, `useProgram`, `useProcess`, `useParent` | `ContextProvider` |
+| `useSystem`, `useSystemAppearance` | `SystemProvider` |
+| `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` | `DesktopProvider` |
+
+Unmounting a provider releases the subscriptions created by that provider. It
+does not stop the Context, disconnect the System, destroy the Desktop, or end
+any domain entity. Those lifetimes remain owned by the contract supplied to it.

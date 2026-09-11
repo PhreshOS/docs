@@ -1,0 +1,127 @@
+---
+title: Subscription hooks
+description: Observe domain events, traffic questions, and answers through React.
+icon: RadioTower
+---
+
+Subscription hooks bind one Core communication registration to a mounted React
+component. They observe future messages and retain the latest projected result;
+they do not request or replay a current snapshot.
+
+## Named events
+
+```tsx
+import { useSubscribe } from "@phreshos/react"
+
+function LatestPosition({ window }: { window: Window }) {
+  const position = useSubscribe(window, "move")
+
+  if (!position) return <p>The Window has not moved.</p>
+  return <p>{position.x}, {position.y}</p>
+}
+```
+
+`useSubscribe(target, event)` returns the latest message for that named event,
+or `undefined` before the first future message arrives. The event name and
+message are inferred from the target's Core event vocabulary. A target with a
+closed vocabulary rejects an unknown event name in TypeScript.
+
+## Project an event
+
+```tsx
+const titleLength = useSubscribe(
+  window,
+  "changeTitle",
+  title => title.length,
+)
+```
+
+`useSubscribe(target, event, project)` applies the projection to every matching
+message and retains its latest result. The projection may return a value or a
+Promise; the hook returns the awaited result type.
+
+When asynchronous projections overlap, only the newest invocation may update
+the hook. A slow result belonging to an older event is discarded rather than
+replacing the result of a newer event.
+
+## Observe every event
+
+```tsx
+const latest = useSubscribe(window, capture => ({
+  event: capture.event,
+  value: capture.message,
+}))
+```
+
+`useSubscribe(target, project)` registers across every event exposed by the
+target. Its projection receives the correlated `{ event, message }` capture
+defined by Core. The hook does not flatten that capture or lose its event name.
+
+## Questions
+
+`useSubscribeAsks(target, project)` observes questions sent by an Endpoint or
+Service traffic surface. The target must satisfy `AskSubscribable` by exposing
+`subscribeAsks()` and returning its cleanup.
+
+```tsx
+const question = useSubscribeAsks(server.traffic, capture => ({
+  event: capture.event,
+  questionId: capture.questionId,
+  destination: capture.message.to,
+  payload: capture.message.payload,
+}))
+```
+
+The capture preserves the event, question identity, destination, and payload.
+Observing a question does not answer it or change its deadline.
+
+## Answers
+
+`useSubscribeAnswers(target, project)` observes answers sent by Server traffic.
+The target must satisfy `AnswerSubscribable` by exposing `subscribeAnswers()`
+and returning its cleanup.
+
+```tsx
+const answer = useSubscribeAnswers(server.traffic, capture => ({
+  event: capture.event,
+  questionId: capture.questionId,
+  destination: capture.message.to,
+  outcome: capture.message.outcome,
+}))
+```
+
+The outcome remains the Core answer outcome: either a successful result or a
+failed error. The React adapter does not turn a failed answer into a thrown
+render error.
+
+## Complete traffic example
+
+```tsx
+import type { ServerEndpoint } from "@phreshos/core"
+import { useSubscribeAnswers, useSubscribeAsks } from "@phreshos/react"
+
+function ServerTraffic({ server }: { server: ServerEndpoint }) {
+  const question = useSubscribeAsks(server.traffic, capture => capture)
+  const answer = useSubscribeAnswers(server.traffic, capture => capture)
+
+  return <pre>{JSON.stringify({ question, answer }, null, 2)}</pre>
+}
+```
+
+Question and answer hooks return `undefined` before the first observed capture,
+support synchronous and asynchronous projections, retain only the latest
+projection, and remove their registration on unmount.
+
+## Subscription lifetime
+
+Changing a target or a named event removes the old registration and establishes
+the new one. Changing only a projection uses the latest React closure without
+restarting the registration.
+
+Unmounting removes the registration and invalidates pending asynchronous
+projections. It does not destroy the target or its SDK connection. If the target
+cannot register, the original boundary failure remains visible rather than
+being replaced by an empty result.
+
+See [Communication](/runtime/communication) for the canonical publication,
+capture, question, answer, timeout, and boundary-value contracts.

@@ -1,0 +1,97 @@
+---
+title: Context
+description: Use capabilities belonging to the currently executing Client Endpoint.
+icon: Focus
+---
+
+`context` is the execution-local root for the current Client Endpoint. It owns
+execution identity, inbound communication, the paired Server Endpoint, Window
+access, and permission requests.
+
+```ts
+import { context } from "@phreshos/client"
+```
+
+## Execution
+
+| Operation | Result |
+| --- | --- |
+| `context.program()` | Current Program |
+| `context.process()` | Current Process |
+| `context.name()` | Process name or `null` |
+| `context.parent()` | Parent Process or `null` |
+| `context.option(name)` | Immutable launch option or `undefined` |
+| `context.isService()` | Whether this Client incarnation is a Service |
+| `context.stop()` | End this Client Endpoint incarnation |
+
+```ts
+const program = await context.program()
+const process = await context.process()
+const parent = await context.parent()
+
+console.log(program.identity, process.identity, parent?.identity)
+```
+
+A parent handle remains a Process value even if that Process later exits.
+`null` means there is no parent visible to this Context.
+
+## Paired Server
+
+`context.server` is the permanent Server Endpoint address belonging to the same
+Process. It can publish, receive traffic, expose lifecycle state, and ask
+questions when its current incarnation exists.
+
+```ts
+const ready = await context.server.exists()
+
+if (ready) {
+  const status = await context.server.ask("status.read")
+  console.log(status)
+}
+```
+
+Endpoint existence is independent from Process existence. Starting or stopping
+the paired Server changes its incarnation, not the identity of
+`context.server`.
+
+## Communication
+
+Context subscriptions receive values addressed to this Client as
+`{ from, payload }`. `from` is `null` when the sender is outside Client
+authority.
+
+```ts
+const cleanup = context.subscribe("document.changed", message => {
+  console.log(message.from, message.payload)
+})
+
+context.publish("client.ready")
+```
+
+`context.publish()` emits destinationless output from the executing Client. See
+[Communication](/runtime/communication) for subscriptions, traffic, questions,
+timeouts, and transferable values.
+
+## Window capabilities
+
+| Member | Ownership |
+| --- | --- |
+| `context.window` | Authoritative Window state and operations |
+| `context.localWindow` | This Desktop's physical representation of that Window |
+
+```ts
+await context.window.changeTitle("Editor")
+await context.localWindow.raise()
+```
+
+The two values intentionally differ. Authoritative Window operations update
+System state and publish events. Local Window operations change only the
+current Desktop representation and are available only where the Window layer
+permits them. See [Desktop](/system/desktop) for the complete contracts.
+
+## Lifetime
+
+The Context begins and ends with this Client Endpoint incarnation. Calling
+`context.stop()` ends the incarnation and releases its pending boundary
+operations and registrations. It does not necessarily exit the Process when a
+Server Endpoint remains alive.

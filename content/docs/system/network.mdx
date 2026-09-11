@@ -1,0 +1,66 @@
+---
+title: Network
+description: Use Fetch and WebSocket through the shared System contract.
+icon: Globe
+---
+
+The System exposes two outbound network operations: `fetch()` performs one
+request and `websocket()` acquires one persistent connection. Both preserve
+their platform-standard web contracts rather than introducing PhreshOS-specific
+request, response, or socket types.
+
+## Fetch
+
+`system.fetch()` accepts `RequestInfo | URL` and optional `RequestInit`, then
+returns a standard `Response`.
+
+```ts
+const response = await system.fetch("https://example.com/data.json", {
+  headers: { accept: "application/json" },
+})
+
+const data = await response.json()
+```
+
+Supplying a `Request` preserves its method, headers, body, and abort signal.
+Node and Server execute the request locally when that preserves the observable
+contract. A Client crosses its System boundary. In every environment the
+request remains owned by the active System connection or execution Context.
+
+A Client requires a `network` scope covering the request URL, or the `all`
+permission. The scope authorizes the target selected by the caller. Standard
+HTTP redirect handling remains part of that authorized request; this
+permission is a System capability boundary, not a packet-level firewall.
+
+## WebSocket
+
+`system.websocket()` accepts the same URL and optional protocols as the
+standard `WebSocket` constructor. Its promise resolves with a native
+`WebSocket` in its ordinary `CONNECTING`, `OPEN`, `CLOSING`, or `CLOSED`
+lifecycle.
+
+```ts
+const socket = await system.websocket("wss://example.com/events")
+
+socket.addEventListener("message", event => {
+  console.log(event.data)
+})
+```
+
+Opening, messages, failures, and closure use the standard properties, methods,
+and events. PhreshOS does not add another socket contract. Node and Server open
+the socket locally and close it when the owning System connection or Server
+Endpoint ends. A Client first acquires authority through the Desktop boundary,
+then creates the browser-native socket. Reloading or closing its frame ends the
+connection naturally.
+
+A Client requires a `network` scope covering the normalized WebSocket URL, or
+the `all` permission. Permission failure rejects the acquisition promise.
+
+## Authority boundary
+
+Server and Node retain full System authority. Client permission checks govern
+only `system.fetch()` and `system.websocket()`; they do not redefine the
+browser's native `fetch()` or `WebSocket` APIs. Revoking a permission prevents
+future System operations but cannot revoke a `Response` or `WebSocket` already
+returned to the Client.

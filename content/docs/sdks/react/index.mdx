@@ -1,0 +1,124 @@
+---
+title: Overview
+description: Provide PhreshOS contracts to React and follow their live state.
+icon: Atom
+---
+
+`@phreshos/react` adapts existing PhreshOS contracts to React. It provides
+contracts to a component tree, resolves their initial values, subscribes while
+components are mounted, and turns future events into React state. It does not
+create another System, Context, Desktop, or state authority.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install @phreshos/react
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add @phreshos/react
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add @phreshos/react
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn add @phreshos/react
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  React requires `@phreshos/core` and `react`.
+</Callout>
+
+Install the environment SDK that supplies the contracts separately. A Client
+application normally obtains them from `@phreshos/client`:
+
+```tsx
+import { context, desktop, system } from "@phreshos/client"
+import {
+  ContextProvider,
+  DesktopProvider,
+  SystemProvider,
+} from "@phreshos/react"
+```
+
+React is a peer dependency. The package uses the application's React instance
+and does not bundle a private copy.
+
+## Public surface
+
+The API has three parallel groups. Providers expose root contracts, state hooks
+combine an explicit read with future domain events, and subscription hooks
+retain the latest observed event projection.
+
+| Group | Exports | Reference |
+| --- | --- | --- |
+| Context | `ContextProvider`, `useContext`, `useProgram`, `useProcess`, `useParent` | [Providers](/sdks/react/providers) |
+| System | `SystemProvider`, `useSystem`, `useSystemAppearance` | [Providers](/sdks/react/providers) |
+| Desktop | `DesktopProvider`, `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` | [Providers](/sdks/react/providers) |
+| Domain state | `useProgramState`, `useProcessState`, `useEndpointState`, `useServiceState`, `useWindowState` | [Domain hooks](/sdks/react/domain-hooks) |
+| Communication | `useSubscribe`, `useSubscribeAsks`, `useSubscribeAnswers` | [Subscription hooks](/sdks/react/subscription-hooks) |
+
+The provider property types, state result types, `AskSubscribable`, and
+`AnswerSubscribable` are exported from the same package. Domain contracts such
+as `Program`, `Process`, and `System` remain owned by `@phreshos/core`.
+
+## Complete setup
+
+Each provider accepts one complete Core contract. Providers are independent;
+nesting expresses which parts of the component tree need each contract, not a
+dependency between the contracts.
+
+```tsx
+import type { ReactNode } from "react"
+import { context, desktop, system } from "@phreshos/client"
+import {
+  ContextProvider,
+  DesktopProvider,
+  SystemProvider,
+} from "@phreshos/react"
+
+export function PhreshProviders({ children }: { children: ReactNode }) {
+  const loading = <p>Loading Program context…</p>
+
+  return (
+    <SystemProvider system={system} fallback={loading}>
+      <DesktopProvider desktop={desktop} fallback={loading}>
+        <ContextProvider context={context} fallback={loading}>
+          {children}
+        </ContextProvider>
+      </DesktopProvider>
+    </SystemProvider>
+  )
+}
+```
+
+From inside this tree, components can read the supplied contracts, follow
+selected domain state, and observe future communication without introducing an
+application-owned mirror of PhreshOS state.
+
+<Cards>
+  <Card
+    title="Providers"
+    description="Supply Context, System, and Desktop contracts and resolve their initial values."
+    href="/sdks/react/providers"
+  />
+  <Card
+    title="Domain hooks"
+    description="Combine explicit domain reads with future lifecycle and Window events."
+    href="/sdks/react/domain-hooks"
+  />
+  <Card
+    title="Subscription hooks"
+    description="Observe named events, correlated captures, questions, and answers."
+    href="/sdks/react/subscription-hooks"
+  />
+</Cards>

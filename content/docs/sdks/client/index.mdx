@@ -1,0 +1,83 @@
+---
+title: Overview
+description: Access PhreshOS from a Client Endpoint inside the Desktop.
+icon: PanelTop
+---
+
+`@phreshos/client` implements the shared PhreshOS contracts for the Client
+Endpoint currently executing inside a Desktop iframe.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install @phreshos/client
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add @phreshos/client
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add @phreshos/client
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn add @phreshos/client
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  Client requires `@phreshos/core`.
+</Callout>
+
+Core is a peer dependency. Import environment roots from Client and shared
+domain constructors or types from Core.
+
+```ts
+import { context, desktop, system } from "@phreshos/client"
+import { Program, Process } from "@phreshos/core"
+```
+
+## Public surface
+
+| Export | Contract | Reference |
+| --- | --- | --- |
+| `context` | Current Client execution Context | [Context](/sdks/client/context) |
+| `desktop` | Desktop containing this Client | [Desktop](/sdks/client/desktop) |
+| `system` | Global System through Client authority | [System access](/sdks/client/system-access) |
+
+The package deliberately exports only these roots. Handles returned from them
+implement Core's Program, Process, Endpoint, and Service contracts and inherit
+the Core constructors.
+
+```ts
+const program = await context.program()
+const process = await context.process()
+
+console.log(program instanceof Program)
+console.log(process instanceof Process)
+```
+
+## Execution boundary
+
+The Client SDK is bound to one live Client Endpoint incarnation. Context-owned
+operations, pending requests, and registrations end with that boundary. A
+Program or Process handle does not become more authoritative because its
+identity is known to the Client.
+
+Client authority begins with its own Program and can be expanded only through
+the closed permission contract. See [Permissions](/sdks/client/permissions) for
+the API and [Security](/system/security) for the canonical authority model.
+
+<Cards>
+  <Card title="Context" description="Use the current execution, paired Server, Window, and Local Window." href="/sdks/client/context" />
+  <Card title="Desktop" description="Read the current Desktop surface and effective preferences." href="/sdks/client/desktop" />
+  <Card title="System access" description="Use the complete System contract through Client authority." href="/sdks/client/system-access" />
+  <Card title="Permissions" description="Inspect authority and request owner grants." href="/sdks/client/permissions" />
+</Cards>

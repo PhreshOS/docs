@@ -1,0 +1,59 @@
+---
+title: System commands
+description: Install and manage the native PhreshOS service.
+icon: MonitorCog
+---
+
+`phresh system` owns installation and operating-system service lifecycle. These
+commands do not operate Programs or Processes; those remain top-level runtime
+domains.
+
+## Command reference
+
+| Command | Outcome |
+| --- | --- |
+| `phresh system install` | Install or update the official System and start its service |
+| `phresh system uninstall` | Remove the installed release and service while keeping persistent data |
+| `phresh system status` | Report version, Desktop address, service state, and startup state |
+| `phresh system version` | Report the installed System version |
+| `phresh system start` | Start the registered background service |
+| `phresh system stop` | Stop the background service |
+| `phresh system enable` | Enable automatic startup where supported |
+| `phresh system disable` | Disable automatic startup where supported |
+
+## Install
+
+```sh
+phresh system install
+```
+
+Installation resolves the official stable release for the current platform,
+installs its files, registers the native service, starts it, waits for gateway
+readiness, and reports the Desktop address.
+
+## Inspect and operate
+
+```sh
+phresh system status
+phresh system stop
+phresh system start
+```
+
+`status` distinguishes installation, service registration, running state,
+gateway readiness, and automatic startup. A running service may briefly report
+as starting before the gateway becomes ready.
+
+`start` and `stop` affect current execution. `enable` and `disable` affect
+future operating-system startup. The latter pair reports unavailable startup
+support rather than pretending every platform provides the same native
+mechanism.
+
+## Uninstall
+
+```sh
+phresh system uninstall
+```
+
+System uninstall stops and unregisters the service and removes installed
+release files. Persistent System data remains available for a later
+installation.
