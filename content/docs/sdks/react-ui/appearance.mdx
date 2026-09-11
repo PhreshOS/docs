@@ -1,16 +1,137 @@
 ---
 title: Appearance
 description: Provide and resolve the visual source used by React UI components.
-icon: Palette
 ---
 
-React UI reads one unresolved `Appearance` and resolves its themed values only
-where they are consumed. `AppearanceProvider` can replace Appearance, Theme,
-or both for one React subtree; it does not render a container.
+React UI consumes Core's `Appearance` contract directly. It does not define a
+React-specific copy. The value accepted by `AppearanceProvider`, the
+`defaultAppearance` re-exported by React UI, and the snapshots exposed by
+[`system.appearance`](/system/appearance) all have the same Core contract.
 
-The complete data contract, limits, and System ownership rules live in
-[System Appearance](/system/appearance). This page defines how React UI
-consumes that contract.
+The System owns the live value. React UI owns how a supplied value is inherited,
+resolved for a Theme, and consumed by components.
+
+## Contract
+
+Appearance is one complete unresolved visual source:
+
+```ts title="appearance.ts"
+type Appearance = Readonly<{
+  colors: AppearanceColors
+  spacing: ThemedValue<number>
+  radius: ThemedValue<number>
+  shadow: ThemedValue<AppearanceShadow, AppearanceShadow>
+  material: ThemedValue<AppearanceMaterial, AppearanceMaterial>
+  signInWallpaper: ThemedValue<string | null, string | null>
+  desktopWallpaper: ThemedValue<string | null, string | null>
+}>
+```
+
+| Value | Meaning in React UI |
+| --- | --- |
+| `colors` | Named sources from which components resolve paint and contrast |
+| `spacing` | Source value for semantic spacing levels |
+| `radius` | Source value for semantic radius levels |
+| `shadow` | Source for components that explicitly own elevation; it is not part of Surface |
+| `material` | Source values for opacity, backdrop, grain, distortion, and saturation |
+| `signInWallpaper`, `desktopWallpaper` | Core values retained in the complete contract; React UI does not load them implicitly |
+
+Every field remains unresolved until its consumer needs a concrete Theme
+branch. The Core contract, its supported ranges, and the System operations that
+replace the live value are documented under [System Appearance](/system/appearance).
+
+## Default colors
+
+`defaultAppearance.colors` provides all eight named sources. The names describe
+their role; Theme names do not imply anything about their actual luminance.
+
+| Color | Light | Dark |
+| --- | --- | --- |
+| `background` | `#ffffff` | `#121a21` |
+| `foreground` | `#183447` | `#edf8fc` |
+| `primary` | `#4c9cff` | `#4c9cff` |
+| `secondary` | `#8b5cf6` | `#a78bfa` |
+| `success` | `#16a34a` | `#4ade80` |
+| `warning` | `#d97706` | `#fbbf24` |
+| `danger` | `#dc2626` | `#f87171` |
+| `info` | `#0891b2` | `#22d3ee` |
+
+<ComponentPreview>
+  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))", gap: "0.75rem" }}>
+    <Surface color="background:base" style={{ padding: 12 }}>background</Surface>
+    <Surface color="foreground:base" style={{ padding: 12 }}>foreground</Surface>
+    <Surface color="primary:base" style={{ padding: 12 }}>primary</Surface>
+    <Surface color="secondary:base" style={{ padding: 12 }}>secondary</Surface>
+    <Surface color="success:base" style={{ padding: 12 }}>success</Surface>
+    <Surface color="warning:base" style={{ padding: 12 }}>warning</Surface>
+    <Surface color="danger:base" style={{ padding: 12 }}>danger</Surface>
+    <Surface color="info:base" style={{ padding: 12 }}>info</Surface>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="palette.tsx"
+    <Surface color="background:base">background</Surface>
+    <Surface color="foreground:base">foreground</Surface>
+    <Surface color="primary:base">primary</Surface>
+    <Surface color="secondary:base">secondary</Surface>
+    <Surface color="success:base">success</Surface>
+    <Surface color="warning:base">warning</Surface>
+    <Surface color="danger:base">danger</Surface>
+    <Surface color="info:base">info</Surface>
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Default spacing and radius
+
+The default spacing source is `12px`; the default radius source is `10px`.
+Semantic levels derive both values through the same numeric scale.
+
+| Level | Factor | Spacing | Radius |
+| --- | ---: | ---: | ---: |
+| `xsmall` | `0.25` | `3px` | `2.5px` |
+| `small` | `0.5` | `6px` | `5px` |
+| `medium` | `1` | `12px` | `10px` |
+| `large` | `1.5` | `18px` | `15px` |
+| `xlarge` | `2` | `24px` | `20px` |
+
+<ComponentPreview>
+  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(17rem, 1fr))", gap: "1.5rem" }}>
+    <div>
+      <p style={{ marginTop: 0 }}>Radius</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <Surface radius="xsmall" style={{ width: 44, height: 44 }} />
+        <Surface radius="small" style={{ width: 44, height: 44 }} />
+        <Surface radius="medium" style={{ width: 44, height: 44 }} />
+        <Surface radius="large" style={{ width: 44, height: 44 }} />
+        <Surface radius="xlarge" style={{ width: 44, height: 44 }} />
+      </div>
+    </div>
+    <div>
+      <p style={{ marginTop: 0 }}>Spacing</p>
+      <div style={{ display: "grid", gap: 8 }}>
+        <Flex gap="xsmall"><Surface style={{ width: 20, height: 20 }} /><Surface style={{ width: 20, height: 20 }} /></Flex>
+        <Flex gap="small"><Surface style={{ width: 20, height: 20 }} /><Surface style={{ width: 20, height: 20 }} /></Flex>
+        <Flex gap="medium"><Surface style={{ width: 20, height: 20 }} /><Surface style={{ width: 20, height: 20 }} /></Flex>
+        <Flex gap="large"><Surface style={{ width: 20, height: 20 }} /><Surface style={{ width: 20, height: 20 }} /></Flex>
+        <Flex gap="xlarge"><Surface style={{ width: 20, height: 20 }} /><Surface style={{ width: 20, height: 20 }} /></Flex>
+      </div>
+    </div>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="geometry.tsx"
+    <Surface radius="small" />
+
+    <Flex gap="large">
+      <Surface />
+      <Surface />
+    </Flex>
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
 
 ## Resolution
 
@@ -18,66 +139,85 @@ consumes that contract.
 | --- | --- |
 | `useAppearance()` | Nearest complete unresolved Appearance, or `defaultAppearance` |
 | `useTheme()` | Nearest explicit Theme, or the browser's current color scheme |
-| `useResolveTheme(value)` | The value's branch for the effective Theme |
-| `AppearanceProvider` | Optional Appearance and Theme override for its descendants |
+| `useResolveTheme(value)` | The supplied themed value resolved for the effective Theme |
+| `AppearanceProvider` | Optional Appearance and Theme source for one React subtree |
 | `defaultAppearance` | Core's complete environment-neutral default Appearance |
 
-Without any provider, `useAppearance()` returns `defaultAppearance` and
-`useTheme()` follows `prefers-color-scheme` as reactive state. During server
-rendering, the Theme snapshot is `light`; the browser becomes authoritative on
-the client.
+Without a provider, `useAppearance()` returns `defaultAppearance` and
+`useTheme()` reactively follows `prefers-color-scheme`. During server rendering,
+the Theme snapshot is `light`; the browser becomes authoritative on the client.
 
 An inner provider inherits each omitted value independently. Overriding Theme
-does not copy or replace Appearance, and overriding Appearance does not stop
-the inherited Theme from changing.
+does not replace Appearance, and overriding Appearance does not stop the
+inherited Theme from changing.
 
-## Numeric levels
+<ComponentPreview>
+  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "1rem" }}>
+    <AppearanceProvider theme="light">
+      <Surface style={{ padding: 16 }}>Light Theme</Surface>
+    </AppearanceProvider>
+    <AppearanceProvider theme="dark">
+      <Surface style={{ padding: 16 }}>Dark Theme</Surface>
+    </AppearanceProvider>
+  </Preview>
+  <PreviewCode>
 
-`ScaleLevel` lets components derive related values from one Appearance value
-without adding five independent theme settings.
+    ```tsx title="theme-preview.tsx"
+    import { AppearanceProvider, Surface } from "@phreshos/react-ui"
 
-| Level | Factor | Meaning |
-| --- | ---: | --- |
-| `xsmall` | `0.25` | One quarter of the source value |
-| `small` | `0.5` | One half of the source value |
-| `medium` | `1` | The source value unchanged |
-| `large` | `1.5` | One and a half times the source value |
-| `xlarge` | `2` | Twice the source value |
+    export default function ThemePreview() {
+      return <>
+        <AppearanceProvider theme="light">
+          <Surface>Light Theme</Surface>
+        </AppearanceProvider>
+        <AppearanceProvider theme="dark">
+          <Surface>Dark Theme</Surface>
+        </AppearanceProvider>
+      </>
+    }
+    ```
 
-Components use these levels for material values, dimensions, spacing, radius,
-and control size where their contracts accept `ScaleLevel`. A component may
-also accept a direct number or CSS value when its domain supports one.
+  </PreviewCode>
+</ComponentPreview>
 
-`useScale(value)` returns the complete numeric scale derived from a concrete
-number:
+## Derived scales
 
-```tsx
+`useScale` and `useColor` have the same role. Each accepts one explicit concrete
+value, memoizes the complete visual scale derived from it, and returns that
+scale. Neither hook reads Appearance or resolves a Theme by itself.
+
+### Numeric scale
+
+| API | Input | Result |
+| --- | --- | --- |
+| `useScale(value)` | Concrete number | `NumericScale`, containing every `ScaleLevel` |
+
+| Level | Factor | Result for `useScale(12)` |
+| --- | ---: | ---: |
+| `xsmall` | `0.25` | `3` |
+| `small` | `0.5` | `6` |
+| `medium` | `1` | `12` |
+| `large` | `1.5` | `18` |
+| `xlarge` | `2` | `24` |
+
+```tsx title="numeric-scale.tsx"
 import { useScale } from "@phreshos/react-ui"
 
 export function SpacingSummary() {
-  const spacing = useScale(12)
+  const values = useScale(12)
 
-  return <p>{spacing.small}px · {spacing.medium}px · {spacing.large}px</p>
+  return <p>{values.small}px · {values.medium}px · {values.large}px</p>
 }
 ```
 
-This produces `6`, `12`, and `18`. Saturation is the one material value that
-scales around its neutral value of `1`; semantic levels scale only its distance
-from that neutral value.
+Saturation is the one material value scaled around the neutral multiplier of
+`1`; its levels scale the distance from `1`, rather than the complete number.
 
-## Color levels
+### Color scale
 
-`Color` accepts either a direct CSS color or a semantic value in the form
-`appearanceColor:level`. The color name selects one value from
-`appearance.colors`; the level selects one treatment derived from that value.
-
-<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))", gap: "0.75rem" }}>
-  <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
-  <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
-  <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
-  <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
-  <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
-</ComponentPreview>
+| API | Input | Result |
+| --- | --- | --- |
+| `useColor(value)` | Concrete CSS color | `ColorScale`, containing every `ColorLevel` |
 
 | Level | Derivation |
 | --- | --- |
@@ -87,52 +227,60 @@ from that neutral value.
 | `strong` | 82% source color mixed toward black |
 | `intense` | 68% source color mixed toward black |
 
-The named Appearance colors are `background`, `foreground`, `primary`,
-`secondary`, `success`, `warning`, `danger`, and `info`. For example,
-`primary:soft` derives the soft treatment from the active Theme branch of
-`appearance.colors.primary`.
+```tsx title="color-scale.tsx"
+import { useColor } from "@phreshos/react-ui"
 
-`useColor(value)` derives the complete `subtle`, `soft`, `base`, `strong`, and
-`intense` scale from one concrete CSS color. Supplying a direct CSS color to a
-component bypasses semantic name and level resolution.
+export function ColorSample() {
+  const values = useColor("#4c9cff")
 
-## Provide a subtree
-
-<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "1rem" }}>
-  <AppearanceProvider theme="light">
-    <Surface style={{ padding: 16 }}>
-      Light Theme
-    </Surface>
-  </AppearanceProvider>
-  <AppearanceProvider theme="dark">
-    <Surface style={{ padding: 16 }}>
-      Dark Theme
-    </Surface>
-  </AppearanceProvider>
-</ComponentPreview>
-
-```tsx
-import {
-  AppearanceProvider,
-  Surface,
-} from "@phreshos/react-ui"
-
-export default function DarkPreview() {
-  return <AppearanceProvider theme="dark">
-    <Surface style={{ padding: 16 }}>
-      This subtree resolves dark branches.
-    </Surface>
-  </AppearanceProvider>
+  return <span style={{ background: values.soft }}>Soft blue</span>
 }
 ```
 
-`appearance` and `theme` are optional. `children` is required. Supplying an
-Appearance replaces the complete source for that subtree; it is not a partial
-patch.
+## Component values
 
-## Read and resolve
+Components accept semantic values when they need a value derived from the
+current Appearance, and direct values when the caller already owns the concrete
+result.
 
-```tsx
+| Contract | Semantic value | Direct value | Default when applicable |
+| --- | --- | --- | --- |
+| `Color` | `appearanceColor:colorLevel` | CSS color | `background:base` |
+| `Spacing` | `ScaleLevel` | Number or CSS spacing | Component-specific |
+| `Radius` | `ScaleLevel` | Number or CSS radius | Component-specific |
+
+The named Appearance colors are `background`, `foreground`, `primary`,
+`secondary`, `success`, `warning`, `danger`, and `info`.
+
+<ComponentPreview>
+  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))", gap: "0.75rem" }}>
+    <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
+    <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
+    <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
+    <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
+    <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="semantic-colors.tsx"
+    <Surface color="primary:subtle">subtle</Surface>
+    <Surface color="primary:soft">soft</Surface>
+    <Surface color="primary:base">base</Surface>
+    <Surface color="primary:strong">strong</Surface>
+    <Surface color="primary:intense">intense</Surface>
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+`resolveSpacing(value, appearance)` and `resolveRadius(value, appearance)` are
+parallel non-hook resolvers. A direct number or CSS value passes through. A
+semantic level is derived from the corresponding Appearance source and
+therefore requires an Appearance value.
+
+## Read resolved values
+
+```tsx title="appearance-summary.tsx"
 import {
   useAppearance,
   useResolveTheme,
@@ -152,25 +300,24 @@ export function AppearanceSummary() {
 
 Theme names select branches; they do not imply that one resolved color is
 lighter than another. Visual behavior that depends on luminance must use the
-resolved color values themselves.
+resolved colors themselves.
 
 ## Ownership
 
-React UI owns only resolution and rendering behavior. It neither reads nor
-updates System Appearance by itself. A System-connected application obtains
-Appearance through its environment SDK and passes the resulting value to
-`AppearanceProvider`; a standalone application may use the defaults or supply
-its own complete value.
+React UI neither reads nor updates System Appearance. A System-connected
+application obtains the shared Core value through its environment SDK and
+passes it to `AppearanceProvider`. A standalone application can use
+`defaultAppearance` or provide another complete Appearance.
 
 <Cards>
   <Card
     title="System Appearance"
-    description="Read the authoritative Appearance data contract and limits."
+    description="Read the live System operations and authoritative limits for the same Core contract."
     href="/system/appearance"
   />
   <Card
-    title="Components"
-    description="See how components consume the resolved visual source."
-    href="/sdks/react-ui/components"
+    title="Surface"
+    description="See how one component consumes color, radius, and material values."
+    href="/sdks/react-ui/components/surface"
   />
 </Cards>

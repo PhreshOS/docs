@@ -5,7 +5,7 @@
     "": {
       "name": "phresh-docs",
       "dependencies": {
-        "@phreshos/react-ui": "^0.1.17",
+        "@phreshos/react-ui": "^0.1.18",
         "cnfast": "^0.1.0",
         "fumadocs-core": "16.14.4",
         "fumadocs-mdx": "15.2.3",
@@ -213,7 +213,7 @@
 
     "@phreshos/core": ["@phreshos/core@0.1.42", "", {}, "sha512-4Dd8Qnt76qnjzdaFs+HEcc8uWtdLfKmO7+g584XCEV9cjCvzaQReHU9C2SA8l1TKFCjD5shu7p2lI7FrCVM9Eg=="],
 
-    "@phreshos/react-ui": ["@phreshos/react-ui@0.1.17", "", { "dependencies": { "@phreshos/core": "^0.1.42", "colorjs.io": "^0.7.1", "motion": "^13.2.0", "react-aria-components": "^1.20.0" }, "peerDependencies": { "react": "^19.2.0", "react-dom": "^19.2.0" } }, "sha512-mpIPF3BY1/suI/Xi218WZgPpKG/HIkX+GPoCOuzfdCavx2Oj3g+QSS8cerViHnDRqa1e8j7HPUSkM2ZWAY2fMA=="],
+    "@phreshos/react-ui": ["@phreshos/react-ui@0.1.18", "", { "dependencies": { "@phreshos/core": "^0.1.42", "colorjs.io": "^0.7.1", "motion": "^13.2.0", "react-aria-components": "^1.20.0" }, "peerDependencies": { "react": "^19.2.0", "react-dom": "^19.2.0" } }, "sha512-IdSz2WDVhrNPMNnMQEHan5jzhhafyx7inwzShXugWa67hOFTgOTGbPd3jDzZOr7Kw4ruYja0c0xFUgA/wZ/w5Q=="],
 
     "@poppinss/colors": ["@poppinss/colors@4.1.6", "", { "dependencies": { "kleur": "^4.1.5" } }, "sha512-H9xkIdFswbS8n1d6vmRd8+c10t2Qe+rZITbbDHHkQixH5+2x1FDGmi/0K+WgWiqQFKPSlIYB7jlH6Kpfn6Fleg=="],
 

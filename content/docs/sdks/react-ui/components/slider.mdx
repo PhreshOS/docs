@@ -1,0 +1,76 @@
+---
+title: Slider
+description: Select and submit one numeric value with pointer, touch, and keyboard input.
+---
+
+`Slider` represents one numeric value and preserves React Aria's range,
+orientation, keyboard, form, and commit behavior.
+
+## Contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `label` | `ReactNode` | None | Visible accessible label |
+| `description` | `ReactNode` | None | Associated descriptive text |
+| `value` | `number` | Uncontrolled | Controlled value |
+| `defaultValue` | `number` | Range default | Initial uncontrolled value |
+| `onChange` | `(value: number) => void` | None | Every value change |
+| `onChangeEnd` | `(value: number) => void` | None | Committed value |
+| `minValue` | `number` | React Aria default | Minimum value |
+| `maxValue` | `number` | React Aria default | Maximum value |
+| `step` | `number` | React Aria default | Value increment |
+| `orientation` | `horizontal \| vertical` | `horizontal` | Range direction |
+| `name` | `string` | None | Native form field name |
+| `disabled` | `boolean` | `false` | Disable interaction |
+| `color` | `ControlColor` | Primary | Filled range and thumb color |
+| `size` | `ScaleLevel` | `medium` | Track and thumb geometry |
+
+When `label` is omitted, provide an accessible name. The forwarded ref targets
+the Slider field root; the component owns a real form input for submission.
+
+<ComponentPreview>
+  <Preview>
+    <Slider
+      label="Volume"
+      description="Playback volume"
+      minValue={0}
+      maxValue={100}
+      step={5}
+      defaultValue={65}
+      style={{ width: 320 }}
+    />
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="volume.tsx"
+    import { Slider } from "@phreshos/react-ui"
+
+    export default function Volume() {
+      return <Slider
+        label="Volume"
+        description="Playback volume"
+        minValue={0}
+        maxValue={100}
+        step={5}
+        defaultValue={65}
+      />
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Behavior
+
+Arrow keys move by `step`; Home and End move to the range limits. Values are
+clamped to those limits. Pointer and touch dragging update the same numeric
+contract.
+
+`onChange` reports each change. `onChangeEnd` reports the committed value
+after keyboard or pointer interaction. Controlled and uncontrolled values both
+participate in native form submission, and an uncontrolled value returns to
+`defaultValue` when its form resets.
+
+Slider does not expose `material` or `radius`. Its track and thumb are range
+geometry rather than Surface containers. This is a contract difference, not a
+documentation exception.

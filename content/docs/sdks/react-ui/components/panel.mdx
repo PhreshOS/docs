@@ -1,0 +1,83 @@
+---
+title: Panel
+description: Compose an outer Surface, optional header, and inset content Surface.
+---
+
+`Panel` owns one structural composition:
+
+```text
+Surface
+├── header
+└── Surface
+    └── content
+```
+
+It does not own window positioning, lifecycle, dragging, resizing, or elevation.
+
+## Contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `header` | `ReactNode` | None | Content before the inset Surface |
+| `children` | `ReactNode` | None | Content inside the inset Surface |
+| `contentProps` | `SurfaceProps` without `children` | None | Properties applied only to the inset Surface |
+| Surface properties | `SurfaceProps` | Surface defaults | Properties applied only to the outer Surface |
+
+The outer element renders one content row when no header exists, or an automatic
+header row followed by a constrained content row when it does.
+
+The inset is half of the active Appearance spacing: `6px` under
+`defaultAppearance`. With a header, its top inset is zero; the header itself
+occupies that side.
+
+<ComponentPreview>
+  <Preview>
+    <Panel
+      header={<strong style={{ padding: 12 }}>Connection</strong>}
+      contentProps={{ style: { padding: 16 } }}
+      style={{ width: 320, height: 160 }}
+    >
+      Ready
+    </Panel>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="connection-panel.tsx"
+    import { Panel } from "@phreshos/react-ui"
+
+    export default function Connection() {
+      return <Panel
+        header={<strong>Connection</strong>}
+        contentProps={{ style: { padding: 16 } }}
+      >
+        Ready
+      </Panel>
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Independent Surfaces
+
+Outer Surface properties and `contentProps` are independent:
+
+```tsx title="independent-material.tsx"
+<Panel
+  color="background:base"
+  opacity={0.4}
+  contentProps={{
+    color: "background:soft",
+    opacity: 0.1,
+  }}
+>
+  Content
+</Panel>
+```
+
+Both layers retain the complete Surface geometry and edge contract. The inset
+Surface uses `overflow: hidden` so opaque content such as an iframe stays
+inside that geometry while its edge remains visible.
+
+The forwarded ref and native `div` properties belong to the outer Surface.
+Properties inside `contentProps` belong only to the inset Surface.

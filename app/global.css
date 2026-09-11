@@ -28,19 +28,106 @@ body {
   background-color: var(--color-fd-background);
 }
 
-.react-ui-component-preview {
-  display: grid;
-  min-height: 12rem;
-  padding: 1.5rem;
-  place-items: center;
+.component-preview {
+  margin-block: 1rem;
   overflow: hidden;
   border: 1px solid var(--color-fd-border);
   border-radius: 0.75rem;
+  background: var(--color-fd-card);
+}
+
+.component-preview-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-bottom: 1px solid var(--color-fd-border);
   background: var(--color-fd-secondary);
 }
 
-.react-ui-component-preview > * {
+.component-preview-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--color-fd-muted-foreground);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  cursor: pointer;
+  transition: color 100ms, background-color 100ms;
+}
+
+.component-preview-tab:hover {
+  color: var(--color-fd-foreground);
+}
+
+.component-preview-tab[aria-selected="true"] {
+  background: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+}
+
+.component-preview-tab:focus-visible {
+  outline: 2px solid var(--color-fd-ring);
+  outline-offset: -2px;
+}
+
+.component-preview-tab svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.component-preview-result {
+  display: grid;
+  min-height: 10rem;
+  padding: 1.25rem;
+  place-items: center;
+  overflow: hidden;
+  background: var(--color-fd-secondary);
+}
+
+.component-preview-result > * {
   max-width: 100%;
+}
+
+.component-preview-code > .docs-code-block {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.docs-code-block {
+  border-color: var(--color-fd-border);
+  background: var(--color-fd-card);
+  box-shadow: none;
+}
+
+.docs-code-block > div:first-child:not([role="region"]) {
+  background: var(--color-fd-secondary);
+}
+
+.docs-code-block-viewport {
+  padding-block: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}
+
+.component-preview-code .docs-code-block-viewport {
+  max-height: 22rem;
+}
+
+.docs-code-block-viewport::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.docs-code-block-viewport::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--color-fd-muted-foreground);
+  background-clip: padding-box;
 }
 
 .mental-model {

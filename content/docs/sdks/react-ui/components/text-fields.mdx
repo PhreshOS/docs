@@ -1,0 +1,96 @@
+---
+title: Text fields
+description: Edit single-line and multiline text through one shared field contract.
+---
+
+`Input` and `Textarea` share `TextControlProps`. They differ only where the
+native text-entry domains differ: Input is single-line, while Textarea owns rows
+and vertical resizing.
+
+## Shared contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `label` | `ReactNode` | None | Visible accessible label |
+| `description` | `ReactNode` | None | Descriptive text associated with the control |
+| `errorMessage` | `ReactNode` | None | Validation text shown and associated when invalid |
+| `value` | `string` | Uncontrolled | Controlled value |
+| `defaultValue` | `string` | Empty | Initial uncontrolled value |
+| `onChange` | `(value: string) => void` | None | Next string value |
+| `placeholder` | `string` | None | Native placeholder |
+| `disabled` | `boolean` | `false` | Disable interaction |
+| `readOnly` | `boolean` | `false` | Preserve focus and value while blocking edits |
+| `required` | `boolean` | `false` | Native required state |
+| `invalid` | `boolean` | `false` | Invalid state and danger paint |
+| `color` | `ControlColor` | Neutral | Base field color |
+| `size` | `ScaleLevel` | `medium` | Height, spacing, and font-size level |
+| `radius` | `Radius` | Appearance radius | Semantic or direct corner radius |
+| `material` | `MaterialOptions` | Appearance material | Surface material overrides |
+
+When `label` is omitted, provide `aria-label` or `aria-labelledby`. The ref
+targets the native `HTMLInputElement` or `HTMLTextAreaElement`, not the field
+container.
+
+<ComponentPreview>
+  <Preview>
+    <Grid columns="minmax(0, 1fr)" gap="large" style={{ width: 320 }}>
+      <Input
+        label="Project name"
+        description="Shown to collaborators."
+        placeholder="New project"
+      />
+      <Textarea
+        label="Description"
+        placeholder="What is this project for?"
+        rows={3}
+      />
+    </Grid>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="text-fields.tsx"
+    import { Input, Textarea } from "@phreshos/react-ui"
+
+    export default function ProjectFields() {
+      return <>
+        <Input
+          label="Project name"
+          description="Shown to collaborators."
+          placeholder="New project"
+        />
+        <Textarea
+          label="Description"
+          placeholder="What is this project for?"
+          rows={3}
+        />
+      </>
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Input
+
+Input preserves applicable single-line text-field properties such as `name`,
+`type`, `pattern`, form participation, and reset behavior. Its default height
+matches a Button at the same size.
+
+## Textarea
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `rows` | `number` | `4` | Initial native row count |
+
+Textarea excludes single-line-only `type` and `pattern`. It stays within its
+available width and can be resized vertically. Its minimum height and typography
+still follow the shared size contract.
+
+## Validation and state
+
+`invalid` gives danger paint precedence over a supplied `color`.
+`description` and `errorMessage` receive their own accessible associations,
+so neighboring fields cannot inherit one another's feedback.
+
+Both components support controlled and uncontrolled values. Native form
+submission and form reset continue to operate on the underlying control.

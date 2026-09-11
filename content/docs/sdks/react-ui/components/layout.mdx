@@ -1,0 +1,95 @@
+---
+title: Layout
+description: Express Flexbox and Grid relationships without adding visual appearance.
+---
+
+`Flex` and `Grid` are layout containers. Both render a `div`, preserve its
+native properties and ref, and add no color, material, border, padding, or
+shadow.
+
+Use them when the parent-child relationship owns layout. When one existing
+element can carry the same layout properties, another container is unnecessary.
+
+## Shared contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `align` | `start \| center \| end \| stretch \| baseline` | CSS default | Cross-axis item alignment |
+| `justify` | `start \| center \| end \| between \| around \| evenly` | CSS default | Main-axis or track distribution |
+| `gap` | `Spacing` | CSS default | Semantic Appearance level, pixels, or CSS gap |
+| `inline` | `boolean` | `false` | Use the inline form of the layout mode |
+
+Semantic gaps resolve from `appearance.spacing`. Direct numbers are pixels,
+and CSS values such as `"1rem"` pass through unchanged.
+
+## Flex
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `direction` | `row \| row-reverse \| column \| column-reverse` | `row` | Main-axis direction |
+| `wrap` | `boolean \| "reverse"` | CSS default | Child wrapping |
+
+<ComponentPreview>
+  <Preview>
+    <Flex align="center" justify="between" gap="medium" style={{ width: 320 }}>
+      <Surface style={{ padding: 12 }}>First</Surface>
+      <Surface style={{ padding: 12 }}>Second</Surface>
+      <Surface style={{ padding: 12 }}>Third</Surface>
+    </Flex>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="flex-layout.tsx"
+    import { Flex, Surface } from "@phreshos/react-ui"
+
+    export default function Actions() {
+      return <Flex align="center" justify="between" gap="medium">
+        <Surface>First</Surface>
+        <Surface>Second</Surface>
+        <Surface>Third</Surface>
+      </Flex>
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Grid
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `columns` | `number \| string` | CSS default | Equal column count or CSS track expression |
+| `rows` | `number \| string` | CSS default | Equal row count or CSS track expression |
+| `flow` | CSS `grid-auto-flow` | CSS default | Automatic placement direction |
+
+A numeric track count must be a positive integer. React UI converts it to equal
+`minmax(0, 1fr)` tracks. A string remains an ordinary CSS track expression.
+
+<ComponentPreview>
+  <Preview>
+    <Grid columns={3} gap="medium" style={{ width: 320 }}>
+      <Surface style={{ padding: 12 }}>One</Surface>
+      <Surface style={{ padding: 12 }}>Two</Surface>
+      <Surface style={{ padding: 12 }}>Three</Surface>
+    </Grid>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="grid-layout.tsx"
+    import { Grid, Surface } from "@phreshos/react-ui"
+
+    export default function Summary() {
+      return <Grid columns={3} gap="medium">
+        <Surface>One</Surface>
+        <Surface>Two</Surface>
+        <Surface>Three</Surface>
+      </Grid>
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+Named layout properties own their corresponding CSS behavior and therefore
+override conflicting values in `style`. Native properties unrelated to that
+contract pass through to the rendered `div`.

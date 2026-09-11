@@ -1,9 +1,13 @@
 {
   "title": "Components",
   "description": "Use React UI components",
-  "icon": "Blocks",
   "pages": [
-    "index",
-    "surface"
+    "surface",
+    "panel",
+    "layout",
+    "button",
+    "text-fields",
+    "selection",
+    "slider"
   ]
 }

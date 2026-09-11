@@ -1,7 +1,6 @@
 ---
 title: Surface
 description: Render one material-owning element on any compatible React host.
-icon: PanelsTopLeft
 ---
 
 `Surface` is the material-owning React UI primitive. It renders a `div` by
@@ -15,7 +14,7 @@ owns the material.
 | --- | --- | --- | --- |
 | `as` | `SurfaceHost` | `"div"` | Element or component that hosts the Surface |
 | `color` | `Color` | `"background:base"` | Semantic Appearance color and level, or a CSS color |
-| `radius` | `Radius` | `"medium"` | Semantic level, pixel value, or CSS radius |
+| `radius` | `Radius` | Appearance radius | Semantic level, pixel value, or CSS radius |
 | `opacity` | `ScaleLevel \| number` | Appearance material value | Material paint opacity; content stays opaque |
 | `backdrop` | `ScaleLevel \| number` | Appearance material value | Backdrop blur in CSS pixels |
 | `grain` | `ScaleLevel \| number` | Appearance material value | Grain scale |
@@ -23,10 +22,13 @@ owns the material.
 | `distortion` | `ScaleLevel \| number` | Appearance material value | Refraction displacement |
 | `saturation` | `ScaleLevel \| number` | Appearance material value | Backdrop saturation multiplier |
 
-A [numeric level](/sdks/react-ui/appearance#numeric-levels) derives a value
+A [numeric level](/sdks/react-ui/appearance#numeric-scale) derives a value
 from the current Appearance; a number supplies the value directly. Numeric
 material values are finite and clamped to Core's published
 [Appearance limits](/system/appearance#values).
+
+Omitting `radius` uses the Appearance radius unchanged. Explicitly supplying
+`"medium"` produces the same value because the medium scale factor is `1`.
 
 The selected host's native properties and ref type remain available. Surface
 also accepts `children`, `className`, and `style` through that host contract.
@@ -34,20 +36,25 @@ also accepts `children`, `className`, and `style` through that host contract.
 ## Default Surface
 
 <ComponentPreview>
-  <Surface style={{ padding: 16 }}>
-    Material content
-  </Surface>
+  <Preview>
+    <Surface style={{ width: 320, padding: 16 }}>
+      Material content
+    </Surface>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="default-surface.tsx"
+    import { Surface } from "@phreshos/react-ui"
+
+    export default function Example() {
+      return <Surface style={{ width: 320, padding: 16 }}>
+        Material content
+      </Surface>
+    }
+    ```
+
+  </PreviewCode>
 </ComponentPreview>
-
-```tsx
-import { Surface } from "@phreshos/react-ui"
-
-export default function Example() {
-  return <Surface style={{ width: 320, padding: 16 }}>
-    Material content
-  </Surface>
-}
-```
 
 Surface owns its paint and edge. The host background remains transparent so
 the material layers can render beneath the content. The host receives the
@@ -60,22 +67,27 @@ preserved.
 
 ## Color and radius
 
-A [semantic color](/sdks/react-ui/appearance#color-levels) combines an
+A [semantic color](/sdks/react-ui/appearance#component-values) combines an
 Appearance color with a resting level:
 
-<ComponentPreview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(10rem, 1fr))", gap: "1rem" }}>
-  <Surface color="primary:soft" radius="large" style={{ padding: 16 }}>
-    Semantic color
-  </Surface>
-  <Surface color="oklch(72% 0.14 190)" radius="1.25rem" style={{ padding: 16 }}>
-    Direct color
-  </Surface>
-</ComponentPreview>
+<ComponentPreview>
+  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(10rem, 1fr))", gap: "1rem" }}>
+    <Surface color="primary:soft" radius="large" style={{ padding: 16 }}>
+      Semantic color
+    </Surface>
+    <Surface color="oklch(72% 0.14 190)" radius="1.25rem" style={{ padding: 16 }}>
+      Direct color
+    </Surface>
+  </Preview>
+  <PreviewCode>
 
-```tsx
-<Surface color="primary:soft" radius="large">Semantic color</Surface>
-<Surface color="oklch(72% 0.14 190)" radius="1.25rem">Direct color</Surface>
-```
+    ```tsx title="surface-color.tsx"
+    <Surface color="primary:soft" radius="large">Semantic color</Surface>
+    <Surface color="oklch(72% 0.14 190)" radius="1.25rem">Direct color</Surface>
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
 
 The material edge is part of Surface and follows the actual resolved colors;
 it does not assume that Theme names describe their luminance. Radius applies
@@ -86,34 +98,39 @@ to the host and all material layers through one inherited geometry.
 Supply only the values that differ from the current Appearance:
 
 <ComponentPreview>
-  <Surface
-    color="background:soft"
-    opacity="large"
-    backdrop={18}
-    grain="small"
-    grainAmount={0.2}
-    distortion={24}
-    saturation={1.15}
-    style={{ padding: 20 }}
-  >
-    Customized material
-  </Surface>
-</ComponentPreview>
+  <Preview>
+    <Surface
+      color="background:soft"
+      opacity="large"
+      backdrop={18}
+      grain="small"
+      grainAmount={0.2}
+      distortion={24}
+      saturation={1.15}
+      style={{ padding: 20 }}
+    >
+      Customized material
+    </Surface>
+  </Preview>
+  <PreviewCode>
 
-```tsx
-<Surface
-  color="background:soft"
-  opacity="large"
-  backdrop={18}
-  grain="small"
-  grainAmount={0.2}
-  distortion={24}
-  saturation={1.15}
-  style={{ padding: 20 }}
->
-  Customized material
-</Surface>
-```
+    ```tsx title="custom-material.tsx"
+    <Surface
+      color="background:soft"
+      opacity="large"
+      backdrop={18}
+      grain="small"
+      grainAmount={0.2}
+      distortion={24}
+      saturation={1.15}
+      style={{ padding: 20 }}
+    >
+      Customized material
+    </Surface>
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
 
 Material options change the visual substance, not the host's geometry or
 content opacity. A zero value disables the corresponding effect where zero is
@@ -125,23 +142,28 @@ layers so one effect does not replace the other.
 `as` changes the host without introducing another wrapper:
 
 <ComponentPreview>
-  <Surface as="button" type="button" style={{ padding: 16 }}>
-    Continue
-  </Surface>
+  <Preview>
+    <Surface as="button" type="button" style={{ padding: 16 }}>
+      Continue
+    </Surface>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="native-action.tsx"
+    import { useRef } from "react"
+    import { Surface } from "@phreshos/react-ui"
+
+    export default function NativeAction() {
+      const ref = useRef<HTMLButtonElement>(null)
+
+      return <Surface as="button" ref={ref} type="button">
+        Continue
+      </Surface>
+    }
+    ```
+
+  </PreviewCode>
 </ComponentPreview>
-
-```tsx
-import { useRef } from "react"
-import { Surface } from "@phreshos/react-ui"
-
-export default function NativeAction() {
-  const ref = useRef<HTMLButtonElement>(null)
-
-  return <Surface as="button" ref={ref} type="button">
-    Continue
-  </Surface>
-}
-```
 
 This remains a native button; it does not acquire the higher-level behavior of
 React UI's `Button`. Use `Button` when the action needs that component's state,
@@ -159,8 +181,8 @@ breaks the material's geometry or the caller's host access.
     href="/sdks/react-ui/appearance"
   />
   <Card
-    title="Components"
-    description="Return to the React UI component domains."
-    href="/sdks/react-ui/components"
+    title="System Appearance"
+    description="Read the authoritative System contract represented by React UI Appearance."
+    href="/system/appearance"
   />
 </Cards>

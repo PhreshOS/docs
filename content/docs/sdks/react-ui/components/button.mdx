@@ -1,0 +1,69 @@
+---
+title: Button
+description: Run one accessible action with normalized interaction and Surface material.
+---
+
+`Button` renders a native button through React Aria and uses Surface for its
+paint. Pointer, Enter, and Space activation all invoke the same `onPress`
+contract.
+
+## Contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | None | Visible action content |
+| `onPress` | `() => void` | None | Normalized activation callback |
+| `color` | `ControlColor` | Neutral | Base semantic or direct color |
+| `size` | `ScaleLevel` | `medium` | Height, spacing, gap, and font-size level |
+| `radius` | `Radius` | Appearance radius | Semantic or direct corner radius |
+| `material` | `MaterialOptions` | Appearance material | Surface material overrides |
+| `disabled` | `boolean` | `false` | Prevent focus and activation |
+| `pending` | `boolean` | `false` | Prevent activation while preserving focus |
+| `type` | Native button type | `button` | Form behavior |
+
+Button also preserves the remaining applicable React Aria button properties,
+native styles, class name, and the ref to its native `HTMLButtonElement`.
+
+<ComponentPreview>
+  <Preview>
+    <Flex align="center" gap="medium" wrap>
+      <Button>Neutral</Button>
+      <Button color="primary:base">Primary</Button>
+      <Button color="danger:base">Delete</Button>
+      <Button disabled>Disabled</Button>
+      <Button pending>Pending</Button>
+    </Flex>
+  </Preview>
+  <PreviewCode>
+
+    ```tsx title="button-states.tsx"
+    import { Button } from "@phreshos/react-ui"
+
+    export default function Actions() {
+      return <>
+        <Button>Neutral</Button>
+        <Button color="primary:base">Primary</Button>
+        <Button color="danger:base">Delete</Button>
+        <Button disabled>Disabled</Button>
+        <Button pending>Pending</Button>
+      </>
+    }
+    ```
+
+  </PreviewCode>
+</ComponentPreview>
+
+## Interaction
+
+A neutral Button derives its paint from Appearance background and foreground.
+Supplying `color` selects another base paint. The component chooses its text
+contrast from that base color once; hover and pressed shades do not recalculate
+the text color or change the Button's geometry.
+
+`disabled` removes the Button from activation and focus. `pending` blocks
+activation but intentionally remains focusable so an in-progress action does
+not destroy keyboard position.
+
+`onPress` is the action contract. It replaces separate pointer and keyboard
+handlers; use native form submission through `type="submit"` when the form
+owns the action instead.
