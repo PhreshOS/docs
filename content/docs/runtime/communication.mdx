@@ -1,6 +1,6 @@
 ---
 title: Communication
-description: Publications, questions, observation, and traffic envelopes.
+description: Publications, questions, observation, traffic envelopes, and boundary values.
 icon: MessagesSquare
 ---
 
@@ -32,6 +32,19 @@ context.publish("changed", { value: 1 })
 Context messages are `{ from, payload }`. Endpoint traffic messages are
 `{ to, payload }`. An inaccessible sender or destination is represented as
 `null`, never as a fabricated or partially visible handle.
+
+## Boundary values
+
+Communication payloads are not limited to JSON. The shared boundary-value
+model preserves `undefined`, `bigint`, `Date`, `Map`, `Set`, `RegExp`, `URL`,
+`Error`, and binary data in addition to JSON-compatible values. This behavior
+is the same whether the communicating Endpoints are reached through the
+Client, Server, or Node SDK.
+
+Binary data remains binary throughout the route; it is not converted to text
+or Base64. An `ArrayBuffer` or any typed-array view is normalized to a
+`Uint8Array` at the receiving boundary. Functions and symbols are not boundary
+values and arrive as `null`.
 
 ## Observation
 
