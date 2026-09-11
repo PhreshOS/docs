@@ -119,8 +119,10 @@ when its only child can carry the same properties and behavior without
 changing the result. Keep a separate container when its layout or behavior
 requires the parent-child relationship.
 
-Color and Material remain separate inputs. `appearance.colors` defines paint;
+Color and material remain separate inputs. `appearance.colors` defines paint;
 `appearance.material` defines opacity, backdrop, grain, distortion, and
-saturation. React UI's `Material` and every Material-bearing component expose
-`color` beside `material`, never inside it. `Material` defaults to
-`background:base`, and `Surface` is the standard `div` that hosts it.
+saturation. React UI's `Surface` is the material-owning element. It exposes
+`color` beside flattened material properties, renders a `div` by default, and
+accepts `as` to preserve another element's native contract. Surface-based
+controls expose `color` beside grouped `material` customization so their own
+behavior contracts remain distinct. Surface defaults to `background:base`.
