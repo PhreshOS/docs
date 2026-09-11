@@ -1,0 +1,133 @@
+---
+title: Surface
+description: Render one material-owning element on any compatible React host.
+icon: PanelsTopLeft
+---
+
+`Surface` is the material-owning React UI primitive. It renders a `div` by
+default and can use another compatible React element or component as its host.
+Material properties are flat `Surface` properties because the Surface itself
+owns the material.
+
+## Contract
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `as` | `SurfaceHost` | `"div"` | Element or component that hosts the Surface |
+| `color` | `Color` | `"background:base"` | Semantic Appearance color and level, or a CSS color |
+| `radius` | `Radius` | `"medium"` | Semantic level, pixel value, or CSS radius |
+| `opacity` | `ScaleLevel \| number` | Appearance material value | Material paint opacity; content stays opaque |
+| `backdrop` | `ScaleLevel \| number` | Appearance material value | Backdrop blur in CSS pixels |
+| `grain` | `ScaleLevel \| number` | Appearance material value | Grain scale |
+| `grainAmount` | `ScaleLevel \| number` | Appearance material value | Grain amount |
+| `distortion` | `ScaleLevel \| number` | Appearance material value | Refraction displacement |
+| `saturation` | `ScaleLevel \| number` | Appearance material value | Backdrop saturation multiplier |
+
+`ScaleLevel` is `"xsmall"`, `"small"`, `"medium"`, `"large"`, or
+`"xlarge"`. A semantic level derives a value from the current Appearance;
+a number supplies the value directly. Numeric material values are finite and
+clamped to Core's published [Appearance limits](/system/appearance#values).
+
+The selected host's native properties and ref type remain available. Surface
+also accepts `children`, `className`, and `style` through that host contract.
+
+## Default Surface
+
+```tsx
+import { Surface } from "@phreshos/react-ui"
+
+export default function Example() {
+  return <Surface style={{ width: 320, padding: 16 }}>
+    Material content
+  </Surface>
+}
+```
+
+Surface owns its paint and edge. The host background remains transparent so
+the material layers can render beneath the content. The host receives the
+resolved foreground color unless `style.color` overrides it.
+
+Surface does not add dimensions, padding, layout, or shadow. It establishes
+relative positioning when no position is supplied and isolates its material
+layers from surrounding stacking contexts. An explicit `style.position` is
+preserved.
+
+## Color and radius
+
+A semantic color combines an Appearance color with a resting level:
+
+```tsx
+<Surface color="primary:soft" radius="large" />
+<Surface color="oklch(72% 0.14 190)" radius="1.25rem" />
+```
+
+Available Appearance color names are `background`, `foreground`, `primary`,
+`secondary`, `success`, `warning`, `danger`, and `info`. Available levels are
+`subtle`, `soft`, `base`, `strong`, and `intense`.
+
+The material edge is part of Surface and follows the actual resolved colors;
+it does not assume that Theme names describe their luminance. Radius applies
+to the host and all material layers through one inherited geometry.
+
+## Material customization
+
+Supply only the values that differ from the current Appearance:
+
+```tsx
+<Surface
+  color="background:soft"
+  opacity="large"
+  backdrop={18}
+  grain="small"
+  grainAmount={0.2}
+  distortion={24}
+  saturation={1.15}
+  style={{ padding: 20 }}
+>
+  Customized material
+</Surface>
+```
+
+Material options change the visual substance, not the host's geometry or
+content opacity. A zero value disables the corresponding effect where zero is
+valid. Surface keeps refraction and native backdrop filtering in separate
+layers so one effect does not replace the other.
+
+## Host another element
+
+`as` changes the host without introducing another wrapper:
+
+```tsx
+import { useRef } from "react"
+import { Surface } from "@phreshos/react-ui"
+
+export default function NativeAction() {
+  const ref = useRef<HTMLButtonElement>(null)
+
+  return <Surface as="button" ref={ref} type="button">
+    Continue
+  </Surface>
+}
+```
+
+This remains a native button; it does not acquire the higher-level behavior of
+React UI's `Button`. Use `Button` when the action needs that component's state,
+accessibility, and interaction contract.
+
+A custom component is a valid `SurfaceHost` when it applies the received
+`style` and renders the received `children` on the same host element, then
+forwards its ref to that element. Failing to preserve any of those three parts
+breaks the material's geometry or the caller's host access.
+
+<Cards>
+  <Card
+    title="Appearance"
+    description="Understand where Surface defaults and themed values come from."
+    href="/sdks/react-ui/appearance"
+  />
+  <Card
+    title="Components"
+    description="Return to the React UI component domains."
+    href="/sdks/react-ui/components"
+  />
+</Cards>

@@ -9,6 +9,7 @@
     "client",
     "server",
     "node",
-    "react"
+    "react",
+    "react-ui"
   ]
 }

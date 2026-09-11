@@ -1,0 +1,98 @@
+---
+title: Appearance
+description: Provide and resolve the visual source used by React UI components.
+icon: Palette
+---
+
+React UI reads one unresolved `Appearance` and resolves its themed values only
+where they are consumed. `AppearanceProvider` can replace Appearance, Theme,
+or both for one React subtree; it does not render a container.
+
+The complete data contract, limits, and System ownership rules live in
+[System Appearance](/system/appearance). This page defines how React UI
+consumes that contract.
+
+## Resolution
+
+| API | Result |
+| --- | --- |
+| `useAppearance()` | Nearest complete unresolved Appearance, or `defaultAppearance` |
+| `useTheme()` | Nearest explicit Theme, or the browser's current color scheme |
+| `useResolveTheme(value)` | The value's branch for the effective Theme |
+| `AppearanceProvider` | Optional Appearance and Theme override for its descendants |
+| `defaultAppearance` | Core's complete environment-neutral default Appearance |
+
+Without any provider, `useAppearance()` returns `defaultAppearance` and
+`useTheme()` follows `prefers-color-scheme` as reactive state. During server
+rendering, the Theme snapshot is `light`; the browser becomes authoritative on
+the client.
+
+An inner provider inherits each omitted value independently. Overriding Theme
+does not copy or replace Appearance, and overriding Appearance does not stop
+the inherited Theme from changing.
+
+## Provide a subtree
+
+```tsx
+import {
+  AppearanceProvider,
+  Surface,
+} from "@phreshos/react-ui"
+
+export default function DarkPreview() {
+  return <AppearanceProvider theme="dark">
+    <Surface style={{ padding: 16 }}>
+      This subtree resolves dark branches.
+    </Surface>
+  </AppearanceProvider>
+}
+```
+
+`appearance` and `theme` are optional. `children` is required. Supplying an
+Appearance replaces the complete source for that subtree; it is not a partial
+patch.
+
+## Read and resolve
+
+```tsx
+import {
+  useAppearance,
+  useResolveTheme,
+  useTheme,
+} from "@phreshos/react-ui"
+
+export function AppearanceSummary() {
+  const appearance = useAppearance()
+  const theme = useTheme()
+  const foreground = useResolveTheme(appearance.colors.foreground)
+
+  return <p style={{ color: foreground }}>
+    Theme: {theme} · spacing: {appearance.spacing.light}px
+  </p>
+}
+```
+
+Theme names select branches; they do not imply that one resolved color is
+lighter than another. Visual behavior that depends on luminance must use the
+resolved color values themselves.
+
+## Ownership
+
+React UI owns only resolution and rendering behavior. It neither reads nor
+updates System Appearance by itself. A System-connected application obtains
+Appearance through its environment SDK and passes the resulting value to
+`AppearanceProvider`; a standalone application may use the defaults or supply
+its own complete value.
+
+<Cards>
+  <Card
+    title="System Appearance"
+    description="Read the authoritative Appearance data contract and limits."
+    href="/system/appearance"
+  />
+  <Card
+    title="Components"
+    description="See how components consume the resolved visual source."
+    href="/sdks/react-ui/components"
+  />
+</Cards>

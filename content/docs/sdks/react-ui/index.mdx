@@ -1,0 +1,82 @@
+---
+title: Overview
+description: Build Appearance-aware React interfaces without a System runtime dependency.
+icon: PanelsTopLeft
+---
+
+`@phreshos/react-ui` provides the visual primitives and accessible controls
+used by PhreshOS interfaces. It consumes the shared Appearance contract, but
+it does not know about a System, Program, Process, Endpoint, or Desktop.
+
+## Install
+
+<Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
+  <Tab value="npm">
+    ```sh
+    npm install @phreshos/react-ui
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```sh
+    pnpm add @phreshos/react-ui
+    ```
+  </Tab>
+  <Tab value="Bun">
+    ```sh
+    bun add @phreshos/react-ui
+    ```
+  </Tab>
+  <Tab value="Yarn Classic">
+    ```sh
+    yarn add @phreshos/react-ui
+    ```
+  </Tab>
+</Tabs>
+
+<Callout title="Peer dependencies">
+  React UI requires `react` and `react-dom` version 19.2 or later within the
+  current major version. It uses the application's React instances.
+</Callout>
+
+## Quick start
+
+React UI works without a provider. In that case, components use Core's
+`defaultAppearance` and reactively follow the browser's color scheme.
+
+```tsx
+import { Surface } from "@phreshos/react-ui"
+
+export default function Welcome() {
+  return <Surface style={{ padding: 16 }}>
+    Welcome to PhreshOS.
+  </Surface>
+}
+```
+
+`Surface` owns the visible material, while its dimensions, layout, spacing,
+and semantic content remain ordinary React and CSS concerns.
+
+## Public surface
+
+| Area | Purpose | Reference |
+| --- | --- | --- |
+| Appearance | Read, provide, and resolve the shared visual source | [Appearance](/sdks/react-ui/appearance) |
+| Components | Compose layout, material, controls, and fields | [Components](/sdks/react-ui/components) |
+
+React UI differs from `@phreshos/react`. React UI renders visual primitives;
+the [React SDK](/sdks/react) supplies Core domain contracts and follows their
+live state. An application can use either package independently or compose
+both.
+
+<Cards>
+  <Card
+    title="Appearance"
+    description="Provide or resolve Appearance and Theme for a React subtree."
+    href="/sdks/react-ui/appearance"
+  />
+  <Card
+    title="Components"
+    description="Browse the reusable React UI component domains."
+    href="/sdks/react-ui/components"
+  />
+</Cards>

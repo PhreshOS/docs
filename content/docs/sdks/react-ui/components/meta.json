@@ -1,0 +1,9 @@
+{
+  "title": "Components",
+  "description": "Use React UI components",
+  "icon": "Blocks",
+  "pages": [
+    "index",
+    "surface"
+  ]
+}

@@ -12,6 +12,12 @@ grouping are part of the plan, not suggestions to reinterpret while writing.
 
 ```text
 SDKs
+├── CLI
+│   ├── Overview
+│   ├── Project commands
+│   ├── Runtime commands
+│   ├── System commands
+│   └── Contract discovery
 ├── Core
 │   ├── Overview
 │   ├── Program configuration
@@ -38,12 +44,12 @@ SDKs
 │   ├── Providers
 │   ├── Domain hooks
 │   └── Subscription hooks
-└── CLI
+└── React UI
     ├── Overview
-    ├── Project commands
-    ├── Runtime commands
-    ├── System commands
-    └── Contract discovery
+    ├── Appearance
+    └── Components
+        ├── Overview
+        └── Surface
 ```
 
 Do not substitute nearby labels, merge these pages into one article, or create
@@ -82,6 +88,11 @@ reason. Content depth belongs inside this stable structure.
 | React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` | SDKs / React |
 | React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState` | SDKs / React |
 | React | `useSubscribe`, `useSubscribeAsks`, `AskSubscribable`, `useSubscribeAnswers`, `AnswerSubscribable` | SDKs / React |
+| React UI | `AppearanceProvider`, `AppearanceProviderProps`, `useAppearance`, `useTheme`, `useResolveTheme`, `defaultAppearance` | SDKs / React UI / Appearance |
+| React UI | `Surface`, `SurfaceProps`, `SurfaceOwnProps`, `SurfaceHost`, `SurfaceHostProps`, `SurfaceComponent`, `MaterialOptions` | SDKs / React UI / Components / Surface |
+| React UI | `Panel`, `PanelProps`, `Flex`, `FlexProps`, `Grid`, `GridProps` | SDKs / React UI / Components |
+| React UI | `Button`, `Input`, `Textarea`, `Checkbox`, `Radio`, `RadioGroup`, `Switch`, `Select`, `Slider`, and their public property and option types | SDKs / React UI / Components |
+| React UI | `Color`, `ColorLevel`, `ColorScale`, `ControlColor`, `defaultColor`, `Radius`, `RadiusProps`, `Spacing`, `LayoutAlignment`, `LayoutGap`, `LayoutJustification`, `NumericScale`, `ScaleLevel`, `useColor`, `useScale`, `resolveRadius`, `resolveSpacing` | SDKs / React UI / Appearance and Components |
 | CLI | Project families: `create`, `init`, `dev`, `start`, `install`, `uninstall`, `pack` | SDKs / CLI |
 | CLI | Runtime families: `program`, `process`, `endpoint`, `window` and every declared child command | SDKs / CLI |
 | CLI | System lifecycle family: `install`, `uninstall`, `status`, `version`, `start`, `stop`, `enable`, `disable` | SDKs / CLI |

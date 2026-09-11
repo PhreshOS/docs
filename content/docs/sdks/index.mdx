@@ -5,7 +5,9 @@ icon: Braces
 ---
 
 PhreshOS separates contracts from environment adapters. Core defines the
-domain model; each SDK implements or composes that model without redefining it.
+domain model; each environment SDK implements or composes that model without
+redefining it. React UI interprets Appearance as environment-neutral React
+components without introducing another System or domain model.
 
 <Cards>
   <Card
@@ -37,6 +39,11 @@ domain model; each SDK implements or composes that model without redefining it.
     title="React"
     description="Core contracts and explicit subscriptions adapted to React."
     href="/sdks/react"
+  />
+  <Card
+    title="React UI"
+    description="Appearance-aware React components and visual primitives."
+    href="/sdks/react-ui"
   />
 </Cards>
 

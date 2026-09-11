@@ -1,0 +1,10 @@
+{
+  "title": "React UI",
+  "description": "Compose PhreshOS visual primitives in React",
+  "icon": "PanelsTopLeft",
+  "pages": [
+    "index",
+    "appearance",
+    "components"
+  ]
+}
