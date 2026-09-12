@@ -5,8 +5,9 @@ description: Render one material-owning element on any compatible React host.
 
 `Surface` is the material-owning React UI primitive. It renders a `div` by
 default and can use another compatible React element or component as its host.
-Material properties are flat `Surface` properties because the Surface itself
-owns the material.
+Material customization is grouped under `material`, using the same contract as
+every other component built on Surface. Color and radius remain independent
+because they describe the host's palette and geometry rather than its material.
 
 ## Contract
 
@@ -15,6 +16,13 @@ owns the material.
 | `as` | `SurfaceHost` | `"div"` | Element or component that hosts the Surface |
 | `color` | `Color` | `"background:base"` | Semantic Appearance color and level, or a CSS color |
 | `radius` | `Radius` | Appearance radius | Semantic level, pixel value, or CSS radius |
+| `material` | `MaterialOptions` | Appearance material | Material paint and backdrop customization |
+
+`MaterialOptions` has one uniform shape wherever React UI exposes a `material`
+prop:
+
+| Property | Type | Default | Meaning |
+| --- | --- | --- | --- |
 | `opacity` | `ScaleLevel \| number` | Appearance material value | Material paint opacity; content stays opaque |
 | `backdrop` | `ScaleLevel \| number` | Appearance material value | Backdrop blur in CSS pixels |
 | `grain` | `ScaleLevel \| number` | Appearance material value | Grain scale |
@@ -101,12 +109,14 @@ Supply only the values that differ from the current Appearance:
   <Preview>
     <Surface
       color="background:soft"
-      opacity="large"
-      backdrop={18}
-      grain="small"
-      grainAmount={0.2}
-      distortion={24}
-      saturation={1.15}
+      material={{
+        opacity: "large",
+        backdrop: 18,
+        grain: "small",
+        grainAmount: 0.2,
+        distortion: 24,
+        saturation: 1.15,
+      }}
       style={{ padding: 20 }}
     >
       Customized material
@@ -117,12 +127,14 @@ Supply only the values that differ from the current Appearance:
     ```tsx title="custom-material.tsx"
     <Surface
       color="background:soft"
-      opacity="large"
-      backdrop={18}
-      grain="small"
-      grainAmount={0.2}
-      distortion={24}
-      saturation={1.15}
+      material={{
+        opacity: "large",
+        backdrop: 18,
+        grain: "small",
+        grainAmount: 0.2,
+        distortion: 24,
+        saturation: 1.15,
+      }}
       style={{ padding: 20 }}
     >
       Customized material

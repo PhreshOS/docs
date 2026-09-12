@@ -65,10 +65,10 @@ Outer Surface properties and `contentProps` are independent:
 ```tsx title="independent-material.tsx"
 <Panel
   color="background:base"
-  opacity={0.4}
+  material={{ opacity: 0.4 }}
   contentProps={{
     color: "background:soft",
-    opacity: 0.1,
+    material: { opacity: 0.1 },
   }}
 >
   Content
