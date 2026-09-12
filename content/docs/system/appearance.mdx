@@ -24,10 +24,11 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 
 | Field | Value |
 | --- | --- |
-| `colors` | Named colors, each with explicit light and dark values |
+| `colors` | Complete named palette for each explicit light and dark branch |
 | `spacing`, `radius` | One shared numeric value |
 | `shadow` | Explicit light and dark outer shadow values |
 | `material` | Explicit light and dark visual-substance values |
+| `transaction` | Shared duration in milliseconds and easing |
 | `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
 
 Material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
@@ -41,6 +42,7 @@ value. `defaultAppearance` is the complete environment-neutral default, and
 | Value | Inclusive range |
 | --- | --- |
 | `spacing`, `radius` | `6–18` |
+| `transaction.duration` | `0–60000` |
 | `shadow.x`, `shadow.y` | `-48–48` |
 | `shadow.blur` | `0–96` |
 | `shadow.spread` | `-24–24` |
@@ -50,8 +52,8 @@ value. `defaultAppearance` is the complete environment-neutral default, and
 | `distortion` | `0–140` |
 | `saturation` | `1–2.6` |
 
-Each member of `appearance.colors` is an independent CSS value with explicit
-light and dark branches.
+Each branch of `appearance.colors` is one complete palette. A Theme selects the
+palette first; a component then selects the named color it needs.
 
 | Color | Role | Light default | Dark default |
 | --- | --- | --- | --- |
@@ -70,7 +72,8 @@ React UI's color contract combines a member and resting level, such as
 remains derived from `colors.foreground`; status colors distinguish backgrounds,
 borders, and indicators.
 
-Standard spacing is `12`, radius is `10`, and wallpapers are `null`. Material
+Standard spacing is `12`, radius is `10`, transaction is
+`{ duration: 120, easing: "ease-out" }`, and wallpapers are `null`. Material
 uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
 `0.35` in the dark branch, neutral saturation, and no grain or distortion.
 
@@ -86,6 +89,11 @@ Updates accept a direct `light` or `dark` theme, a boolean animation choice, or
 
 A consumer combines the Appearance snapshot with the effective theme and
 resolves only the property it needs.
+
+`ThemedValue<Value>` always contains both `{ light: Value, dark: Value }`
+branches. It is used only at the exact boundary where a value differs by Theme;
+direct Appearance values are not wrapped merely because Appearance supports
+themes.
 
 Theme names select branches; they do not determine a color's brightness. When
 a visual treatment depends on lightness, compare the resolved colors themselves.

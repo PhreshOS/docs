@@ -72,9 +72,11 @@ representation of that Window:
 | `raise()` | Bring the representation to the front of its current layer |
 | `transaction(transaction)` | Bind surface, geometry, minimize, and follow operations to visual timing |
 
-A transaction requires `duration`, `easing`, or both; `wait` optionally makes
-an operation resolve after the transition. Easing accepts the standard CSS
-names or a four-number cubic Bézier tuple.
+`AppearanceTransaction` requires both `duration` and `easing`. It is the same
+contract as `appearance.transaction`. `WaitedTransaction` adds `wait: true`;
+that form makes the requested operation resolve after visual completion rather
+than after the Desktop accepts it. Easing accepts the standard CSS names or a
+four-number cubic Bézier tuple.
 
 Local operations publish no authoritative Window events and are accepted only
 for `under` or `over` Windows. Pointer gestures, measurements, snap previews,

@@ -17,13 +17,14 @@ Appearance is one complete unresolved visual source:
 
 ```ts title="appearance.ts"
 type Appearance = Readonly<{
-  colors: AppearanceColors
-  spacing: ThemedValue<number>
-  radius: ThemedValue<number>
-  shadow: ThemedValue<AppearanceShadow, AppearanceShadow>
-  material: ThemedValue<AppearanceMaterial, AppearanceMaterial>
-  signInWallpaper: ThemedValue<string | null, string | null>
-  desktopWallpaper: ThemedValue<string | null, string | null>
+  colors: ThemedValue<AppearanceColors>
+  spacing: number
+  radius: number
+  shadow: ThemedValue<AppearanceShadow>
+  material: ThemedValue<AppearanceMaterial>
+  transaction: AppearanceTransaction
+  signInWallpaper: ThemedValue<string | null>
+  desktopWallpaper: ThemedValue<string | null>
 }>
 ```
 
@@ -34,10 +35,12 @@ type Appearance = Readonly<{
 | `radius` | Source value for semantic radius levels |
 | `shadow` | Source for components that explicitly own elevation; it is not part of Surface |
 | `material` | Source values for opacity, backdrop, grain, distortion, and saturation |
+| `transaction` | Shared duration and easing for visual changes |
 | `signInWallpaper`, `desktopWallpaper` | Core values retained in the complete contract; React UI does not load them implicitly |
 
-Every field remains unresolved until its consumer needs a concrete Theme
-branch. The Core contract, its supported ranges, and the System operations that
+Only values whose meaning actually differs by Theme use `ThemedValue`. Colors
+resolve as one complete palette; spacing, radius, and transaction are direct.
+The Core contract, its supported ranges, and the System operations that
 replace the live value are documented under [System Appearance](/system/appearance).
 
 ## Default colors
@@ -133,13 +136,26 @@ Semantic levels derive both values through the same numeric scale.
   </PreviewCode>
 </ComponentPreview>
 
+## Transaction
+
+`appearance.transaction` is the one direct timing value consumed by React UI.
+It contains required `duration` milliseconds and required `easing`. Components
+use it for material paint changes, control state geometry, and overlay presence
+instead of defining private durations or curves. Reduced-motion preferences
+reduce the effective duration to zero without changing the Appearance value.
+
+The default is `{ duration: 120, easing: "ease-out" }`. The same
+`AppearanceTransaction` type is accepted by SDK visual operations. Their
+`WaitedTransaction` form adds `wait: true` only to change when the operation
+promise settles; `wait` is not part of rendered animation state.
+
 ## Resolution
 
 | API | Result |
 | --- | --- |
 | `useAppearance()` | Nearest complete unresolved Appearance, or `defaultAppearance` |
 | `useTheme()` | Nearest explicit Theme, or the browser's current color scheme |
-| `useResolveTheme(value)` | The supplied themed value resolved for the effective Theme |
+| `useThemedValue(value)` | The supplied `ThemedValue` branch for the effective Theme |
 | `AppearanceProvider` | Optional Appearance and Theme source for one React subtree |
 | `defaultAppearance` | Core's complete environment-neutral default Appearance |
 
@@ -283,17 +299,17 @@ therefore requires an Appearance value.
 ```tsx title="appearance-summary.tsx"
 import {
   useAppearance,
-  useResolveTheme,
   useTheme,
+  useThemedValue,
 } from "@phreshos/react-ui"
 
 export function AppearanceSummary() {
   const appearance = useAppearance()
   const theme = useTheme()
-  const foreground = useResolveTheme(appearance.colors.foreground)
+  const foreground = useThemedValue(appearance.colors).foreground
 
   return <p style={{ color: foreground }}>
-    Theme: {theme} · spacing: {appearance.spacing.light}px
+    Theme: {theme} · spacing: {appearance.spacing}px
   </p>
 }
 ```
