@@ -4,20 +4,20 @@ description: Read and update the Desktop containing the current Client.
 ---
 
 `desktop` represents the graphical environment containing this Client
-Endpoint. It exposes the Desktop surface and its effective preferences without
+Endpoint. It exposes the Desktop viewport and its effective preferences without
 exposing Desktop implementation details.
 
 ```ts
 import { desktop } from "@phreshos/client"
 ```
 
-## Surface
+## Viewport
 
 ```ts
-const { size } = await desktop.surface.snapshot()
+const { size } = await desktop.viewport.snapshot()
 console.log(size.width, size.height)
 
-const cleanup = desktop.surface.subscribe("resize", snapshot => {
+const cleanup = desktop.viewport.subscribe("resize", snapshot => {
   console.log(snapshot.size)
 })
 ```

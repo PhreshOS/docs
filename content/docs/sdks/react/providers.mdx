@@ -22,7 +22,7 @@ then are the children rendered again.
 | --- | --- | --- |
 | `ContextProvider` | `ClientContext` | Program, Process, and parent Process |
 | `SystemProvider` | `System` | System Appearance |
-| `DesktopProvider` | `Desktop` | Desktop surface and effective preferences |
+| `DesktopProvider` | `Desktop` | Desktop viewport and effective preferences |
 
 ## ContextProvider
 
@@ -118,19 +118,19 @@ when rendering must follow Appearance changes.
 | Hook | Returned value |
 | --- | --- |
 | `useDesktop()` | The complete supplied `Desktop` contract |
-| `useDesktopSurface()` | Current `{ size }`, followed through `resize` events |
+| `useDesktopViewport()` | Current `{ size }`, followed through `resize` events |
 | `useDesktopPreferences()` | Current effective preferences, followed through `change` events |
 
 ```tsx
 import {
   useDesktop,
   useDesktopPreferences,
-  useDesktopSurface,
+  useDesktopViewport,
 } from "@phreshos/react"
 
 function DesktopState() {
   const desktop = useDesktop()
-  const { size } = useDesktopSurface()
+  const { size } = useDesktopViewport()
   const preferences = useDesktopPreferences()
 
   async function useSystemTheme() {
@@ -156,7 +156,7 @@ Calling a provider hook outside its matching provider throws immediately:
 | --- | --- |
 | `useContext`, `useProgram`, `useProcess`, `useParent` | `ContextProvider` |
 | `useSystem`, `useSystemAppearance` | `SystemProvider` |
-| `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` | `DesktopProvider` |
+| `useDesktop`, `useDesktopViewport`, `useDesktopPreferences` | `DesktopProvider` |
 
 Unmounting a provider releases the subscriptions created by that provider. It
 does not stop the Context, disconnect the System, destroy the Desktop, or end

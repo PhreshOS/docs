@@ -21,7 +21,7 @@ only capabilities inherent to its execution role.
 | `stop()` | Stop the incarnation without implicitly ending the Process |
 | `isService()` | Whether the current incarnation is a Service |
 
-Endpoints also implement `publish()`, `subscribe()`, `waitFor()`, and `events()`
+Endpoints also implement `publish()`, `subscribe()`, `wait()`, and `events()`
 for application communication. These operations remain on the Endpoint root;
 only lifecycle transitions use `endpoint.lifecycle`.
 
@@ -71,7 +71,7 @@ boundary and does not have an independent working directory.
 
 `ClientEndpoint` adds its permanent `window` capability.
 `start(clientLaunch?)` may select the Service role and initial Window title,
-size, position, layer, location, and minimized state.
+size, position, layer, and minimized state.
 
 A Client executes in a Desktop iframe. It may access its own Program, that
 Program's Processes and Services, and its Context and Desktop capabilities.

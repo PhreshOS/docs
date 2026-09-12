@@ -19,7 +19,7 @@ complete state shape listed below.
 | `useProcessState(process)` | `{ exited }` |
 | `useEndpointState(endpoint)` | `{ exists }` |
 | `useServiceState(service)` | `{ exists }` |
-| `useWindowState(window)` | `{ title, position, size, minimized, front, layer, location }` |
+| `useWindowState(window)` | `{ title, position, size, minimized, front, layer }` |
 
 The hook subscribes before requesting the initial snapshot. Events received
 while the read is pending are applied after it, preventing an older read from
@@ -91,9 +91,8 @@ function WindowStatus({ window }: { window: Window }) {
 ```
 
 The initial snapshot reads title, position, size, minimized state, front state,
-layer, and location concurrently. The hook follows move, resize, minimize,
-title, and front changes. Layer and location are read as stable properties of
-the current Window.
+and layer concurrently. The hook follows move, resize, minimize, title, and
+front changes. Layer is a stable property of the current Window.
 
 ## Lifetime and failures
 

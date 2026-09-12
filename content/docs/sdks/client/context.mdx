@@ -19,7 +19,8 @@ import { context } from "@phreshos/client"
 | `context.process()` | Current Process |
 | `context.name()` | Process name or `null` |
 | `context.parent()` | Parent Process or `null` |
-| `context.option(name)` | Immutable launch option or `undefined` |
+| `context.options()` | Every immutable launch option |
+| `context.options(name)` | One immutable launch option or `undefined` |
 | `context.isService()` | Whether this Client incarnation is a Service |
 | `context.stop()` | End this Client Endpoint incarnation |
 

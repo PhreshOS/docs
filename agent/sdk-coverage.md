@@ -85,7 +85,7 @@ reason. Content depth belongs inside this stable structure.
 | Node | `resolveHome`, `gatewayAddress` | SDKs / Node |
 | React | `ContextProvider`, `ContextProviderProperties`, `useContext`, `useProgram`, `useProcess`, `useParent` | SDKs / React |
 | React | `SystemProvider`, `SystemProviderProperties`, `useSystem`, `useSystemAppearance` | SDKs / React |
-| React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopSurface`, `useDesktopPreferences` | SDKs / React |
+| React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopViewport`, `useDesktopPreferences` | SDKs / React |
 | React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState` | SDKs / React |
 | React | `useSubscribe`, `useSubscribeAsks`, `AskSubscribable`, `useSubscribeAnswers`, `AnswerSubscribable` | SDKs / React |
 | React UI | `AppearanceProvider`, `AppearanceProviderProps`, `useAppearance`, `useTheme`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |

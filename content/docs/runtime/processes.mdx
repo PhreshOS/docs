@@ -19,8 +19,9 @@ fixed for its lifetime.
 | `client` | Permanent Client Endpoint handle |
 
 `program()` returns the owning Program. `parent()` returns the Process whose
-creation call produced this Process, or `null`. `option(name)` reads one
-immutable string launch option or returns `undefined`.
+creation call produced this Process, or `null`. `options()` returns every
+immutable launch option. `options(name)` returns one string option or
+`undefined`.
 
 An exited parent remains available as the same retained Process handle, whose
 `exited()` operation returns `true`. `null` means the Process never had a

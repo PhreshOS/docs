@@ -54,11 +54,11 @@ Every `Subscribable` exposes the same three operations:
 | --- | --- |
 | `subscribe(event, subscriber)` | Persistent registration and its cleanup |
 | `subscribe(subscriber)` | Persistent registration across correlated `{ event, message }` captures |
-| `waitFor(event, timeout?)` | Promise for the next matching message |
+| `wait(event, timeout?)` | Promise for the next matching message |
 | `events(event?, options?)` | Async iterator for one event or all correlated captures |
 
 Event iterator options are `{ signal, capacity }`. Capacity defaults to `64`;
-`Infinity` removes the queue bound. `waitFor()` uses ten seconds by default.
+`Infinity` removes the queue bound. `wait()` uses ten seconds by default.
 
 Subscriptions observe future messages and do not replay current state. A
 persistent registration ends only when its cleanup runs or its owning boundary
@@ -102,4 +102,4 @@ including destinations that an Endpoint subscription does not expose.
 Question and answer captures contain `event`, `questionId`, and `message`. The
 question message holds `{ to, payload }`; the answer message holds
 `{ to, outcome }`. Ordinary traffic remains available through `subscribe()`,
-`waitFor()`, and `events()`.
+`wait()`, and `events()`.

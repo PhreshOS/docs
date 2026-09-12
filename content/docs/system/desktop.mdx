@@ -12,7 +12,7 @@ representation.
 
 | Capability | Read | Change | Event |
 | --- | --- | --- | --- |
-| `desktop.surface` | `snapshot()` → `{ size: { width, height } }` | — | `resize` with the complete snapshot |
+| `desktop.viewport` | `snapshot()` → `{ size: { width, height } }` | — | `resize` with the complete snapshot |
 | `desktop.preferences` | `snapshot()` → `{ theme, animations }` | `update(preferences)` | `change` with the complete preferences |
 
 The Client may read both capabilities. Updating preferences requires
@@ -22,8 +22,7 @@ The Client may read both capabilities. Updating preferences requires
 ## Window state
 
 Every Client Endpoint owns a permanent `window` handle. Its authoritative state
-contains `title`, `position`, `size`, `minimized`, `front`, `layer`, and
-`location`.
+contains `title`, `position`, `size`, `minimized`, `front`, and `layer`.
 
 | Read | Mutation | Event |
 | --- | --- | --- |
@@ -34,7 +33,6 @@ contains `title`, `position`, `size`, `minimized`, `front`, `layer`, and
 | `minimized()` | `minimize(minimized?)` | `minimize` with the state |
 | `front()` | `raise()` | `front` with the state |
 | `layer()` | — | — |
-| `location()` | — | — |
 
 Calling `minimize()` without a value selects `true`. `raise()` brings the
 Window to the front of its own layer.

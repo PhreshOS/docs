@@ -18,7 +18,8 @@ Every Client and Server Context has the same execution operations:
 | `context.name()` | Current Process name, or `null` |
 | `context.parent()` | Parent Process visible to this Context, or `null` |
 | `context.program()` | Current Program handle |
-| `context.option(name)` | Immutable launch option, or `undefined` |
+| `context.options()` | Every immutable launch option |
+| `context.options(name)` | One immutable launch option, or `undefined` |
 | `context.isService()` | Whether this Endpoint incarnation is a Service |
 | `context.stop()` | End the current Endpoint incarnation |
 
