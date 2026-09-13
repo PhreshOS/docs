@@ -21,8 +21,8 @@ import { context, system } from "@phreshos/client"
 | `storage` | Access the native filesystem |
 | `uploads` | Read or create System uploads |
 | `appearance` | Read or replace System Appearance |
-| `fetch()` | Perform an outbound standard request |
-| `websocket()` | Open a standard WebSocket |
+| `network.fetch()` | Perform an outbound standard request |
+| `network.websocket()` | Open a standard WebSocket |
 | `shell()` | Stream an operating-system command |
 
 Every capability's complete operation contract lives under [System](/system).
@@ -41,19 +41,19 @@ corresponding permission.
 
 ```ts
 if (await context.permissions.allows("network", ["https://api.example.com"])) {
-  const response = await system.fetch("https://api.example.com/status")
+  const response = await system.network.fetch("https://api.example.com/status")
   console.log(await response.json())
 }
 ```
 
 ## Standard platform results
 
-`system.fetch()` accepts standard `RequestInfo | URL` and `RequestInit`, then
-returns a standard `Response`. `system.websocket()` returns the platform's
+`system.network.fetch()` accepts standard `RequestInfo | URL` and `RequestInit`, then
+returns a standard `Response`. `system.network.websocket()` returns the platform's
 standard `WebSocket` after its asynchronous authority boundary.
 
 ```ts
-const socket = await system.websocket("wss://events.example.com")
+const socket = await system.network.websocket("wss://events.example.com")
 
 socket.addEventListener("message", event => {
   console.log(event.data)

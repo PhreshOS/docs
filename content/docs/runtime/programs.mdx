@@ -21,8 +21,9 @@ root for declaration, resources, installation, startup, and live Processes.
 | `client` | Resolved Client declaration, or `null` |
 
 The Server and Client declarations expose their default `start` and `service`
-values. The Client declaration also exposes its resolved Window defaults and
-immutable permission declaration.
+values. The Client declaration also exposes its resolved Window defaults.
+Permission declarations seed persistent state during installation and are not
+runtime Program state.
 
 Only one current runtime Program occupies an identity. `assetId` changes when
 that runtime entity is replaced, allowing the System to distinguish its Client
@@ -60,7 +61,7 @@ contract.
 | `program.store` | Persistent key-value storage |
 | `program.database` | Writable Program SQL database |
 | `program.logs` | Read-only SQL access to captured Endpoint output |
-| `program.permissions` | Stored user grants belonging to this Program |
+| `program.permissions` | Authoritative permission state belonging to this Program |
 
 `startup.get()` returns the configured launch or `null`.
 `startup.enable(launch?)` stores a validated launch, and `startup.disable()`

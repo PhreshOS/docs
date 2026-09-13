@@ -17,14 +17,19 @@ into one canonical contract value or reject it; they do not contact the System.
 | `isPermissionName(value)` | Whether a value names a permission in the closed catalog |
 | `parsePermissionName(value)` | One permission name or an error |
 | `parsePermission(name, value)` | Canonical value for one exact permission |
-| `parseClientPermissions(value)` | Immutable declared Client grants |
+| `parseClientPermissionDeclarations(value)` | Canonical install-time Client permission declaration |
 | `parsePermissions(value)` | Stored Program grants |
 | `parseNetworkScope(value)` | Canonical network scope |
 | `networkScopeCovers(grant, request)` | Whether one network scope contains another |
 | `parseStorageScope(value)` | Canonical operation-and-path scope |
 | `describeStorageScope(value)` | Operations and path represented by a Storage scope |
 | `parseShellEvent(value)` | Canonical shell lifecycle event |
-| `createAppearanceSnapshot(value)` | Deeply frozen Appearance snapshot |
+| `parseProgramDefinition(value)` | Complete runtime Program definition |
+| `parseProgramSnapshot(value)` | Shared Program boundary state |
+| `parseProcessSnapshot(value)` | Shared Process boundary state |
+| `parseEndpointReference(value)` | Shared Endpoint address and owning Process state |
+| `parseAppearance(value)` | Validated, deeply frozen Appearance snapshot |
+| `createAppearanceSnapshot(value)` | Deeply frozen already-typed Appearance value |
 
 ```ts
 import {

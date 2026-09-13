@@ -67,11 +67,12 @@ reason. Content depth belongs inside this stable structure.
 | Core | `Context`, `EndpointContext`, `ClientContext`, `ServerContext`, `ContextMessage`, `ContextEvents`, `ContextCapture`, `Answerer` | Runtime / Context |
 | Core | `Window`, `LocalWindow`, their operations, state, events, geometry, layers, launch values, and transactions | System / Desktop |
 | Core | `Desktop`, surface snapshots and events, preferences, themes, and writable preference contracts | System / Desktop and Appearance |
-| Core | `Appearance` and all appearance value, source, event, limit, default, and trait exports | System / Appearance |
+| Core | `Appearance` and all appearance value, source, event, limit, default, and parser exports | System / Appearance |
 | Core | `Storage`, `StorageFile`, file/stat/read/write/transfer/list/space/watch/change/scope types and scope parsers | System / Storage |
 | Core | `SystemUploads`, `Upload`, `isUploadFile` | System / Storage |
 | Core | `System`, `SystemProgram`, `SystemProcess`, definitions, shell types, events, and `parseShellEvent` | System capability pages |
-| Core | Permission catalog, definitions, declarations, values, requests, stores, guards, and parsers | System / Security |
+| Core | Permission names, value domains, installation declarations, values, capabilities, guards, and parsers | System / Security |
+| System | Permission defaults, presentation, resolution policy, persistence, and enforcement | System / Security |
 | Core | Network scope, parser, and containment operation | System / Network and Security |
 | Core | `LogKind`, `LogRecord`, `LogSource`, `ProgramSql` | Runtime / Programs |
 | Core | `defineConfig`, `Config`, Client and Server configuration and development types | SDKs / Core |

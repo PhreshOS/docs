@@ -22,7 +22,7 @@ The Client may read both capabilities. Updating preferences requires
 ## Window state
 
 Every Client Endpoint owns a permanent `window` handle. Its authoritative state
-contains `title`, `position`, `size`, `minimized`, `front`, and `layer`.
+contains `title`, `position`, `size`, `minimized`, `maximized`, `front`, and `layer`.
 
 | Read | Mutation | Event |
 | --- | --- | --- |
@@ -31,18 +31,28 @@ contains `title`, `position`, `size`, `minimized`, `front`, and `layer`.
 | `size()` | `resize(size)` | `resize` with the size |
 | position and size | `setGeometry(geometry)` | `geometry` with both values |
 | `minimized()` | `minimize(minimized?)` | `minimize` with the state |
+| `maximized()` | `maximize(maximized?)` | `maximize` with the state |
 | `front()` | `raise()` | `front` with the state |
 | `layer()` | — | — |
 
-Calling `minimize()` without a value selects `true`. `raise()` brings the
+Calling `minimize()` or `maximize()` without a value selects `true`. `raise()` brings the
 Window to the front of its own layer.
 
 ## Geometry and layers
 
 Geometry accepts finite pixels or linear workspace-relative expressions such
 as `"1/2"`, `"50%"`, or `"50% + 10"`. `setGeometry()` commits position and
-size atomically. Filling the workspace is geometry, not a separate maximized
-domain state; the interface offering restoration owns the temporary geometry.
+size atomically.
+
+Presentation has one precedence order: minimized, maximized, then geometry.
+A minimized Window is hidden. Otherwise, a maximized Window fills its Desktop
+workspace; otherwise its stored geometry is displayed. Each Desktop resolves
+the workspace bounds locally.
+
+Both flags are independent. Maximizing never overwrites geometry, and restoring
+visibility never clears maximization. Geometry and maximization changes remain
+stored and observable while minimized. Clearing maximization reveals the current
+stored geometry, so restoration requires no separate saved rectangle.
 
 Numbers are absolute pixels. Percentages and fractions are relative values;
 addition and subtraction combine terms, while multiplication and division
@@ -65,10 +75,12 @@ representation of that Window:
 | `resize(size)` | Resize only the local representation |
 | `setGeometry(geometry)` | Change local position and size together |
 | `minimize(minimized?)` | Minimize or restore only the local representation |
-| `follow(window)` | Follow another permitted Window's geometry and minimized state |
-| `unfollow()` | Return to the representation held before following |
+| `maximize(maximized?)` | Maximize or restore only the local representation |
+| `changeTitle(title)` | Change only the local title |
+| `follow(window)` | Follow the supplied permitted authoritative Window |
+| `unfollow()` | Stop following and retain the current local state |
 | `raise()` | Bring the representation to the front of its current layer |
-| `transaction(transaction)` | Bind surface, geometry, minimize, and follow operations to visual timing |
+| `transaction(transaction)` | Bind Surface, geometry, minimize, maximize, and follow operations to visual timing |
 
 `AppearanceTransaction` requires both `duration` and `easing`. It is the same
 contract as `appearance.transaction`. `WaitedTransaction` adds `wait: true`;
@@ -76,10 +88,22 @@ that form makes the requested operation resolve after visual completion rather
 than after the Desktop accepts it. Easing accepts the standard CSS names or a
 four-number cubic Bézier tuple.
 
-Local operations publish no authoritative Window events and are accepted only
-for `under` or `over` Windows. Pointer gestures, measurements, snap previews,
-iframe references, and animation state remain local. Continuous dragging and
-resizing commit one authoritative request at the end. `raise()` has no
-transaction form because ordering is an immediate local fact rather than a
-visual interpolation. Direct local geometry or minimized-state changes end an
-active following relationship.
+Local operations return `Promise<void>`, have no reads or events, and change
+only the current Desktop representation. All layers accept the shared Window
+operations. Only `addSurface()` and `removeSurface()` are restricted to
+`under` and `over`, because standard windows already have a Desktop-owned Surface.
+
+Standard windows initially follow their own authoritative Window. Under and
+over windows start from authoritative state but remain unfollowed.
+`follow(window)` synchronizes to its supplied authoritative target and replaces
+any previous target. `unfollow()` preserves the current local state. A stopped
+target ends following without restoring an older rectangle.
+
+Local operations do not implicitly unfollow. Subsequent authoritative changes
+update only the properties that changed; a title change does not reset a local
+position override. Following does not copy the target's layer or Surface.
+
+Pointer gestures, measurements, snap previews, iframe references, and animation
+state remain local. Desktop gestures explicitly commit authoritative changes.
+`raise()` and `changeTitle()` have no transaction form; the remaining local
+operations accept visual timing through `transaction()`.

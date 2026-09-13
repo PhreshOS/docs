@@ -28,14 +28,17 @@ import {
 } from "@phreshos/core"
 ```
 
-The constructors make runtime identity testable with `instanceof`. Their
-interfaces define the operations; concrete SDKs provide the implementations.
+The abstract classes make runtime identity testable with `instanceof` and
+define the complete required contract. Concrete SDK classes extend them, so a
+breaking Core member change fails type checking until every implementation is
+updated.
 
 ## System domains
 
 | Domain | Meaning | Canonical reference |
 | --- | --- | --- |
 | System | Global capability root | [System](/system) |
+| Network | Outbound Fetch and WebSocket operations | [Network](/system/network) |
 | Storage and StorageFile | Directory and file locations within one filesystem boundary | [Storage](/system/storage) |
 | Desktop | One graphical environment's surface and preferences | [Desktop](/system/desktop) |
 | Window and LocalWindow | Authoritative and local Client presentation | [Desktop](/system/desktop) |
@@ -58,10 +61,3 @@ cleanup()
 
 [Communication](/runtime/communication) defines publications, subscriptions,
 iterators, questions, answers, traffic, and transferable boundary values.
-
-## Visual capability traits
-
-`Colorable`, `Sizable`, `Shapeable`, `Variantable`, and `Elevatable` describe
-semantic visual choices. They do not render components or define a styling
-system; a UI package selects the value domain accepted by each concrete
-component.

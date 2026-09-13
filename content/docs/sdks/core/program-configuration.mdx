@@ -86,10 +86,10 @@ client: {
 | Field | Meaning |
 | --- | --- |
 | `location` | Directory containing production Client resources |
-| `title`, `size`, `position`, `layer`, `minimize` | Initial Window values |
+| `title`, `size`, `position`, `layer`, `minimize`, `maximize` | Initial Window values |
 | `start` | Whether a default Process starts this Endpoint; defaults to `true` |
 | `service` | Whether the Endpoint starts as a Service; defaults to `false` |
-| `permissions` | Immutable initial Client grants from the closed permission catalog |
+| `permissions` | Values copied into `storage/permissions.json` during installation |
 | `development.url` | Fixed HTTP or HTTPS development address |
 | `development.startCommand` | Command that starts the development Client |
 

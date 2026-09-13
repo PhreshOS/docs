@@ -52,8 +52,8 @@ host capabilities. The Desktop represents that state graphically.
 | `appearance` | Read and replace authoritative Appearance |
 | `service(key)` | Stable communication address for one Endpoint Service |
 | `program.forceCreate(source)` | Replace one runtime Program without removing installed resources |
-| `fetch(input, init?)` | Outbound web request |
-| `websocket(url, protocols?)` | Outbound standard WebSocket connection |
+| `network.fetch(input, init?)` | Outbound web request |
+| `network.websocket(url, protocols?)` | Outbound standard WebSocket connection |
 | `shell(command, options?)` | Owned operating-system command stream |
 
 Client, Server, and Node implement this same contract. Authority may reject an

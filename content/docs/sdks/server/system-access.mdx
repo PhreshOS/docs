@@ -20,8 +20,8 @@ import { system } from "@phreshos/server"
 | `storage` | Access the native filesystem |
 | `uploads` | Read and create uploads |
 | `appearance` | Read and replace System Appearance |
-| `fetch()` | Perform an outbound standard request |
-| `websocket()` | Open a standard WebSocket |
+| `network.fetch()` | Perform an outbound standard request |
+| `network.websocket()` | Open a standard WebSocket |
 | `shell()` | Stream an operating-system command |
 
 ```ts
@@ -36,7 +36,7 @@ The operation contracts, defaults, and errors are documented under
 
 ## Local execution
 
-`fetch()`, `websocket()`, and `shell()` execute through native facilities of the
+`network.fetch()`, `network.websocket()`, and `shell()` execute through native facilities of the
 Server environment when that preserves the shared result. They still belong to
 the Server boundary: stopping the endpoint aborts attached requests, sockets,
 streams, and command trees.

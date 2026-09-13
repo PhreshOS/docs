@@ -11,11 +11,11 @@ request, response, or socket types.
 
 ## Fetch
 
-`system.fetch()` accepts `RequestInfo | URL` and optional `RequestInit`, then
+`system.network.fetch()` accepts `RequestInfo | URL` and optional `RequestInit`, then
 returns a standard `Response`.
 
 ```ts
-const response = await system.fetch("https://example.com/data.json", {
+const response = await system.network.fetch("https://example.com/data.json", {
   headers: { accept: "application/json" },
 })
 
@@ -34,13 +34,13 @@ permission is a System capability boundary, not a packet-level firewall.
 
 ## WebSocket
 
-`system.websocket()` accepts the same URL and optional protocols as the
+`system.network.websocket()` accepts the same URL and optional protocols as the
 standard `WebSocket` constructor. Its promise resolves with a native
 `WebSocket` in its ordinary `CONNECTING`, `OPEN`, `CLOSING`, or `CLOSED`
 lifecycle.
 
 ```ts
-const socket = await system.websocket("wss://example.com/events")
+const socket = await system.network.websocket("wss://example.com/events")
 
 socket.addEventListener("message", event => {
   console.log(event.data)
@@ -60,7 +60,7 @@ the `all` permission. Permission failure rejects the acquisition promise.
 ## Authority boundary
 
 Server and Node retain full System authority. Client permission checks govern
-only `system.fetch()` and `system.websocket()`; they do not redefine the
+only `system.network.fetch()` and `system.network.websocket()`; they do not redefine the
 browser's native `fetch()` or `WebSocket` APIs. Revoking a permission prevents
 future System operations but cannot revoke a `Response` or `WebSocket` already
 returned to the Client.

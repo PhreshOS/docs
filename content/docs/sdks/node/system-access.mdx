@@ -22,8 +22,8 @@ const system = await System.connect()
 | `storage` | Access the native filesystem |
 | `uploads` | Read and create uploads |
 | `appearance` | Read and replace System Appearance |
-| `fetch()` | Perform an outbound standard request |
-| `websocket()` | Open a standard WebSocket |
+| `network.fetch()` | Perform an outbound standard request |
+| `network.websocket()` | Open a standard WebSocket |
 | `shell()` | Stream an operating-system command |
 
 ```ts
@@ -41,13 +41,13 @@ rename or narrow them.
 When crossing the gateway would make no observable difference, Node executes a
 capability directly while keeping it attached to the connection lifetime:
 
-- `fetch()` uses the Node standard Fetch implementation.
-- `websocket()` creates the Node standard WebSocket.
+- `network.fetch()` uses the Node standard Fetch implementation.
+- `network.websocket()` creates the Node standard WebSocket.
 - `shell()` supervises the native command tree.
 - `storage` enters at the operating-system user's home directory.
 
 ```ts
-const response = await system.fetch("https://api.example.com/status")
+const response = await system.network.fetch("https://api.example.com/status")
 console.log(response.status)
 
 for await (const event of system.shell("node --version")) {

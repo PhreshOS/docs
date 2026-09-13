@@ -1,6 +1,6 @@
 ---
 title: Permissions
-description: Inspect effective Client authority and request owner grants.
+description: Inspect stored Client authority and request owner decisions.
 ---
 
 Client permissions expand authority for later Client operations. Permission
@@ -9,13 +9,14 @@ invent either one.
 
 ## Context permissions
 
-`context.permissions` combines immutable Program declarations, stored owner
-grants, and implied authority when checking the current execution.
+`context.permissions` reads and checks the Program's authoritative stored
+permissions. Program declarations are copied into that state during
+installation; they are not consulted as another live permission layer.
 
 | Operation | Result |
 | --- | --- |
-| `get(name)` | Stored user value only: a canonical list, `false`, or `null` |
-| `allows(name, value?)` | Whether effective authority covers the request |
+| `get(name)` | Exact stored assignment: a canonical list, `false`, or `null` |
+| `allows(name, value?)` | Whether current stored authority covers the request |
 | `request(name, value?)` | Requested canonical list, `false`, or `null` |
 | `timeout(milliseconds).request(...)` | The same request with another deadline |
 
@@ -30,14 +31,15 @@ if (!await context.permissions.allows("network", scope)) {
 }
 ```
 
-Requests wait for up to two minutes by default. If existing authority already
-covers a narrower request, `request()` returns exactly the requested canonical
-scope without prompting or changing stored grants.
+Requests wait for up to two minutes by default. Every call asks the owner, even
+when current authority already covers a narrower request. Approval replaces
+that exact permission and returns its canonical value. Denial or dismissal
+returns `false` or `null` without changing storage.
 
 ## Program permissions
 
-`program.permissions` manages stored owner grants belonging to that Program.
-It does not include immutable declarations or temporary Context state.
+`program.permissions` directly manages the only permission state belonging to
+that Program: `storage/permissions.json`.
 
 | Operation | Result |
 | --- | --- |
@@ -62,8 +64,13 @@ retain owner-level System access.
 
 `true` is assignment and request shorthand for a permission's default list. It
 is resolved before storage or return. Arrays are unordered sets and duplicate
-values are removed. `false` records denial, while `null` represents the absence
-of a resolved stored value and belongs to `delete()` rather than `set()`.
+values are removed. `false` records denial, while `null` represents no stored
+assignment and belongs to `delete()` rather than `set()`.
+
+An explicit assignment has priority over broader fallbacks. `programs` supplies
+an unassigned `services` permission, and `all` supplies other unassigned
+permissions. Consequently, approving a narrower exact request genuinely
+restricts that capability.
 
 [Security](/system/security) defines every permission, its value grammar,
-implied grants, declarations, and exact operation coverage.
+installation seeding, fallback authority, and exact operation coverage.
