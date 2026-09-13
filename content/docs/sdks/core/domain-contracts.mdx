@@ -28,10 +28,8 @@ import {
 } from "@phreshos/core"
 ```
 
-The abstract classes make runtime identity testable with `instanceof` and
-define the complete required contract. Concrete SDK classes extend them, so a
-breaking Core member change fails type checking until every implementation is
-updated.
+Client, Server, and Node expose these same Core domain contracts. Use
+`instanceof` with the exported classes to identify their runtime domain objects.
 
 ## System domains
 

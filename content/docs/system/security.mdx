@@ -24,11 +24,13 @@ nonexistent one; a hidden sender or destination is represented as `null`.
 Permissions come from the closed Core catalog. A Program cannot invent a
 permission name or a value outside that permission's value domain.
 
-Initial values may be declared under `client.permissions`. Each Program creation
-atomically replaces `storage/permissions.json` with that declaration; an omitted
-declaration produces an empty set. The file is the source of truth for subsequent
-permission operations. Reconstructing an installed Program during System startup
-reads its stored permissions.
+Values may be declared under `client.permissions`. During creation and
+installation, each declared entry replaces that permission's stored value in
+`storage/permissions.json`; unrelated entries remain unchanged. Empty or omitted
+declarations neither create nor modify the file. Nonempty declarations create
+the file when absent and atomically write the resulting permission set.
+The file is the source of truth for subsequent permission operations.
+Reconstructing an installed Program during System startup reads its stored permissions.
 
 The current catalog is:
 

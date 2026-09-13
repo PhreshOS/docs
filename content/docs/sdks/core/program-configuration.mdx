@@ -38,8 +38,8 @@ export default defineConfig({
 | `categories`, `keywords`, `website` | Catalog metadata |
 | `buildCommand` | Command executed before production start, install, and pack |
 | `options` | Default string-valued Process options; explicit launch values override matching keys |
-| `startup` | `boolean \| Launch`, default `false`; an active declaration replaces stored startup during installation or update |
-| `launch` | `true \| Launch`; writes the icon launch at Program creation, while omission preserves stored configuration |
+| `startup` | `true \| Launch`, optional; writes the stored startup at creation and installation when supplied |
+| `launch` | `true \| Launch`, optional; writes the stored icon launch at creation and installation when supplied |
 | `server`, `client` | Endpoint declarations; at least one is required |
 
 ```ts
@@ -53,8 +53,8 @@ export default defineConfig({
 ```
 
 The startup Process receives `{ language: "en", document: "welcome.txt" }`.
-Use `startup: true` to store a launch with all defaults. `false` or omission
-leaves stored startup untouched during installation or update. See
+For both `startup` and `launch`, `true` stores `{}`, an object stores that Launch,
+and `undefined` or omission leaves the saved configuration untouched at creation and installation. See
 [Program startup](/runtime/programs#owned-capabilities) for persistence and
 execution behavior.
 
@@ -112,7 +112,7 @@ client: {
 | `title`, `size`, `position`, `layer`, `minimize`, `maximize` | Initial Window values |
 | `start` | Whether a default Process starts this Endpoint; defaults to `true` |
 | `service` | Whether the Endpoint starts as a Service; defaults to `false` |
-| `permissions` | Values replacing `storage/permissions.json` during Program creation |
+| `permissions` | Declared entries applied to `storage/permissions.json` at creation and installation; unrelated entries are preserved |
 | `development.url` | Fixed HTTP or HTTPS development address |
 | `development.startCommand` | Command that starts the development Client |
 
