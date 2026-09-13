@@ -11,7 +11,7 @@ invent either one.
 
 `context.permissions` reads and checks the Program's authoritative stored
 permissions. Program declarations are copied into that state during
-installation; they are not consulted as another live permission layer.
+Program creation; they are not consulted as another live permission layer.
 
 | Operation | Result |
 | --- | --- |
@@ -67,10 +67,9 @@ is resolved before storage or return. Arrays are unordered sets and duplicate
 values are removed. `false` records denial, while `null` represents no stored
 assignment and belongs to `delete()` rather than `set()`.
 
-An explicit assignment has priority over broader fallbacks. `programs` supplies
-an unassigned `services` permission, and `all` supplies other unassigned
+An explicit assignment has priority over `all`, which supplies unassigned
 permissions. Consequently, approving a narrower exact request genuinely
 restricts that capability.
 
 [Security](/system/security) defines every permission, its value grammar,
-installation seeding, fallback authority, and exact operation coverage.
+creation-time seeding, fallback authority, and exact operation coverage.

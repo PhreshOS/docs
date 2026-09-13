@@ -14,7 +14,7 @@ authentication method.
 ## Client authority
 
 A Client can access its own Program, that Program's Processes and resources,
-Services belonging to that Program, read-only Appearance, Desktop viewport and
+read-only Appearance, Desktop viewport and
 preferences, and its Context capabilities. It cannot enlarge authority by
 fabricating an identity or message. An inaccessible handle behaves like a
 nonexistent one; a hidden sender or destination is represented as `null`.
@@ -24,19 +24,19 @@ nonexistent one; a hidden sender or destination is represented as `null`.
 Permissions come from the closed Core catalog. A Program cannot invent a
 permission name or a value outside that permission's value domain.
 
-Initial values may be declared under `client.permissions`. Installation copies
-that declaration into the Program's `storage/permissions.json`, atomically replacing
-the entire permission set. Removed grants are not retained; an omitted
-declaration produces an empty set. From that point onward, the file is the only source
-of truth. The declaration is not a second live grant and reinstalling resets
-owner changes to the newly installed declaration.
+Initial values may be declared under `client.permissions`. Each Program creation
+atomically replaces `storage/permissions.json` with that declaration; an omitted
+declaration produces an empty set. The file is the source of truth for subsequent
+permission operations. Reconstructing an installed Program during System startup
+reads its stored permissions.
 
 The current catalog is:
 
 | Permission | Values | Default | Authority |
 | --- | --- | --- | --- |
 | `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs |
-| `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, resources, and Services |
+| `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, and resources |
+| `layers` | `under`, `over` | `[]` | Both restricted Window layers, or only the listed layers, in Client launch requests |
 | `network` | Network scopes | `[]` | Every System request target, or only targets covered by the listed scopes |
 | `storage` | Storage scopes | `[]` | Every native path and operation, or selected operation-and-path scopes |
 | `uploads` | None | `[]` | Create values in the public uploads collection |
@@ -45,10 +45,21 @@ The current catalog is:
 | `all` | None | `[]` | Fallback authority for every permission without an exact assignment, plus unrestricted Client capabilities |
 
 For `services` and `programs`, an empty list means every Program; a non-empty
-list is an unordered set of selected Program identities. A `programs`
-assignment supplies Service access for the same Programs only when `services`
-has no explicit assignment. Creating or force-creating
-a Program and forking a Program require the unrestricted `programs: []` grant.
+list is an unordered set of selected Program identities. Each permission governs
+its own domain. Creating or force-creating a Program requires `all`.
+
+Every Client Service access requires a `services` grant covering the addressed
+Program, or the applicable `all` fallback. This applies equally to Services
+belonging to the caller's Program and to other Programs.
+
+For `layers`, an empty list permits both `under` and `over`; a selected list
+permits only its listed layers. A Client's explicit layer selection is checked
+by `program.process.create()`, `program.process.findOrCreate()`,
+`program.process.run()`, `program.startup.enable()`, `program.launch.set()`, and
+`process.client.start()` before launching or storing the request. The `window`
+layer is unrestricted and is not a permission value. Omitted layers use the
+existing launch defaults. Owner-initiated launches and execution of stored
+startup configurations use owner authority.
 
 For `network`, an empty list means every request target. A non-empty list contains
 canonical scopes used only by `system.network.fetch()` and `system.network.websocket()`:
@@ -111,7 +122,8 @@ permissions: {
 ```
 
 `true` is assignment and request shorthand for the permission's default value.
-It therefore selects every Program for `services` and `programs`, every request
+It therefore selects every Program for `services` and `programs`, both restricted
+layers for `layers`, every request
 target for `network`, every native path and operation for `storage`, and the
 canonical present value for value-less permissions such as `uploads`.
 
@@ -122,9 +134,8 @@ Client iframe. An explicit assignment for a permission takes priority over
 
 `context.permissions.get()` returns the exact stored assignment.
 `context.permissions.allows()` checks the current stored authority without
-prompting or changing it. Exact assignments take priority, then `programs` may
-supply an unassigned `services` permission, and finally `all` may supply any
-other unassigned permission.
+prompting or changing it. Exact assignments take priority, then `all` may supply
+an unassigned permission.
 `context.permissions.request()` returns only the permission: the requested
 canonical list when granted, `false` when denied, or `null` when unresolved.
 Every request asks the owner, including a request narrower than current
@@ -151,7 +162,7 @@ minutes by default, and `timeout()` selects another deadline.
 
 `set()` accepts `true`, an allowed value set, or `false`; `null` belongs to
 `delete()`. A permission declaration accepts only `true` or an allowed value
-set and is copied only during installation. Arrays are canonicalized as
+set and is copied during Program creation. Arrays are canonicalized as
 unordered sets.
 
 `set()` and `delete()` are commands returning `Promise<void>`; failure rejects.
@@ -159,10 +170,10 @@ The System propagates resulting access changes to every Client Process of that
 Program. Program permission management from a Client is itself
 available only with `all`.
 
-For example, if a Program has `programs: []` and the owner approves
+For example, if a Program has `all: []` and the owner approves
 `context.permissions.request("services", ["browser"])`, the System stores and
 returns `services: ["browser"]`. That explicit Service assignment now restricts
-Service access even though `programs` remains broad.
+Service access even though `all` remains present.
 
 Asynchronous operations reject with `Execution is not permitted` when authority
 is missing. Synchronous operations that cannot report failure remain silent.

@@ -22,7 +22,7 @@ root for declaration, resources, installation, startup, and live Processes.
 
 The Server and Client declarations expose their default `start` and `service`
 values. The Client declaration also exposes its resolved Window defaults.
-Permission declarations seed persistent state during installation and are not
+Permission declarations seed persistent state during Program creation and are not
 runtime Program state.
 
 Only one current runtime Program occupies an identity. `assetId` changes when
@@ -44,10 +44,9 @@ three messages are the affected Program. `uninstall` sends
 `{ program, everything }`.
 
 A Client always sees its own Program. The `programs` permission grants selected
-Programs and their domain trees, except stored permission administration; an
-empty list grants every Program and also permits Program creation,
-force-creation, and forking. A selected list does not permit those three
-operations. See [Security](/system/security) for the complete authority
+Programs and their Processes, Endpoints, Windows, and resources. Service access
+uses `services`; Program creation, force-creation, and stored permission
+administration require `all`. See [Security](/system/security) for the complete authority
 contract.
 
 ## Owned capabilities
@@ -56,12 +55,32 @@ contract.
 | --- | --- |
 | `program.process` | List, create, run, and observe this Program's Processes |
 | `program.startup` | Read, enable, or disable one persistent Process launch |
+| `program.launch` | Read or replace the saved Process launch used when opening the Program icon |
 | `program.data` | Durable filesystem storage |
 | `program.cache` | Disposable filesystem storage |
 | `program.store` | Persistent key-value storage |
 | `program.database` | Writable Program SQL database |
 | `program.logs` | Read-only SQL access to captured Endpoint output |
 | `program.permissions` | Authoritative permission state belonging to this Program |
+
+`launch.get()` returns the saved [Launch](/runtime/processes#launch) or `null`.
+`launch.set(launch)` replaces `storage/launch.json` without creating a Process.
+It accepts a Launch object, including `{}` for an empty launch.
+
+The Program declaration accepts `launch: true` to write `{}`, or `launch: { ... }`
+to write that configuration when the Program is created. Omission leaves an
+existing file untouched. Reconstruction and installation of an existing Program
+preserve its stored launch.
+
+Opening the Program icon reads this saved configuration and creates a Process
+with it. If no configuration is saved, it creates a Process with `{}`. Other
+Process launches use their own supplied Launch. In every case, unspecified
+values fall back to the Program's Endpoint declarations and default options.
+
+```ts
+await program.launch.set({ options: { document: "welcome.txt" } })
+const saved = await program.launch.get()
+```
 
 `startup.get()` returns the configured launch or `null`.
 `startup.enable(launch?)` stores a validated launch, and `startup.disable()`
@@ -70,9 +89,9 @@ installed Program can enable startup.
 
 The Program declaration accepts `startup: true` for a default launch or
 `startup: { ... }` for a [Launch](/runtime/processes#launch). The default is
-`false`. Each installation or update replaces `storage/startup.json` from
-this declaration: `true` stores `{}`, an object stores that launch, and
-`false` or omission removes the previous file, including owner edits.
+`false`. During installation or update, `true` replaces `storage/startup.json`
+with `{}`, and an object replaces it with that launch. `false` or omission leaves
+the file untouched. The stored file determines actual startup behavior.
 
 Enabled startup creates one Process immediately after installation and again
 when the System starts. Creating an uninstalled Program does not trigger it.
@@ -89,12 +108,11 @@ installation stream reports the failure. The stored launch remains enabled.
 | `install()` | Async generator of exact `stdout` and `stderr` command chunks |
 | `uninstall(everything?)` | Async generator of cleanup command chunks |
 | `forget()` | End Processes and remove only the runtime entity |
-| `fork(identity)` | Create another Program under a new identity |
 
 `uninstall()` preserves Program storage unless `everything` is `true`.
-Installation replaces the complete stored permission set from the new
-declaration; removed permissions do not survive an update. Other Program
-data is preserved. See [Security](/system/security).
+Program creation replaces the complete stored permission set from its
+declaration. Installation preserves stored permissions and other Program data.
+See [Security](/system/security).
 `system.program.forceCreate(source)` is the Program-domain operation for replacing
 the current runtime entity while preserving installed files and storage.
 
