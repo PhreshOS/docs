@@ -58,7 +58,7 @@ for await (const event of lifecycle) {
 Program, and returns its attached Process lifecycle generator. Await the method
 before iterating the generator.
 
-`options.options` supplies immutable Process launch options. `options.signal`
+`options.options` overrides the Program's default Process options. `options.signal`
 aborts the attached Process and iteration.
 
 ## Start development

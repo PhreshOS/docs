@@ -25,8 +25,9 @@ Permissions come from the closed Core catalog. A Program cannot invent a
 permission name or a value outside that permission's value domain.
 
 Initial values may be declared under `client.permissions`. Installation copies
-that declaration into the Program's `storage/permissions.json`, overwriting any
-previous permission file. From that point onward, the file is the only source
+that declaration into the Program's `storage/permissions.json`, atomically replacing
+the entire permission set. Removed grants are not retained; an omitted
+declaration produces an empty set. From that point onward, the file is the only source
 of truth. The declaration is not a second live grant and reinstalling resets
 owner changes to the newly installed declaration.
 

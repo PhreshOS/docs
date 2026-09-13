@@ -52,6 +52,12 @@ Service roles, Client Window overrides, and immutable string options. Omitting
 an Endpoint selection uses its declaration default. Reusing a live Process name
 with a different launch rejects.
 
+The Program's top-level `options` supplies default string values. Explicit
+launch options override matching keys; omitted keys retain their defaults.
+The resulting options are fixed for the Process lifetime and readable by
+both Endpoints. This applies to every launch, including startup and attached
+development runs.
+
 ```ts
 const process = await program.process.create({
   name: "main",

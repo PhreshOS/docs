@@ -37,7 +37,24 @@ export default defineConfig({
 | `agent` | Program-relative `agent.md` path |
 | `categories`, `keywords`, `website` | Catalog metadata |
 | `buildCommand` | Command executed before production start, install, and pack |
+| `options` | Default string-valued Process options; explicit launch values override matching keys |
+| `startup` | `boolean \| Launch`, default `false`; replaces stored startup on each installation or update |
 | `server`, `client` | Endpoint declarations; at least one is required |
+
+```ts
+export default defineConfig({
+  identity: "example",
+  options: { language: "en", document: "default.txt" },
+  startup: { options: { document: "welcome.txt" } },
+  client: { location: "dist/client" },
+})
+```
+
+The startup Process receives `{ language: "en", document: "welcome.txt" }`.
+Use `startup: true` to launch with all defaults. Removing `startup` disables
+the previously stored launch on the next installation or update. See
+[Program startup](/runtime/programs#owned-capabilities) for persistence and
+execution behavior.
 
 ## Server declaration
 

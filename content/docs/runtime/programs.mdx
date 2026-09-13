@@ -68,6 +68,17 @@ contract.
 removes it without changing the Program or its current Processes. Only an
 installed Program can enable startup.
 
+The Program declaration accepts `startup: true` for a default launch or
+`startup: { ... }` for a [Launch](/runtime/processes#launch). The default is
+`false`. Each installation or update replaces `storage/startup.json` from
+this declaration: `true` stores `{}`, an object stores that launch, and
+`false` or omission removes the previous file, including owner edits.
+
+Enabled startup creates one Process immediately after installation and again
+when the System starts. Creating an uninstalled Program does not trigger it.
+If startup fails after installation, the Program remains installed and the
+installation stream reports the failure. The stored launch remains enabled.
+
 ## Operations
 
 | Operation | Result |
@@ -81,6 +92,9 @@ installed Program can enable startup.
 | `fork(identity)` | Create another Program under a new identity |
 
 `uninstall()` preserves Program storage unless `everything` is `true`.
+Installation replaces the complete stored permission set from the new
+declaration; removed permissions do not survive an update. Other Program
+data is preserved. See [Security](/system/security).
 `system.program.forceCreate(source)` is the Program-domain operation for replacing
 the current runtime entity while preserving installed files and storage.
 
