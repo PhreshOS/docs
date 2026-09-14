@@ -30,6 +30,10 @@ Installation resolves the official stable release for the current platform,
 installs its files, registers the native service, starts it, waits for gateway
 readiness, and reports the Desktop address.
 
+`phresh system install --purge` deletes the selected `PHRESHOS_HOME` after
+stopping the service and before activating the installed System. This permanently
+removes existing Programs, settings, and other System data.
+
 ## Inspect and operate
 
 ```sh
@@ -56,3 +60,5 @@ phresh system uninstall
 System uninstall stops and unregisters the service and removes installed
 release files. Persistent System data remains available for a later
 installation.
+
+`phresh system uninstall --purge` also deletes the selected `PHRESHOS_HOME`.

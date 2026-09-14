@@ -37,7 +37,6 @@ export default defineConfig({
 | `agent` | Program-relative `agent.md` path |
 | `categories`, `keywords`, `website` | Catalog metadata |
 | `buildCommand` | Command executed before production start, install, and pack |
-| `options` | Default string-valued Process options; explicit launch values override matching keys |
 | `startup` | `true \| Launch`, optional; writes the stored startup at creation and installation when supplied |
 | `launch` | `true \| Launch`, optional; writes the stored icon launch at creation and installation when supplied |
 | `server`, `client` | Endpoint declarations; at least one is required |
@@ -45,22 +44,20 @@ export default defineConfig({
 ```ts
 export default defineConfig({
   identity: "example",
-  options: { language: "en", document: "default.txt" },
   startup: { options: { document: "welcome.txt" } },
   launch: { options: { document: "home.txt" } },
   client: { location: "dist/client" },
 })
 ```
 
-The startup Process receives `{ language: "en", document: "welcome.txt" }`.
+The startup Process receives `{ document: "welcome.txt" }`.
 For both `startup` and `launch`, `true` stores `{}`, an object stores that Launch,
 and `undefined` or omission leaves the saved configuration untouched at creation and installation. See
 [Program startup](/runtime/programs#owned-capabilities) for persistence and
 execution behavior.
 
-The icon launch receives `{ language: "en", document: "home.txt" }`. This saved
-configuration is separate from defaults: an independently supplied Launch uses
-its own overrides. See [Program launch configuration](/runtime/programs#owned-capabilities).
+The icon launch receives `{ document: "home.txt" }`. An independently supplied
+Launch uses its own options. See [Program launch configuration](/runtime/programs#owned-capabilities).
 
 ## Server declaration
 

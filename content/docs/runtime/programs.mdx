@@ -41,7 +41,7 @@ assets without changing the public identity.
 
 The collection emits `create`, `forget`, `install`, and `uninstall`. The first
 three messages are the affected Program. `uninstall` sends
-`{ program, everything }`.
+`{ program, purge }`.
 
 A Client always sees its own Program. The `programs` permission grants selected
 Programs and their Processes, Endpoints, Windows, and resources. Service access
@@ -78,7 +78,7 @@ unrelated permissions. Empty or omitted permissions leave the file untouched.
 Opening the Program icon reads this saved configuration and creates a Process
 with it. If no configuration is saved, it creates a Process with `{}`. Other
 Process launches use their own supplied Launch. In every case, unspecified
-values fall back to the Program's Endpoint declarations and default options.
+Endpoint values fall back to the Program's Endpoint declarations.
 
 ```ts
 await program.launch.set({ options: { document: "welcome.txt" } })
@@ -104,12 +104,30 @@ installation stream reports the failure. The stored launch remains enabled.
 | `icon(size?)` | `small`, `medium`, or `large` PNG icon as a `Blob`; `medium` is the default |
 | `agent()` | Declared agent document or `null` |
 | `installed()` | Whether an installed form currently exists |
-| `install()` | Async generator of exact `stdout` and `stderr` command chunks |
-| `uninstall(everything?)` | Async generator of cleanup command chunks |
+| `install({ launch, purge }?)` | Async generator of `stdout` and `stderr` command chunks |
+| `uninstall({ purge }?)` | Async generator of cleanup command chunks |
 | `forget()` | End Processes and remove only the runtime entity |
 
-`uninstall()` preserves Program storage unless `everything` is `true`.
-Creation and installation apply declared settings while preserving other Program data.
+`install()` keeps existing Processes alive through the install command. System
+ends them immediately before switching the registered Program to the installed
+configuration and paths. The generator completes without a return value.
+
+`launch: true` requests a Process with an empty Launch; a Launch object selects
+its configuration. System creates this Process after installation, before
+startup, even if the installing caller has ended. A requested launch failure
+throws without rolling back the completed installation.
+
+```ts
+for await (const chunk of program.install({ launch: { name: "editor", replace: true } })) {
+  console.log(chunk.text)
+}
+```
+
+For installation, `purge: true` deletes existing installed Program storage before
+applying declaration settings. Source-project storage is not copied or deleted.
+For uninstallation, `purge: true` also ends Processes, deletes installed storage,
+and removes the runtime Program. Omission preserves storage.
+Creation and installation apply declared settings.
 See [Security](/system/security).
 `system.program.forceCreate(source)` is the Program-domain operation for replacing
 the current runtime entity while preserving installed files and storage.
@@ -117,7 +135,7 @@ the current runtime entity while preserving installed files and storage.
 ## Events
 
 An individual Program emits `forget` with `undefined` and `uninstall` with the
-`everything` boolean. Process membership events belong to `program.process`,
+`purge` boolean. Process membership events belong to `program.process`,
 not to the Program root.
 
 ## Runtime forms

@@ -68,15 +68,19 @@ phresh install terminal --run
 Without a name, `install` builds and installs the current project. A name
 selects a verified official release. The System executes the Program's
 [stored startup](/runtime/programs#owned-capabilities) after installation.
-`--run` explicitly creates an additional Process after successful installation.
+`--run` requests a Process created by System after successful installation,
+before startup.
+
+`phresh install --purge` deletes existing installed Program storage.
+Source-project storage is left untouched.
 
 ```sh
 phresh uninstall
-phresh uninstall terminal --everything
+phresh uninstall terminal --purge
 ```
 
 Uninstalling normally removes installed files while preserving Processes, data,
-and retained runtime state. `--everything` removes those Program-owned values
+and retained runtime state. `--purge` removes those Program-owned values
 as well.
 
 ## Package

@@ -58,7 +58,7 @@ for await (const event of lifecycle) {
 Program, and returns its attached Process lifecycle generator. Await the method
 before iterating the generator.
 
-`options.options` overrides the Program's default Process options. `options.signal`
+`options.options` supplies the Process's immutable string options. `options.signal`
 aborts the attached Process and iteration.
 
 ## Start development
@@ -89,9 +89,13 @@ for await (const output of installation) {
 }
 ```
 
-`install()` builds, force-creates the production Program, and returns the
+`install(system, options?)` builds, force-creates the production Program, and returns the
 Program installation generator. Installation output remains streamed rather
 than being consumed internally by Project.
+
+The options are the same as [Program installation](/runtime/programs):
+`launch` requests a Process after installation, before startup, and `purge`
+deletes existing installed Program storage.
 
 ## Package a release
 

@@ -63,8 +63,9 @@ The taskbar remains above them.
 
 The `wallpaper` layer fills the Desktop's wallpaper area without window chrome.
 The System permits one running Client Endpoint in this layer at a time. A
-second launch is rejected, leaving the existing Endpoint running. This applies
-to both Process creation and starting a Client Endpoint in an existing Process.
+new launch terminates the entire Process occupying the layer before starting
+the replacement. This applies to both Process creation and starting a Client
+Endpoint in an existing Process.
 
 While that Client runs, Desktop displays it instead of the Appearance wallpaper.
 When it stops, Desktop returns to the Appearance wallpaper. The wallpaper role

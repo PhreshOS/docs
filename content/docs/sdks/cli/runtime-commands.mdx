@@ -46,6 +46,10 @@ Launch flags preserve the human-facing syntax and are translated into Core's
 incarnations. `--no-server` and `--no-client` disable an Endpoint for that
 Process. Run options use repeatable `--option name=value` values.
 
+`--name main --replace` ends the existing Process named `main` within the
+selected Program before creating its replacement. This applies to both
+`process create` and `process findOrCreate`.
+
 ## Endpoint
 
 | Command | Operation |

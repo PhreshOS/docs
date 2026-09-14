@@ -49,12 +49,16 @@ System-wide collection.
 
 A launch selects a Process name, which declared Endpoints start, per-incarnation
 Service roles, Client Window overrides, and immutable string options. Omitting
-an Endpoint selection uses its declaration default. Reusing a live Process name
-with a different launch rejects.
+an Endpoint selection uses its declaration default.
 
-The Program's top-level `options` supplies default string values. Explicit
-launch options override matching keys; omitted keys retain their defaults.
-The resulting options are fixed for the Process lifetime and readable by
+With `name` and `replace: true`, creating a Process terminates the existing
+Process with that name in the same Program, then creates its replacement.
+Replacement requires a name. Concurrent replacement requests are serialized.
+Without replacement, creating a duplicate name rejects; `findOrCreate` returns
+the existing Process only when its resolved launch matches.
+
+`options` supplies this Launch's string values and defaults to `{}`.
+These options are fixed for the Process lifetime and readable by
 both Endpoints. This applies to every launch, including startup and attached
 development runs.
 
