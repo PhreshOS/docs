@@ -13,7 +13,7 @@ contract.
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | None | Visible action content |
 | `onPress` | `() => void` | None | Normalized activation callback |
-| `color` | `ControlColor` | Neutral | Base semantic or direct color |
+| `color` | `ControlColor` | `default:base` | Base semantic or direct color |
 | `size` | `ScaleLevel` | `medium` | Height, spacing, gap, and font-size level |
 | `radius` | `Radius` | Appearance radius | Semantic or direct corner radius |
 | `material` | `MaterialOptions` | Appearance material | Surface material overrides |
@@ -27,7 +27,7 @@ native styles, class name, and the ref to its native `HTMLButtonElement`.
 <ComponentPreview>
   <Preview>
     <Flex align="center" gap="medium" wrap>
-      <Button>Neutral</Button>
+      <Button>Default</Button>
       <Button color="primary:base">Primary</Button>
       <Button color="danger:base">Delete</Button>
       <Button disabled>Disabled</Button>
@@ -41,7 +41,7 @@ native styles, class name, and the ref to its native `HTMLButtonElement`.
 
     export default function Actions() {
       return <>
-        <Button>Neutral</Button>
+        <Button>Default</Button>
         <Button color="primary:base">Primary</Button>
         <Button color="danger:base">Delete</Button>
         <Button disabled>Disabled</Button>
@@ -55,7 +55,7 @@ native styles, class name, and the ref to its native `HTMLButtonElement`.
 
 ## Interaction
 
-A neutral Button derives its paint from Appearance background and foreground.
+A Button without `color` derives its paint from Appearance's `default` color.
 Supplying `color` selects another base paint. The component chooses its text
 contrast from that base color once; hover and pressed shades do not recalculate
 the text color or change the Button's geometry.
