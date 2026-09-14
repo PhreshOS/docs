@@ -44,10 +44,12 @@ three messages are the affected Program. `uninstall` sends
 `{ program, purge }`.
 
 A Client always sees its own Program. The `programs` permission grants selected
-Programs and their Processes, Endpoints, Windows, and resources. Service access
-uses `services`; Program creation, force-creation, and stored permission
-administration require `all`. See [Security](/system/security) for the complete authority
-contract.
+Programs and their Processes, Endpoints, Windows, Services, and resources. A
+Client also accesses its own Program's Services without a permission. The
+narrower `services` permission grants foreign Service access without granting
+access to the owning Program. Program creation, force-creation, and stored
+permission administration require `all`. See [Security](/system/security) for
+the complete authority contract.
 
 ## Owned capabilities
 

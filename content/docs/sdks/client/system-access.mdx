@@ -30,14 +30,16 @@ This page defines only what changes at the Client boundary.
 
 ## Default authority
 
-Without additional permissions, a Client can access its own Program, Processes
-and resources belonging to that Program. It may read Appearance, Desktop state,
-and existing uploads.
+Without additional permissions, a Client can access its own Program and the
+Processes, Services, and resources belonging to that Program. It may read
+Appearance, Desktop state, and existing uploads.
 
-Access to other Programs, Services, native Storage, outbound System
-networking, upload creation, Appearance updates, Desktop preference updates,
-restricted layer selections, shell execution, and unrestricted Program permission management requires the
-corresponding permission.
+Access to another Program also covers its Services. A narrower `services`
+permission can grant only those Services without exposing the Program. Native
+Storage, outbound System networking, upload creation, Appearance updates,
+Desktop preference updates, restricted layer selections, shell execution, and
+unrestricted Program permission management require their corresponding
+permissions.
 
 ```ts
 if (await context.permissions.allows("network", ["https://api.example.com"])) {

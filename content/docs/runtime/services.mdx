@@ -32,9 +32,11 @@ const exact = system.service({
 `system.service(key)` synchronously creates or reuses the canonical handle. It
 does not discover providers, list Services, start a Process, or imply readiness.
 
-Client access uses the `services` permission for the addressed Program.
-An empty list means every Program. See [Security](/system/security) for
-the complete authority contract.
+A Client can address Services belonging to its own Program. For another
+Program, either `programs` or `services` must cover the addressed Program; an
+empty list covers every Program in that permission's domain. The narrower
+`services` permission grants no access to the Program itself. See
+[Security](/system/security) for the complete authority contract.
 
 ## Shared contract
 
