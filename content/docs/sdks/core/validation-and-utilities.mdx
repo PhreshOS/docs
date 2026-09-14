@@ -12,6 +12,7 @@ into one canonical contract value or reject it; they do not contact the System.
 | --- | --- |
 | `isServiceKey(value)` | Whether a value contains complete Service coordinates |
 | `isUploadFile(value)` | Whether text has the opaque upload-key grammar |
+| `isLayer(value)` | Whether a value names a Window layer |
 | `isRelativeValue(value)` | Whether a value follows Window geometry grammar |
 | `parseRelativeValue(value)` | Relative and pixel coefficients for one geometry value |
 | `isPermissionName(value)` | Whether a value names a permission in the closed catalog |
@@ -53,7 +54,7 @@ to be repeatedly parsed.
 | Export | Meaning |
 | --- | --- |
 | `clientPermissionCatalog` | Every permission name and its accepted value domain |
-| `layers` | Valid Window layers in their ordering vocabulary |
+| `layers` | Valid Window layers |
 | `appearanceLimits` | Valid numerical Appearance ranges |
 | `defaultAppearance` | Complete default Appearance source value |
 

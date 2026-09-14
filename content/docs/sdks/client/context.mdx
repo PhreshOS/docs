@@ -86,8 +86,10 @@ await context.localWindow.raise()
 
 The two values intentionally differ. Authoritative Window operations update
 System state and publish events. Local Window operations change only the
-current Desktop representation in every Window layer. Host Surface operations
-are specific to under and over layers. See [Desktop](/system/desktop) for the complete contracts.
+current Desktop representation, within the operations its layer permits.
+For example, only standard windows accept local title changes, and only under
+and over layers accept host Surface operations. See [Desktop](/system/desktop)
+for the complete operation and following contracts.
 
 ## Lifetime
 

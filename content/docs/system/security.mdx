@@ -39,6 +39,7 @@ The current catalog is:
 | `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs |
 | `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, and resources |
 | `layers` | `under`, `over` | `[]` | Both restricted Window layers, or only the listed layers, in Client launch requests |
+| `wallpaper` | None | `[]` | Select the wallpaper layer in Client launch requests |
 | `network` | Network scopes | `[]` | Every System request target, or only targets covered by the listed scopes |
 | `storage` | Storage scopes | `[]` | Every native path and operation, or selected operation-and-path scopes |
 | `uploads` | None | `[]` | Create values in the public uploads collection |
@@ -55,7 +56,8 @@ Program, or the applicable `all` fallback. This applies equally to Services
 belonging to the caller's Program and to other Programs.
 
 For `layers`, an empty list permits both `under` and `over`; a selected list
-permits only its listed layers. A Client's explicit layer selection is checked
+permits only its listed layers. Selecting `wallpaper` requires the separate
+`wallpaper` permission. A Client's explicit layer selection is checked
 by `program.process.create()`, `program.process.findOrCreate()`,
 `program.process.run()`, `program.startup.enable()`, `program.launch.set()`, and
 `process.client.start()` before launching or storing the request. The `window`

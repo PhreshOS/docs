@@ -58,9 +58,19 @@ Numbers are absolute pixels. Percentages and fractions are relative values;
 addition and subtraction combine terms, while multiplication and division
 scale the preceding term. Other strings are rejected.
 
-Windows occupy `under`, `window`, or `over`, from back to front. Wallpaper is
-Appearance rather than another Window layer, and the taskbar remains above all
-three.
+Windows occupy `wallpaper`, `under`, `window`, or `over`, from back to front.
+The taskbar remains above them.
+
+The `wallpaper` layer fills the Desktop's wallpaper area without window chrome.
+The System permits one running Client Endpoint in this layer at a time. A
+second launch is rejected, leaving the existing Endpoint running. This applies
+to both Process creation and starting a Client Endpoint in an existing Process.
+
+While that Client runs, Desktop displays it instead of the Appearance wallpaper.
+When it stops, Desktop returns to the Appearance wallpaper. The wallpaper role
+stays visible and fills its area regardless of authoritative geometry,
+minimization, maximization, or depth. Those Window values remain readable,
+mutable, and observable; they do not control this role's presentation.
 
 ## Local Window
 
@@ -89,19 +99,28 @@ than after the Desktop accepts it. Easing accepts the standard CSS names or a
 four-number cubic Bézier tuple.
 
 Local operations return `Promise<void>`, have no reads or events, and change
-only the current Desktop representation. All layers accept the shared Window
-operations. Only `addSurface()` and `removeSurface()` are restricted to
-`under` and `over`, because standard windows already have a Desktop-owned Surface.
+only the current Desktop representation. Each layer accepts the operations for
+properties that Desktop owns in that role; other local operations reject:
+
+| Local operation | `window` | `under` / `over` | `wallpaper` |
+| --- | --- | --- | --- |
+| Geometry, minimize, maximize, raise | Allowed | Allowed | Rejected |
+| `changeTitle()` | Allowed | Rejected | Rejected |
+| `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
+| `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
 Standard windows initially follow their own authoritative Window. Under and
-over windows start from authoritative state but remain unfollowed.
-`follow(window)` synchronizes to its supplied authoritative target and replaces
+over windows start with authoritative geometry and visibility but remain
+unfollowed. Wallpaper also starts unfollowed, using its fixed Desktop role.
+`follow(window)` tracks the properties its receiving layer permits and replaces
 any previous target. `unfollow()` preserves the current local state. A stopped
 target ends following without restoring an older rectangle.
 
 Local operations do not implicitly unfollow. Subsequent authoritative changes
 update only the properties that changed; a title change does not reset a local
 position override. Following does not copy the target's layer or Surface.
+Under and over followers do not copy titles. A wallpaper follower accepts the
+relationship without adopting geometry, title, visibility, or ordering changes.
 
 Pointer gestures, measurements, snap previews, iframe references, and animation
 state remain local. Desktop gestures explicitly commit authoritative changes.
