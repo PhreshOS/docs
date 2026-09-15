@@ -1,6 +1,6 @@
 ---
 title: Domain hooks
-description: Read and follow Program, Process, Endpoint, Service, and Window state through React.
+description: Read and follow PhreshOS domain state through React.
 ---
 
 React state hooks combine an explicit read from one domain handle with that
@@ -20,6 +20,8 @@ complete state shape listed below.
 | `useEndpointState(endpoint)` | `{ exists }` |
 | `useServiceState(service)` | `{ exists }` |
 | `useWindowState(window)` | `{ title, position, size, minimized, maximized, front, layer }` |
+| `useConnectionState(connection)` | `{ connected, session }` |
+| `useSessionState(session)` | `{ valid, connections }` |
 
 The hook subscribes before requesting the initial snapshot. Events received
 while the read is pending are applied after it, preventing an older read from
@@ -44,7 +46,7 @@ function CurrentProgram() {
 ```
 
 The initial snapshot reads `program.installed()` and
-`program.process.list()` concurrently. The hook then follows Process creation,
+`program.processes()` concurrently. The hook then follows Process creation,
 Process exit, and Program uninstall. Repeated creation events for the same
 canonical Process handle do not duplicate it in the array.
 
@@ -93,6 +95,21 @@ function WindowStatus({ window }: { window: Window }) {
 The initial snapshot reads title, position, size, minimized and maximized states, front state,
 and layer concurrently. The hook follows move, resize, geometry, minimize, maximize, title, and
 front changes. Layer is a stable property of the current Window.
+
+## Connection and Session state
+
+```tsx
+const connectionState = useConnectionState(connection)
+const sessionState = useSessionState(session)
+```
+
+Connection state reads `connected()` and `session()`, then follows
+`sessionChange` and `disconnect`. Disconnection sets `connected` to `false` and
+clears the Session.
+
+Session state reads `valid()` and `connections()`, then follows
+`connectionAttach`, `connectionDetach`, and `end`. An ended Session becomes
+invalid and its Connection list becomes empty.
 
 ## Lifetime and failures
 

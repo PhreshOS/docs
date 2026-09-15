@@ -27,20 +27,21 @@ An exited parent remains available as the same retained Process handle, whose
 `exited()` operation returns `true`. `null` means the Process never had a
 parent; it does not mean that its parent has exited.
 
-## Program collection
+## Program-scoped operations
 
-`program.process` addresses only Processes belonging to that Program:
+Process operations on a Program address only Processes belonging to that
+Program:
 
 | Operation | Result |
 | --- | --- |
-| `list()` | Every live Process |
-| `first()` | Earliest-started Process or `null` |
-| `last()` | Latest-started Process or `null` |
-| `find(identityOrName)` | Matching Process or `null` |
-| `create(launch?)` | Always create a Process |
-| `findOrCreate(launch)` | Find the named Process or atomically create it |
-| `exitAll()` | End every Process and return their identities |
-| `run(launch?, { signal }?)` | Create a Process owned by an async generator |
+| `processes()` | Every live Process |
+| `firstProcess()` | Earliest-started Process or `null` |
+| `lastProcess()` | Latest-started Process or `null` |
+| `findProcess(identityOrName)` | Matching Process or `null` |
+| `createProcess(launch?)` | Always create a Process |
+| `findOrCreateProcess(launch)` | Find the named Process or atomically create it |
+| `exitProcesses()` | End every Process and return their identities |
+| `runProcess(launch?, { signal }?)` | Create a Process owned by an async generator |
 
 `system.process.list()` and `system.process.find(identity)` provide the
 System-wide collection.
@@ -63,7 +64,7 @@ both Endpoints. This applies to every launch, including startup and attached
 development runs.
 
 ```ts
-const process = await program.process.create({
+const process = await program.createProcess({
   name: "main",
   server: { service: true },
   client: true,
@@ -73,13 +74,13 @@ const process = await program.process.create({
 
 ## Attached run
 
-`run()` yields `started`, `output`, and `exited` in order. Output contains its
+`runProcess()` yields `started`, `output`, and `exited` in order. Output contains its
 `stream` and exact `text`; the final event contains the Process and `Exit`.
 
 ```ts
 const controller = new AbortController()
 
-for await (const event of program.process.run(
+for await (const event of program.runProcess(
   { server: true, client: true },
   { signal: controller.signal },
 )) {
@@ -96,8 +97,9 @@ Process.
 
 `exit()` ends the Process and all live Endpoints. `exited()` reports whether it
 has ended. An individual Process emits `exit` with `{ status, code, signal }`.
-Both `program.process` and `system.process` emit `create` with a Process and
-`exit` with the Process plus its exit result.
+The owning Program emits `processCreate` with a Process and `processExit` with
+the Process plus its exit result. `system.process` emits the corresponding
+System-wide `create` and `exit` events.
 
 ## Parentage
 

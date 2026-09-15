@@ -47,6 +47,8 @@ host capabilities. The Desktop represents that state graphically.
 | --- | --- |
 | `program` | System-wide Program collection and lifecycle events |
 | `process` | System-wide Process collection and lifecycle events |
+| `connection` | Live browser Connection collection and lifecycle events |
+| `session` | Authentication Session collection and lifecycle events |
 | `storage` | Native filesystem access |
 | `uploads` | Flat System-owned upload collection |
 | `appearance` | Read and replace authoritative Appearance |
@@ -65,6 +67,7 @@ External Node tools and the CLI reach the running System through an owner-local
 gateway: a Unix-domain socket with owner-only permissions on POSIX systems or an
 owner-created named pipe on Windows. It opens no network port.
 
-The gateway is a connection mechanism, not a public domain. Node and the CLI
-use ordinary System contracts through it; code that owns a connection adds only
-`disconnect()` to end that connection's lifetime.
+The gateway is an external transport mechanism, not a browser `Connection` or
+authentication `Session`. Node and the CLI use ordinary System contracts
+through it; code that owns this transport adds only `disconnect()` to end its
+lifetime.

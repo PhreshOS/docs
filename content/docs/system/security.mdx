@@ -5,24 +5,94 @@ icon: ShieldCheck
 ---
 
 Security begins with one System owner and structural authority boundaries.
-Initial setup registers the owner and closes registration; later Desktop
-sessions authenticate as that owner.
+Initial setup signs up the owner; later browser Connections sign in as that
+owner through Sessions.
 
 The System provides no independent recovery authority above the owner's chosen
 authentication method.
 
+## Connections and Sessions
+
+A `Connection` is one live browser connection to the System. It has either no
+Session or one Session. A `Session` is a persistent authentication grant and may
+authorize any number of live Connections.
+
+```ts
+const connections = await system.connection.list()
+const session = await connections[0]?.session()
+
+if (session) {
+  const attached = await session.connections()
+  console.log(attached.length)
+}
+```
+
+Both are canonical Core domain handles. Reaching the same identity again within
+one SDK context returns the same object. A Connection remaining open and its
+authorization changing are separate lifecycle facts: signing out never closes
+the underlying WebSocket. They are System domains, not additional components in
+the Program, Process, Endpoint, and Service operating-system model.
+
+| Connection operation | Result |
+| --- | --- |
+| `connected()` | Whether the browser connection still exists |
+| `session()` | Its attached `Session`, or `null` |
+| `signIn()` | Create and attach a new Session; rejects if already signed in |
+
+| Session operation | Result |
+| --- | --- |
+| `valid()` | Whether the authentication grant remains valid |
+| `connections()` | Its currently attached live Connections |
+| `signOut()` | Delete the Session and detach every associated Connection |
+
+`system.connection` and `system.session` each provide `list()` and `find()` plus
+registry lifecycle events. A Connection emits `sessionChange` and `disconnect`.
+A Session emits `connectionAttach` and `connectionDetach` as Connections enter and leave it,
+and `end` with either `signedOut` or `expired`.
+
+Retained handles preserve terminal reads. After disconnection,
+`connection.connected()` resolves to `false` and `connection.session()` resolves
+to `null`; `connection.signIn()` rejects because no live Connection can be
+changed. After a Session ends, `session.valid()` resolves to `false` and
+`session.connections()` resolves to `[]`; `session.signOut()` rejects because
+the Session no longer exists. None of these operations silently ignores a
+requested state change.
+
+The raw Session token is delivered only to the browser Client. The System stores
+its SHA-256 hash under `authentication:sessions:<hash>` together with the
+Session's public identity and disconnected timestamp. A Session remains valid
+while at least one Connection is attached. With no attached Connections, it
+expires 24 hours after the last normal disconnection. Explicit sign-out removes
+it immediately.
+
+The owner-local Node Gateway is an external trusted transport. It can operate on
+browser Connections and Sessions through the same System contract, but it is
+not itself a value in either domain.
+
 ## Client authority
 
-A Client can access its own Program, that Program's Processes, Services, and resources,
-read-only Appearance, Desktop viewport and
-preferences, and its Context capabilities. It cannot enlarge authority by
-fabricating an identity or message. An inaccessible handle behaves like a
-nonexistent one; a hidden sender or destination is represented as `null`.
+A Client can access its own Program, that Program's Processes, Services, and
+resources, read-only Appearance, Desktop viewport and preferences, and its
+Context capabilities. Permissions extend this accessible scope.
+
+Registry `list()` operations include only visible handles and `find()` returns
+`null` for an inaccessible identity. Addressing an inaccessible or fabricated
+handle fails as though that handle does not exist. Events and relationship
+results follow the same scope, so they never reveal a hidden entity.
+
+An explicit, non-lookup capability instead reports missing authority directly.
+For example, `desktop.connection()` rejects when the current Desktop Connection
+is outside the Client's scope.
 
 ## Permissions
 
-Permissions come from the closed Core catalog. A Program cannot invent a
-permission name or a value outside that permission's value domain.
+Permissions govern Client Endpoint authority only. A Server Endpoint already
+executes inside the trusted server environment with complete System access, so
+assigning permissions to it would have no meaning. There is no Server
+permission declaration or permission state.
+
+Client permissions come from the closed Core catalog. A Program cannot invent
+a permission name or a value outside that permission's value domain.
 
 Values may be declared under `client.permissions`. During creation and
 installation, each declared entry replaces that permission's stored value in
@@ -44,6 +114,8 @@ The current catalog is:
 | `uploads` | None | `[]` | Create values in the public uploads collection |
 | `appearance` | None | `[]` | Update System Appearance |
 | `desktopPreferences` | None | `[]` | Update Desktop preferences |
+| `desktopConnection` | None | `[]` | Access this Desktop's Connection and its attached Session |
+| `connections` | None | `[]` | Access every Connection and Session; also grants `desktopConnection` |
 | `all` | None | `[]` | Fallback authority for every permission without an exact assignment, plus unrestricted Client capabilities |
 
 For `services` and `programs`, an empty list means every Program; a non-empty
@@ -57,10 +129,17 @@ Service access; it does not grant access to the Program, its Processes, or its
 other resources. When a Service key contains only an exact Process identity,
 the System resolves the Process's owning Program before applying the same rule.
 
+`desktopConnection` adds only the Connection carrying the current Desktop and
+that Connection's attached Session to the accessible scope. Relationship
+operations remain scoped: `session.connections()` includes only visible
+Connections. `connections` exposes every Connection and Session and also grants
+the narrower `desktopConnection` capability. Granting `desktopConnection` does
+not grant `connections`.
+
 For `layers`, an empty list permits `under`, `over`, and `wallpaper`; a selected
 list permits only its listed layers. A Client's explicit layer selection is
-checked by `program.process.create()`, `program.process.findOrCreate()`,
-`program.process.run()`, `program.startup.enable()`, `program.launch.set()`, and
+checked by `program.createProcess()`, `program.findOrCreateProcess()`,
+`program.runProcess()`, `program.startup.enable()`, `program.launch.set()`, and
 `process.client.start()` before launching or storing the request. The `window`
 layer is unrestricted and is not a permission value. Omitted layers use the
 existing launch defaults. Owner-initiated launches and execution of stored
@@ -127,8 +206,8 @@ permissions: {
 ```
 
 `true` is assignment and request shorthand for the permission's default value.
-It therefore selects every Program for `services` and `programs`, both restricted
-layers for `layers`, every request
+It therefore selects every Program for `services` and `programs`, every restricted
+layer for `layers`, every request
 target for `network`, every native path and operation for `storage`, and the
 canonical present value for value-less permissions such as `uploads`.
 
@@ -139,8 +218,10 @@ Client iframe. An explicit assignment for a permission takes priority over
 
 `context.permissions.get()` returns the exact stored assignment.
 `context.permissions.allows()` checks the current stored authority without
-prompting or changing it. Exact assignments take priority, then `all` may supply
-an unassigned permission.
+prompting or changing it. Exact assignments take priority over the `all`
+fallback for the same permission. Related domain authority remains independent:
+`programs` also exposes corresponding Services, while `connections` also grants
+`desktopConnection`.
 `context.permissions.request()` returns only the permission: the requested
 canonical list when granted, `false` when denied, or `null` when unresolved.
 Every request asks the owner, including a request narrower than current
@@ -181,5 +262,7 @@ returns `services: ["browser"]`. That explicit Service assignment restricts the
 `services` fallback despite `all`; own-Program and `programs` authority remain
 independent sources of Service access.
 
-Asynchronous operations reject with `Execution is not permitted` when authority
-is missing. Synchronous operations that cannot report failure remain silent.
+Direct asynchronous capabilities reject with `Execution is not permitted` when
+authority is missing. Discovery remains opaque: lists filter, searches return
+`null`, and operations through inaccessible handles report that the handle does
+not exist. Synchronous operations that cannot report failure remain silent.

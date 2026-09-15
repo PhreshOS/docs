@@ -17,6 +17,8 @@ import { context, system } from "@phreshos/client"
 | --- | --- |
 | `program` | List, find, create, and observe Programs |
 | `process` | List, find, and observe Processes |
+| `connection` | List, find, and observe browser Connections |
+| `session` | List, find, and observe authentication Sessions |
 | `service(key)` | Address one Server or Client Service |
 | `storage` | Access the native filesystem |
 | `uploads` | Read or create System uploads |
@@ -35,11 +37,13 @@ Processes, Services, and resources belonging to that Program. It may read
 Appearance, Desktop state, and existing uploads.
 
 Access to another Program also covers its Services. A narrower `services`
-permission can grant only those Services without exposing the Program. Native
-Storage, outbound System networking, upload creation, Appearance updates,
-Desktop preference updates, restricted layer selections, shell execution, and
-unrestricted Program permission management require their corresponding
-permissions.
+permission can grant only those Services without exposing the Program.
+`desktopConnection` exposes this Desktop's Connection and its Session;
+`connections` exposes the complete Connection and Session registries and also
+grants that narrower capability. Native Storage, outbound System networking,
+upload creation, Appearance updates, Desktop preference updates, restricted
+layer selections, shell execution, and unrestricted Program permission
+management require their corresponding permissions.
 
 ```ts
 if (await context.permissions.allows("network", ["https://api.example.com"])) {
@@ -67,10 +71,13 @@ Once returned, the socket uses the standard interface.
 
 ## Failure behavior
 
-An asynchronous operation rejected by Client authority fails with
+Registry lists contain only visible handles, searches return `null` for hidden
+identities, and events and relationships omit hidden entities. Using an
+inaccessible or fabricated handle reports that the handle does not exist.
+
+An explicit non-lookup capability rejected by Client authority fails with
 `Execution is not permitted`. A synchronous operation that cannot represent
-failure remains silent. Fabricating a Program identity, path, scope, or handle
-does not expand authority, and inaccessible handles behave as nonexistent.
+failure remains silent.
 
 A permission change governs later System operations. It does not retroactively
 revoke a `Response` or `WebSocket` already returned to the Client.

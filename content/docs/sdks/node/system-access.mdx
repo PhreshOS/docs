@@ -18,6 +18,8 @@ const system = await System.connect()
 | --- | --- |
 | `program` | List, find, create, and observe Programs |
 | `process` | List, find, and observe Processes |
+| `connection` | List, find, and observe browser Connections |
+| `session` | List, find, and observe authentication Sessions |
 | `service(key)` | Address one Server or Client Service |
 | `storage` | Access the native filesystem |
 | `uploads` | Read and create uploads |
@@ -28,7 +30,7 @@ const system = await System.connect()
 
 ```ts
 const program = await system.program.find("terminal")
-const process = await program?.process.first()
+const process = await program?.firstProcess()
 
 console.log(program?.name, process?.identity)
 ```

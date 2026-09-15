@@ -78,7 +78,7 @@ Omission means `false`. An object launch can override the default for one
 incarnation:
 
 ```ts
-await program.process.create({
+await program.createProcess({
   name: "main",
   server: { service: true },
   client: false,

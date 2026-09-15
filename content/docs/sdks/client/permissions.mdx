@@ -67,9 +67,10 @@ is resolved before storage or return. Arrays are unordered sets and duplicate
 values are removed. `false` records denial, while `null` represents no stored
 assignment and belongs to `delete()` rather than `set()`.
 
-An explicit assignment has priority over `all`, which supplies unassigned
-permissions. Consequently, approving a narrower exact request genuinely
-restricts that capability.
+An explicit assignment has priority over the `all` fallback, which supplies
+unassigned permissions. Related domain authority remains independent:
+`programs` also exposes matching Services, while `connections` also grants
+`desktopConnection`. The reverse grants do not apply.
 
 [Security](/system/security) defines every permission, its value grammar,
 creation-time seeding, fallback authority, and exact operation coverage.

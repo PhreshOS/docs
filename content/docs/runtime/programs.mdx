@@ -55,7 +55,9 @@ the complete authority contract.
 
 | Member | Contract |
 | --- | --- |
-| `program.process` | List, create, run, and observe this Program's Processes |
+| `processes()`, `findProcess()` | Read this Program's live Processes |
+| `createProcess()`, `findOrCreateProcess()` | Create a Process belonging to this Program |
+| `runProcess()`, `exitProcesses()` | Run an attached Process or end all owned Processes |
 | `program.startup` | Read, enable, or disable one persistent Process launch |
 | `program.launch` | Read or replace the saved Process launch used when opening the Program icon |
 | `program.data` | Durable filesystem storage |
@@ -136,9 +138,9 @@ the current runtime entity while preserving installed files and storage.
 
 ## Events
 
-An individual Program emits `forget` with `undefined` and `uninstall` with the
-`purge` boolean. Process membership events belong to `program.process`,
-not to the Program root.
+An individual Program emits `processCreate` with the created Process,
+`processExit` with `{ process, status, code, signal }`, `forget` with
+`undefined`, and `uninstall` with `{ purge }`.
 
 ## Runtime forms
 

@@ -11,6 +11,18 @@ exposing Desktop implementation details.
 import { desktop } from "@phreshos/client"
 ```
 
+## Connection
+
+```ts
+const connection = await desktop.connection()
+const session = await connection.session()
+```
+
+`desktop.connection()` returns the browser Connection carrying this Desktop.
+It requires `desktopConnection` or the broader `connections` permission. Within
+one Client SDK context it is the same canonical handle returned by
+`system.connection.find()` for that identity.
+
 ## Viewport
 
 ```ts
