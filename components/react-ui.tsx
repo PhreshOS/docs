@@ -15,4 +15,5 @@ export {
   Surface,
   Switch,
   Textarea,
+  useBrowserPreferences,
 } from '@phreshos/react-ui';

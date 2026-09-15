@@ -89,7 +89,7 @@ reason. Content depth belongs inside this stable structure.
 | React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopViewport`, `useDesktopPreferences` | SDKs / React |
 | React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState` | SDKs / React |
 | React | `useSubscribe`, `useSubscribeAsks`, `AskSubscribable`, `useSubscribeAnswers`, `AnswerSubscribable` | SDKs / React |
-| React UI | `AppearanceProvider`, `AppearanceProviderProps`, `useAppearance`, `useTheme`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |
+| React UI | `AppearanceProvider`, `AppearanceProviderProps`, `Preferences`, `useAppearance`, `usePreferences`, `useBrowserPreferences`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |
 | React UI | `Surface`, `SurfaceProps`, `SurfaceOwnProps`, `SurfaceHost`, `SurfaceHostProps`, `SurfaceComponent`, `MaterialOptions` | SDKs / React UI / Components / Surface |
 | React UI | `Panel`, `PanelProps`, `Flex`, `FlexProps`, `Grid`, `GridProps` | SDKs / React UI / Components |
 | React UI | `Button`, `Input`, `Textarea`, `Checkbox`, `Radio`, `RadioGroup`, `Switch`, `Select`, `Slider`, and their public property and option types | SDKs / React UI / Components |

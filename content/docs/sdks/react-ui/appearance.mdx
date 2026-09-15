@@ -155,25 +155,28 @@ promise settles; `wait` is not part of rendered animation state.
 | API | Result |
 | --- | --- |
 | `useAppearance()` | Nearest complete unresolved Appearance, or `defaultAppearance` |
-| `useTheme()` | Nearest explicit Theme, or the browser's current color scheme |
+| `usePreferences()` | Nearest complete Preferences, or the browser's current preferences |
+| `useBrowserPreferences()` | Browser color scheme and animation preference |
 | `useThemedValue(value)` | The supplied `ThemedValue` branch for the effective Theme |
-| `AppearanceProvider` | Optional Appearance and Theme source for one React subtree |
+| `AppearanceProvider` | Optional Appearance and complete Preferences source for one React subtree |
 | `defaultAppearance` | Core's complete environment-neutral default Appearance |
 
 Without a provider, `useAppearance()` returns `defaultAppearance` and
-`useTheme()` reactively follows `prefers-color-scheme`. During server rendering,
-the Theme snapshot is `light`; the browser becomes authoritative on the client.
+`usePreferences()` reactively follows the browser's color-scheme and reduced-motion
+preferences. During server rendering, the browser snapshot uses the light Theme
+with animations enabled; the browser becomes authoritative on the client.
 
-An inner provider inherits each omitted value independently. Overriding Theme
-does not replace Appearance, and overriding Appearance does not stop the
-inherited Theme from changing.
+Preferences is one complete `{ theme, animations }` value. A provider either
+replaces that value in full or inherits it in full; it never merges individual
+fields. `useBrowserPreferences()` lets a consumer derive a complete replacement
+from the browser value before passing it to the provider.
 
 <ComponentPreview>
   <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: "1rem" }}>
-    <AppearanceProvider theme="light">
+    <AppearanceProvider preferences={{ theme: "light", animations: true }}>
       <Surface style={{ padding: 16 }}>Light Theme</Surface>
     </AppearanceProvider>
-    <AppearanceProvider theme="dark">
+    <AppearanceProvider preferences={{ theme: "dark", animations: true }}>
       <Surface style={{ padding: 16 }}>Dark Theme</Surface>
     </AppearanceProvider>
   </Preview>
@@ -184,10 +187,10 @@ inherited Theme from changing.
 
     export default function ThemePreview() {
       return <>
-        <AppearanceProvider theme="light">
+        <AppearanceProvider preferences={{ theme: "light", animations: true }}>
           <Surface>Light Theme</Surface>
         </AppearanceProvider>
-        <AppearanceProvider theme="dark">
+        <AppearanceProvider preferences={{ theme: "dark", animations: true }}>
           <Surface>Dark Theme</Surface>
         </AppearanceProvider>
       </>
@@ -300,13 +303,13 @@ therefore requires an Appearance value.
 ```tsx title="appearance-summary.tsx"
 import {
   useAppearance,
-  useTheme,
+  usePreferences,
   useThemedValue,
 } from "@phreshos/react-ui"
 
 export function AppearanceSummary() {
   const appearance = useAppearance()
-  const theme = useTheme()
+  const { theme } = usePreferences()
   const foreground = useThemedValue(appearance.colors).foreground
 
   return <p style={{ color: foreground }}>

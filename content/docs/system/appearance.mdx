@@ -29,7 +29,7 @@ Clients may read Appearance. Updating it requires `appearance` or `all`.
 | `shadow` | Explicit light and dark outer shadow values |
 | `material` | Explicit light and dark visual-substance values |
 | `transaction` | Shared duration in milliseconds and easing |
-| `signInWallpaper`, `desktopWallpaper` | Explicit light and dark URLs or `null` |
+| `signInWallpaper`, `desktopWallpaper` | Explicit light and dark System upload keys or `null` |
 
 Material contains `grain`, `grainAmount`, `backdrop`, `opacity`,
 `distortion`, and `saturation`.
@@ -81,6 +81,20 @@ uses a backdrop blur of `12`, opacity of `0.2` in the light branch and
 Both shadow branches default to `{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`.
 Neither Material nor Surface consumes or renders this setting. A component that
 owns elevation may resolve it independently; shadow remains a separate contract.
+
+## Wallpapers
+
+Each wallpaper branch accepts a System upload containing an image, video, or
+self-contained HTML document. Applying a wallpaper validates that the upload
+exists, has a supported type, and is no larger than 50 MiB. This limit belongs
+to wallpapers and is independent from the upload-size limit.
+
+Images and videos fill the wallpaper area using cover sizing. Videos play
+automatically, muted, and loop continuously. An HTML wallpaper fills the area
+with its own document and may run scripts, but it has no System access and no
+network access. All of its code and resources must therefore be contained in
+the single uploaded file. The document owns its internal layout; Desktop does
+not inject styles or alter its contents.
 
 ## Theme resolution
 

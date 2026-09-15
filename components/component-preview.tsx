@@ -7,9 +7,10 @@ import {
   TabsTrigger,
 } from 'fumadocs-ui/components/ui/tabs';
 import { useTheme as useDocsTheme } from 'fumadocs-ui/provider/base';
+import type { Preferences } from '@phreshos/react-ui';
 import { Code2, Eye } from 'lucide-react';
 import { useSyncExternalStore, type ComponentProps, type HTMLAttributes } from 'react';
-import { AppearanceProvider } from './react-ui';
+import { AppearanceProvider, useBrowserPreferences } from './react-ui';
 
 type ComponentPreviewProps = Omit<ComponentProps<typeof Tabs>, 'className' | 'defaultValue'> & {
   className?: string;
@@ -17,12 +18,19 @@ type ComponentPreviewProps = Omit<ComponentProps<typeof Tabs>, 'className' | 'de
 
 export function ComponentPreview({ children, className, ...properties }: ComponentPreviewProps) {
   const { resolvedTheme } = useDocsTheme();
+  const browserPreferences = useBrowserPreferences();
   const hydrated = useSyncExternalStore(subscribeToHydration, clientHydration, serverHydration);
-  const theme = hydrated && (resolvedTheme === 'light' || resolvedTheme === 'dark')
-    ? resolvedTheme
+  const theme: Preferences['theme'] | undefined = hydrated
+    ? resolvedTheme === 'light'
+      ? 'light'
+      : resolvedTheme === 'dark'
+        ? 'dark'
+        : undefined
     : undefined;
 
-  return <AppearanceProvider theme={theme}>
+  const preferences = theme === undefined ? browserPreferences : { ...browserPreferences, theme };
+
+  return <AppearanceProvider preferences={preferences}>
     <Tabs
       {...properties}
       defaultValue="preview"

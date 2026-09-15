@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { hydrateRoot } from "react-dom/client"
 import { renderToString } from "react-dom/server"
 import { afterEach, expect, test, vi } from "vitest"
-import { useTheme } from "@phreshos/react-ui"
+import { usePreferences } from "@phreshos/react-ui"
 import { ComponentPreview, Preview, PreviewCode } from "../components/component-preview"
 
 const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" }))
@@ -12,7 +12,7 @@ vi.mock("fumadocs-ui/provider/base", () => ({ useTheme: () => docsTheme }))
 afterEach(cleanup)
 
 function ThemeProbe() {
-  return <output aria-label="Preview theme">{useTheme()}</output>
+  return <output aria-label="Preview theme">{usePreferences().theme}</output>
 }
 
 function Example() {
