@@ -1,11 +1,11 @@
 ---
 title: Overview
-description: Create Programs and operate PhreshOS from a terminal.
+description: Use PhreshOS projects, runtime domains, and System lifecycle from a terminal.
 ---
 
-The `phresh` CLI presents Project workflows, running-System operations, and
-native System lifecycle management as human-facing commands. Its command tree
-translates into the same contracts used by the SDKs.
+The `phresh` CLI translates terminal commands into the same Project and System
+contracts used by the SDKs. It has three jobs: work with a local Program
+project, operate the running domain model, and manage the native System service.
 
 ## Install
 
@@ -41,40 +41,24 @@ phresh --version
 phresh --help
 ```
 
-## Command surface
+## Human and structured use
 
-| Area | Commands | Reference |
-| --- | --- | --- |
-| Project | `create`, `init`, `dev`, `start`, `install`, `uninstall`, `pack` | [Project commands](/sdks/cli/project-commands) |
-| Runtime | `program`, `process`, `endpoint`, `window` | [Runtime commands](/sdks/cli/runtime-commands) |
-| System lifecycle | `system install`, `uninstall`, `status`, `version`, `start`, `stop`, `enable`, `disable` | [System commands](/sdks/cli/system-commands) |
-| Discovery | `describe` | [Contract discovery](/sdks/cli/contract-discovery) |
-
-Unknown commands, options, and malformed values reject instead of being
-guessed. Run `phresh <path> --help` for human guidance or `phresh describe` for
-the machine-readable contract.
-
-## Human and automation output
-
-Commands render for the terminal by default. Collections use responsive tables,
-single values use labeled fields, and narrow terminals wrap or switch to
-vertical records without discarding data. Mutations show only the fields needed
-to understand their outcome. Runtime inspection and observation commands accept
-`--json` and write the complete result as one machine-readable JSON value on one
-line.
+Terminal output is designed for people by default. Collections use responsive
+tables, narrow terminals preserve all data, and mutations report the fields
+needed to understand their outcome. Inspection and observation commands accept
+`--json` when another tool needs the complete structured result.
 
 ```sh
 phresh program list --installed-only
 phresh program list --installed-only --json
 ```
 
-Searchable lists use `--search`, `--limit`, and `--offset`. Human output reports
-how many results are shown. Their JSON result is `{ data, total, truncated }`,
-making bounded automation explicit.
+Searchable collections accept `--search`, `--limit`, and `--offset`. Their JSON
+shape is `{ data, total, truncated }`, so bounded results remain explicit.
 
 <Cards>
-  <Card title="Project commands" description="Create, configure, run, install, and package Programs." href="/sdks/cli/project-commands" />
-  <Card title="Runtime commands" description="Inspect and operate Programs, Processes, Endpoints, and Windows." href="/sdks/cli/runtime-commands" />
-  <Card title="System commands" description="Install and manage the native PhreshOS service." href="/sdks/cli/system-commands" />
-  <Card title="Contract discovery" description="Read exact commands, options, examples, and output schemas." href="/sdks/cli/contract-discovery" />
+  <Card title="Project commands" description="Create, run, install, and package Program projects." href="/sdks/cli/project-commands" />
+  <Card title="Runtime commands" description="Navigate and operate Programs, Processes, Endpoints, and Windows." href="/sdks/cli/runtime-commands" />
+  <Card title="System commands" description="Install and control the native System service." href="/sdks/cli/system-commands" />
+  <Card title="Contract discovery" description="Inspect exact commands, options, examples, and output schemas." href="/sdks/cli/contract-discovery" />
 </Cards>

@@ -3,66 +3,45 @@ title: Connection
 description: Connect Node.js code to one owner-local PhreshOS System.
 ---
 
-`System.connect()` creates a complete System implementation tied to one Node
-connection.
+`System.connect()` returns a complete System implementation whose work belongs
+to one external Node connection. The connected object implements Core's
+`System` contract and adds `disconnect()` to end that connection.
 
 ```ts
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
 console.log(await system.program.list())
+
 await system.disconnect()
 ```
 
-The static factory is Node-owned and is not part of Core's connected `System`
-interface. The instance adds only `disconnect()` to that shared contract.
+The Node connection is trusted owner-local transport. It is not a browser
+`Connection` and has no authentication `Session`.
 
-## Select the System home
+## Selecting the System home
 
-```ts
-const defaultSystem = await System.connect()
-const selectedSystem = await System.connect("/absolute/system/home")
-```
-
-Selection follows this order:
-
-1. The absolute `home` argument passed to `connect()`.
-2. The absolute `PHRESHOS_HOME` environment value.
-3. `.phreshos` under the operating-system user's home directory.
-
-Relative custom paths reject. Existing paths are canonicalized through their
-real filesystem location.
-
-`resolveHome(home?)` exposes the same selection logic without connecting:
+The optional `home` argument identifies which local System to reach:
 
 ```ts
-import { resolveHome } from "@phreshos/node"
-
-console.log(resolveHome())
+const system = await System.connect("/absolute/system/home")
 ```
 
-## Gateway address
+Selection uses the explicit argument first, then `PHRESHOS_HOME`, then
+`.phreshos` under the operating-system user's home. A custom value must be
+absolute. `resolveHome(home?)` exposes the same resolution without connecting.
 
-`gatewayAddress(home)` derives the owner-local connection address for an
-already resolved home. POSIX uses `gateway.sock` inside that home. Windows uses
-a named pipe derived from the canonical home identity.
+`gatewayAddress(home)` derives the local transport address for an already
+resolved home. POSIX uses `gateway.sock` in that home; Windows uses a named pipe
+derived from the canonical home identity. Most applications need neither
+helper directly.
 
-```ts
-import { gatewayAddress, resolveHome } from "@phreshos/node"
+## Owned lifetime
 
-const address = gatewayAddress(resolveHome())
-console.log(address)
-```
+The connection owns every handle, pending operation, subscription, network
+value, command stream, and local capability obtained through it.
+`disconnect()` closes the gateway and releases that attached work. Later
+operations reject because the System connection is closed.
 
-This address is a connection detail, not a second System API. Most consumers
-need only `System.connect()`.
-
-## Connection lifetime
-
-One connection owns the handles, pending operations, event registrations,
-requests, sockets, command streams, and local capability work obtained through
-it. `disconnect()` closes the gateway and aborts that attached work.
-
-Calling a connected operation after disconnection rejects with
-`This System connection is closed`. Disconnecting does not stop the PhreshOS
-System service or delete any Program state.
+Disconnecting does not stop the System service or alter Program state. It ends
+only this external path into the System.

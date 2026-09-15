@@ -1,268 +1,33 @@
 ---
 title: Security
-description: One owner, structural Client isolation, and explicit permissions.
+description: Understand owner authentication and the visible authority of Client Endpoints.
 icon: ShieldCheck
 ---
 
-Security begins with one System owner and structural authority boundaries.
-Initial setup signs up the owner; later browser Connections sign in as that
-owner through Sessions.
+PhreshOS security separates two questions. Authentication establishes which
+browser Connections belong to the System owner. Permissions determine what a
+Client Endpoint may see and do once it is running.
+
+The separation matters because a browser Connection and a Program are
+different authorities. One Session may authorize several Connections, while
+each Client Endpoint receives the permission state of its own Program.
+
+<Cards>
+  <Card
+    title="Authentication"
+    description="Connections, Sessions, sign-in, sign-out, and expiration."
+    href="/system/authentication"
+  />
+  <Card
+    title="Permissions"
+    description="Program-owned Client authority, visible scope, and owner requests."
+    href="/system/permissions"
+  />
+</Cards>
+
+Initial setup signs up the owner. Later browser Connections sign in by attaching
+a Session. Server Endpoints and the owner-local Node gateway already execute in
+trusted server authority; Client permissions do not apply to them.
 
 The System provides no independent recovery authority above the owner's chosen
 authentication method.
-
-## Connections and Sessions
-
-A `Connection` is one live browser connection to the System. It has either no
-Session or one Session. A `Session` is a persistent authentication grant and may
-authorize any number of live Connections.
-
-```ts
-const connections = await system.connection.list()
-const session = await connections[0]?.session()
-
-if (session) {
-  const attached = await session.connections()
-  console.log(attached.length)
-}
-```
-
-Both are canonical Core domain handles. Reaching the same identity again within
-one SDK context returns the same object. A Connection remaining open and its
-authorization changing are separate lifecycle facts: signing out never closes
-the underlying WebSocket. They are System domains, not additional components in
-the Program, Process, Endpoint, and Service operating-system model.
-
-| Connection operation | Result |
-| --- | --- |
-| `connected()` | Whether the browser connection still exists |
-| `session()` | Its attached `Session`, or `null` |
-| `signIn()` | Create and attach a new Session; rejects if already signed in |
-
-| Session operation | Result |
-| --- | --- |
-| `valid()` | Whether the authentication grant remains valid |
-| `connections()` | Its currently attached live Connections |
-| `signOut()` | Delete the Session and detach every associated Connection |
-
-`system.connection` and `system.session` each provide `list()` and `find()` plus
-registry lifecycle events. A Connection emits `sessionChange` and `disconnect`.
-A Session emits `connectionAttach` and `connectionDetach` as Connections enter and leave it,
-and `end` with either `signedOut` or `expired`.
-
-Retained handles preserve terminal reads. After disconnection,
-`connection.connected()` resolves to `false` and `connection.session()` resolves
-to `null`; `connection.signIn()` rejects because no live Connection can be
-changed. After a Session ends, `session.valid()` resolves to `false` and
-`session.connections()` resolves to `[]`; `session.signOut()` rejects because
-the Session no longer exists. None of these operations silently ignores a
-requested state change.
-
-The raw Session token is delivered only to the browser Client. The System stores
-its SHA-256 hash under `authentication:sessions:<hash>` together with the
-Session's public identity and disconnected timestamp. A Session remains valid
-while at least one Connection is attached. With no attached Connections, it
-expires 24 hours after the last normal disconnection. Explicit sign-out removes
-it immediately.
-
-The owner-local Node Gateway is an external trusted transport. It can operate on
-browser Connections and Sessions through the same System contract, but it is
-not itself a value in either domain.
-
-## Client authority
-
-A Client can access its own Program, that Program's Processes, Services, and
-resources, read-only Appearance, Desktop viewport and preferences, and its
-Context capabilities. Permissions extend this accessible scope.
-
-Registry `list()` operations include only visible handles and `find()` returns
-`null` for an inaccessible identity. Addressing an inaccessible or fabricated
-handle fails as though that handle does not exist. Events and relationship
-results follow the same scope, so they never reveal a hidden entity.
-
-An explicit, non-lookup capability instead reports missing authority directly.
-For example, `desktop.connection()` rejects when the current Desktop Connection
-is outside the Client's scope.
-
-## Permissions
-
-Permissions govern Client Endpoint authority only. A Server Endpoint already
-executes inside the trusted server environment with complete System access, so
-assigning permissions to it would have no meaning. There is no Server
-permission declaration or permission state.
-
-Client permissions come from the closed Core catalog. A Program cannot invent
-a permission name or a value outside that permission's value domain.
-
-Values may be declared under `client.permissions`. During creation and
-installation, each declared entry replaces that permission's stored value in
-`storage/permissions.json`; unrelated entries remain unchanged. Empty or omitted
-declarations neither create nor modify the file. Nonempty declarations create
-the file when absent and atomically write the resulting permission set.
-The file is the source of truth for subsequent permission operations.
-Reconstructing an installed Program during System startup reads its stored permissions.
-
-The current catalog is:
-
-| Permission | Values | Default | Authority |
-| --- | --- | --- | --- |
-| `services` | Program identities | `[]` | Services belonging to every Program, or only the listed Programs, without broader Program access |
-| `programs` | Program identities | `[]` | Every Program, or only the listed Programs, including their Processes, Endpoints, Windows, Services, and resources |
-| `layers` | `under`, `over`, `wallpaper` | `[]` | Every restricted Window layer, or only the listed layers, in Client launch requests |
-| `network` | Network scopes | `[]` | Every System request target, or only targets covered by the listed scopes |
-| `storage` | Storage scopes | `[]` | Every native path and operation, or selected operation-and-path scopes |
-| `uploads` | None | `[]` | Create values in the public uploads collection |
-| `appearance` | None | `[]` | Update System Appearance |
-| `desktopPreferences` | None | `[]` | Update Desktop preferences |
-| `desktopConnection` | None | `[]` | Access this Desktop's Connection and its attached Session |
-| `connections` | None | `[]` | Access every Connection and Session; also grants `desktopConnection` |
-| `all` | None | `[]` | Fallback authority for every permission without an exact assignment, plus unrestricted Client capabilities |
-
-For `services` and `programs`, an empty list means every Program; a non-empty
-list is an unordered set of selected Program identities. Each permission governs
-its own domain. Creating or force-creating a Program requires `all`.
-
-A Client can always access Services belonging to its own Program. For another
-Program, access is granted by either `programs` or `services` covering that
-Program, or by the applicable `all` fallback. A `services` grant provides only
-Service access; it does not grant access to the Program, its Processes, or its
-other resources. When a Service key contains only an exact Process identity,
-the System resolves the Process's owning Program before applying the same rule.
-
-`desktopConnection` adds only the Connection carrying the current Desktop and
-that Connection's attached Session to the accessible scope. Relationship
-operations remain scoped: `session.connections()` includes only visible
-Connections. `connections` exposes every Connection and Session and also grants
-the narrower `desktopConnection` capability. Granting `desktopConnection` does
-not grant `connections`.
-
-For `layers`, an empty list permits `under`, `over`, and `wallpaper`; a selected
-list permits only its listed layers. A Client's explicit layer selection is
-checked by `program.createProcess()`, `program.findOrCreateProcess()`,
-`program.runProcess()`, `program.startup.enable()`, `program.launch.set()`, and
-`process.client.start()` before launching or storing the request. The `window`
-layer is unrestricted and is not a permission value. Omitted layers use the
-existing launch defaults. Owner-initiated launches and execution of stored
-startup configurations use owner authority.
-
-For `network`, an empty list means every request target. A non-empty list contains
-canonical scopes used only by `system.network.fetch()` and `system.network.websocket()`:
-
-```ts
-permissions: {
-  network: [
-    "https://api.example.com",
-    "https://*.example.com/v1/**",
-    "http://localhost:*",
-    "wss://events.example.com/**",
-  ],
-}
-```
-
-Schemes are explicit. `*.` replaces complete leading hostname labels, `:*`
-selects every port, and a final `/**` selects a path subtree. A scope without a
-path selects its entire origin. Query strings and fragments do not define
-authority. Broader stored scopes satisfy narrower checks. This permission
-does not govern browser-native networking APIs and never requires an iframe
-reload. A change governs later System operations; it does not revoke a
-`Response` or `WebSocket` already returned to the Client.
-
-For `storage`, an empty list grants every operation over the native filesystem.
-A non-empty list combines an operation set with an exact path or a path subtree:
-
-```ts
-permissions: {
-  storage: [
-    "Documents/report.json",
-    "read:Documents/**",
-    "read,write:Downloads/**",
-    "delete:/var/shared/temporary/**",
-  ],
-}
-```
-
-A path without an operation prefix grants `read`, `write`, and `delete`.
-There is no `all:` prefix. Operations may be combined with commas and are
-treated as an unordered set. A final `/**` includes the named path and its descendants.
-Relative paths begin at `system.storage.path()`; absolute paths retain their
-native meaning.
-
-Every `path()` operation on `system.storage`, Program `data`, Program `cache`,
-and System `uploads` needs a scope covering the returned native path under any
-granted operation. `navigate()` and `file()` only select locations and perform
-no access. Native reads, metadata, listing, space, and watching require `read`;
-directory creation, file writing, and appending require `write`; deleting and
-clearing require `delete`. Storage grants do not require an iframe reload and
-affect only later operations.
-
-Value-less permissions use an empty list only as their canonical present value.
-For example:
-
-```ts
-permissions: {
-  services: ["web-browser"],
-  appearance: true,
-}
-```
-
-`true` is assignment and request shorthand for the permission's default value.
-It therefore selects every Program for `services` and `programs`, every restricted
-layer for `layers`, every request
-target for `network`, every native path and operation for `storage`, and the
-canonical present value for value-less permissions such as `uploads`.
-
-When present, `all` supplies every otherwise-unassigned System capability,
-uniquely permits `program.permissions`, and adds `allow-same-origin` to the
-Client iframe. An explicit assignment for a permission takes priority over
-`all`; this is what allows a later approved request to restrict one capability.
-
-`context.permissions.get()` returns the exact stored assignment.
-`context.permissions.allows()` checks the current stored authority without
-prompting or changing it. Exact assignments take priority over the `all`
-fallback for the same permission. Related domain authority remains independent:
-`programs` also exposes corresponding Services, while `connections` also grants
-`desktopConnection`.
-`context.permissions.request()` returns only the permission: the requested
-canonical list when granted, `false` when denied, or `null` when unresolved.
-Every request asks the owner, including a request narrower than current
-authority. Approval replaces that exact stored permission and returns it;
-denial or dismissal leaves storage unchanged. Requests wait for up to two
-minutes by default, and `timeout()` selects another deadline.
-
-| Context operation | Result |
-| --- | --- |
-| `get(name)` | Stored `string[]`, `false`, or `null` |
-| `allows(name, value?)` | Whether current stored authority covers the requested value |
-| `request(name, value?)` | Requested canonical list, `false`, or `null` |
-| `timeout(milliseconds).request(...)` | The same request with another deadline |
-
-`program.permissions` is the authoritative permission-state capability:
-
-| Program operation | Result |
-| --- | --- |
-| `get(name)` | Stored canonical value |
-| `all()` | Stored values indexed by permission name |
-| `allows(name, value?)` | Whether the stored Program permissions cover the requested value |
-| `set(name, value)` | Completion |
-| `delete(name)` | Completion |
-
-`set()` accepts `true`, an allowed value set, or `false`; `null` belongs to
-`delete()`. A permission declaration accepts only `true` or an allowed value
-set and is copied during Program creation. Arrays are canonicalized as
-unordered sets.
-
-`set()` and `delete()` are commands returning `Promise<void>`; failure rejects.
-The System propagates resulting access changes to every Client Process of that
-Program. Program permission management from a Client is itself
-available only with `all`.
-
-For example, if a Program has `all: []` and the owner approves
-`context.permissions.request("services", ["browser"])`, the System stores and
-returns `services: ["browser"]`. That explicit Service assignment restricts the
-`services` fallback despite `all`; own-Program and `programs` authority remain
-independent sources of Service access.
-
-Direct asynchronous capabilities reject with `Execution is not permitted` when
-authority is missing. Discovery remains opaque: lists filter, searches return
-`null`, and operations through inaccessible handles report that the handle does
-not exist. Synchronous operations that cannot report failure remain silent.

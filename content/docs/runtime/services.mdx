@@ -1,26 +1,30 @@
 ---
 title: Services
-description: Stable communication addresses for Endpoint services.
+description: Understand stable addresses for reachable Endpoint capabilities.
 icon: Waypoints
 ---
 
-A Service is a stable communication address for an Endpoint incarnation that
-declared a Service role. It provides communication without controlling the
-Endpoint.
+A Service is a stable communication address for an Endpoint that chose to be
+reachable. It lets another part of the System communicate with that Endpoint
+without owning its Process or controlling its lifecycle.
 
-## Address
+## Addressing a Service
+
+A Service key identifies a Process and one of its Endpoint kinds. A
+Program-local Process name also needs the Program identity that gives the name
+its namespace:
 
 ```ts
-const service = system.service({
+const browser = system.service({
   program: "web-browser",
   process: "main",
   endpoint: "server",
 })
 ```
 
-When `process` is a Program-local name, `program` supplies its namespace and
-the Service follows replacement Processes under that name. A globally unique
-Process identity needs no Program coordinate and addresses only that Process:
+This address follows replacement Processes created under the same name. If the
+key uses a globally unique Process identity, the Program coordinate is not
+needed and the address refers only to that exact Process:
 
 ```ts
 const exact = system.service({
@@ -29,72 +33,41 @@ const exact = system.service({
 })
 ```
 
-`system.service(key)` synchronously creates or reuses the canonical handle. It
-does not discover providers, list Services, start a Process, or imply readiness.
+`system.service(key)` creates or reuses the canonical handle synchronously. It
+does not search for a provider or start one.
 
-A Client can address Services belonging to its own Program. For another
-Program, either `programs` or `services` must cover the addressed Program; an
-empty list covers every Program in that permission's domain. The narrower
-`services` permission grants no access to the Program itself. See
-[Security](/system/security) for the complete authority contract.
+## Availability without ownership
 
-## Shared contract
-
-| Member | Contract |
-| --- | --- |
-| `lifecycle` | Addressed Endpoint's `start` and `stop` events |
-| `exists()` | Whether a matching Service incarnation exists |
-| `waitReady(timeout?)` | Wait for a usable Client or ready Server |
-| `publish()` | Send an application event to the address |
-| `subscribe()` | Persistently observe an event or every event |
-| `wait()` | Wait for the next matching application event |
-| `events()` | Iterate matching or correlated application events |
-
-`ServerService` additionally provides `ask()` and `timeout()`.
-`ClientService` adds no operation to the shared Service contract. A Service has
-no `start()`, `stop()`, `enable()`, or `disable()` operation.
-Lifecycle `start` and `stop` messages are `undefined`, matching Endpoint
-lifecycle.
+A Service follows the addressed Endpoint's `start` and `stop` lifecycle and
+reports its current availability through `exists()` and `waitReady()`. It can
+publish and observe application events. A Server Service can also ask
+questions; a Client Service does not gain that Server-only capability.
 
 ```ts
-service.subscribe("changed", message => console.log(message))
-service.lifecycle.subscribe("stop", () => console.log("unavailable"))
-await service.ask("value") // available because this is a Server Service
+browser.lifecycle.subscribe("stop", () => console.log("Browser unavailable"))
+
+await browser.waitReady()
+const result = await browser.ask("page.open", { url: "https://example.com" })
 ```
 
-## Service role
+The handle intentionally has no `start()`, `stop()`, `enable()`, or `disable()`
+operation. Those belong to the Endpoint and Process owners. The Service only
+addresses whatever valid incarnation currently occupies its coordinates.
 
-A Program declaration supplies the default role for each Endpoint kind:
+## Becoming a Service
 
-```ts
-server: {
-  location: "dist/server",
-  entryFile: "main.js",
-  service: true,
-}
-```
-
-Omission means `false`. An object launch can override the default for one
-incarnation:
+An Endpoint declaration sets the default Service role. A Launch may override
+that role for one incarnation:
 
 ```ts
-await program.createProcess({
+const process = await program.createProcess({
   name: "main",
   server: { service: true },
   client: false,
 })
 ```
 
-The same `ServerLaunch` and `ClientLaunch` contracts apply to Process creation
-and later `server.start()` or `client.start()` calls. `context.isService()` and
-`endpoint.isService()` read the resolved role.
-
-## Availability and identity
-
-A Client Service is ready when its incarnation exists. A Server Service must
-also have announced readiness. Temporary absence remains waitable; permanent
-unavailability rejects. Calls use ten seconds by default.
-
-`Service`, `ServerService`, and `ClientService` are public classes. Repeated
-lookup of one address within the same SDK context returns the same handle, so
-reference equality and `instanceof` are meaningful.
+`endpoint.isService()` and `context.isService()` report the resolved role.
+A Client may address Services belonging to its own Program. Foreign Services
+become visible through the `services`, `programs`, or applicable `all`
+permission; see [Permissions](/system/permissions).

@@ -1,33 +1,22 @@
 ---
 title: Layout
-description: Express Flexbox and Grid relationships without adding visual appearance.
+description: Arrange children with Flexbox or Grid without adding visual paint.
 ---
 
-`Flex` and `Grid` are layout containers. Both render a `div`, preserve its
-native properties and ref, and add no color, material, border, padding, or
-shadow.
+`Flex` and `Grid` are layout containers. They render a `div`, forward its ref,
+and add no material, color, border, padding, or shadow. Use them when the
+parent-child relationship itself owns the layout.
 
-Use them when the parent-child relationship owns layout. When one existing
-element can carry the same layout properties, another container is unnecessary.
+Both accept `align`, `justify`, `gap`, and `inline`. Alignment uses `start`,
+`center`, `end`, `stretch`, or `baseline`. Justification uses `start`, `center`,
+`end`, `between`, `around`, or `evenly`.
 
-## Shared contract
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `align` | `start \| center \| end \| stretch \| baseline` | CSS default | Cross-axis item alignment |
-| `justify` | `start \| center \| end \| between \| around \| evenly` | CSS default | Main-axis or track distribution |
-| `gap` | `Spacing` | CSS default | Semantic Appearance level, pixels, or CSS gap |
-| `inline` | `boolean` | `false` | Use the inline form of the layout mode |
-
-Semantic gaps resolve from `appearance.spacing`. Direct numbers are pixels,
-and CSS values such as `"1rem"` pass through unchanged.
+`gap` accepts an Appearance-derived scale level, a pixel number, or an explicit
+CSS value.
 
 ## Flex
 
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `direction` | `row \| row-reverse \| column \| column-reverse` | `row` | Main-axis direction |
-| `wrap` | `boolean \| "reverse"` | CSS default | Child wrapping |
+Flex adds `direction` and `wrap` to the shared layout values.
 
 <ComponentPreview>
   <Preview>
@@ -39,31 +28,23 @@ and CSS values such as `"1rem"` pass through unchanged.
   </Preview>
   <PreviewCode>
 
-    ```tsx title="flex-layout.tsx"
-    import { Flex, Surface } from "@phreshos/react-ui"
-
-    export default function Actions() {
-      return <Flex align="center" justify="between" gap="medium">
-        <Surface>First</Surface>
-        <Surface>Second</Surface>
-        <Surface>Third</Surface>
-      </Flex>
-    }
+    ```tsx
+    <Flex align="center" justify="between" gap="medium">
+      <Surface>First</Surface>
+      <Surface>Second</Surface>
+      <Surface>Third</Surface>
+    </Flex>
     ```
 
   </PreviewCode>
 </ComponentPreview>
 
+`direction` accepts the four CSS flex directions. `wrap` accepts a boolean or
+`"reverse"`.
+
 ## Grid
 
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `columns` | `number \| string` | CSS default | Equal column count or CSS track expression |
-| `rows` | `number \| string` | CSS default | Equal row count or CSS track expression |
-| `flow` | CSS `grid-auto-flow` | CSS default | Automatic placement direction |
-
-A numeric track count must be a positive integer. React UI converts it to equal
-`minmax(0, 1fr)` tracks. A string remains an ordinary CSS track expression.
+Grid adds `columns`, `rows`, and automatic `flow`.
 
 <ComponentPreview>
   <Preview>
@@ -75,21 +56,20 @@ A numeric track count must be a positive integer. React UI converts it to equal
   </Preview>
   <PreviewCode>
 
-    ```tsx title="grid-layout.tsx"
-    import { Grid, Surface } from "@phreshos/react-ui"
-
-    export default function Summary() {
-      return <Grid columns={3} gap="medium">
-        <Surface>One</Surface>
-        <Surface>Two</Surface>
-        <Surface>Three</Surface>
-      </Grid>
-    }
+    ```tsx
+    <Grid columns={3} gap="medium">
+      <Surface>One</Surface>
+      <Surface>Two</Surface>
+      <Surface>Three</Surface>
+    </Grid>
     ```
 
   </PreviewCode>
 </ComponentPreview>
 
-Named layout properties own their corresponding CSS behavior and therefore
-override conflicting values in `style`. Native properties unrelated to that
-contract pass through to the rendered `div`.
+A numeric track count becomes equal `minmax(0, 1fr)` tracks. A string remains
+an ordinary CSS track expression. Named props own their corresponding layout
+behavior; unrelated native `div` props and styles pass through.
+
+If an existing element can express the same relationship itself, another
+layout container is unnecessary.

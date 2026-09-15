@@ -1,156 +1,143 @@
 ---
 title: Programs
-description: Stable software identities owned by the System.
+description: Understand the stable software identity at the root of the runtime model.
 icon: Package
 ---
 
-A Program is the stable software identity known by the System. It is the domain
-root for declaration, resources, installation, startup, and live Processes.
+A Program is software as the System knows it. Its identity remains stable while
+its installed files, active development source, and live Processes may change.
+This makes the Program the place where long-lived resources and policy belong,
+rather than attaching them to one temporary execution.
 
-## State
+## Identity and declaration
 
-| Member | Meaning |
-| --- | --- |
-| `identity` | Stable public kebab-case identity |
-| `assetId` | Identity of the current runtime entity used in Client asset URLs |
-| `name` | Human-readable resolved name |
-| `version` | Declared version, or `null` |
-| `description` | Declared description, or `null` |
-| `hasAgent` | Whether agent documentation was declared |
-| `server` | Resolved Server declaration, or `null` |
-| `client` | Resolved Client declaration, or `null` |
-
-The Server and Client declarations expose their default `start` and `service`
-values. The Client declaration also exposes its resolved Window defaults.
-Permission declarations seed persistent state during Program creation and are not
-runtime Program state.
-
-Only one current runtime Program occupies an identity. `assetId` changes when
-that runtime entity is replaced, allowing the System to distinguish its Client
-assets without changing the public identity.
-
-## System collection
-
-`system.program` is the collection of Programs known to the System:
-
-| Operation | Result |
-| --- | --- |
-| `list(onlyInstalled?)` | Every visible Program, optionally limited to installed Programs |
-| `find(identity)` | One Program or `null` |
-| `create(source)` | A new uninstalled Program from a runtime definition or absolute `program.json` path |
-
-The collection emits `create`, `forget`, `install`, and `uninstall`. The first
-three messages are the affected Program. `uninstall` sends
-`{ program, purge }`.
-
-A Client always sees its own Program. The `programs` permission grants selected
-Programs and their Processes, Endpoints, Windows, Services, and resources. A
-Client also accesses its own Program's Services without a permission. The
-narrower `services` permission grants foreign Service access without granting
-access to the owning Program. Program creation, force-creation, and stored
-permission administration require `all`. See [Security](/system/security) for
-the complete authority contract.
-
-## Owned capabilities
-
-| Member | Contract |
-| --- | --- |
-| `processes()`, `findProcess()` | Read this Program's live Processes |
-| `createProcess()`, `findOrCreateProcess()` | Create a Process belonging to this Program |
-| `runProcess()`, `exitProcesses()` | Run an attached Process or end all owned Processes |
-| `program.startup` | Read, enable, or disable one persistent Process launch |
-| `program.launch` | Read or replace the saved Process launch used when opening the Program icon |
-| `program.data` | Durable filesystem storage |
-| `program.cache` | Disposable filesystem storage |
-| `program.store` | Persistent key-value storage |
-| `program.database` | Writable Program SQL database |
-| `program.logs` | Read-only SQL access to captured Endpoint output |
-| `program.permissions` | Authoritative permission state belonging to this Program |
-
-`launch.get()` returns the saved [Launch](/runtime/processes#launch) or `null`.
-`launch.set(launch)` replaces `storage/launch.json` without creating a Process.
-It accepts a Launch object, including `{}` for an empty launch.
-
-Program creation and installation apply the declaration to the current and
-installed storage respectively. Both `startup` and `launch` accept `true | Launch` when supplied:
-`undefined` or omission leaves the corresponding saved configuration untouched,
-`true` writes `{}`, and an object writes that configuration. System boot
-reconstruction preserves all three stored settings.
-Declared permission entries update their stored values without changing
-unrelated permissions. Empty or omitted permissions leave the file untouched.
-
-Opening the Program icon reads this saved configuration and creates a Process
-with it. If no configuration is saved, it creates a Process with `{}`. Other
-Process launches use their own supplied Launch. In every case, unspecified
-Endpoint values fall back to the Program's Endpoint declarations.
+Every Program has a kebab-case `identity` used by the System and a resolved
+human name. It may also declare a version, description, icon, agent document,
+Server Endpoint, and Client Endpoint. The resolved `server` and `client`
+members describe what a default Process should start and whether each Endpoint
+should begin as a Service.
 
 ```ts
-await program.launch.set({ options: { document: "welcome.txt" } })
-const saved = await program.launch.get()
-```
+const program = await system.program.find("notes")
 
-`startup.get()` returns the configured launch or `null`.
-`startup.enable(launch?)` stores a validated launch, and `startup.disable()`
-removes it without changing the Program or its current Processes. Startup and
-icon launch operations work for both installed and uninstalled Programs.
-
-Enabled startup creates one Process immediately after installation and again
-when the System starts. Creating an uninstalled Program does not trigger it.
-Only installed Programs are reconstructed on System boot; storing startup for
-an uninstalled Program does not install it.
-If startup fails after installation, the Program remains installed and the
-installation stream reports the failure. The stored launch remains enabled.
-
-## Operations
-
-| Operation | Result |
-| --- | --- |
-| `icon(size?)` | `small`, `medium`, or `large` PNG icon as a `Blob`; `medium` is the default |
-| `agent()` | Declared agent document or `null` |
-| `installed()` | Whether an installed form currently exists |
-| `install({ launch, purge }?)` | Async generator of `stdout` and `stderr` command chunks |
-| `uninstall({ purge }?)` | Async generator of cleanup command chunks |
-| `forget()` | End Processes and remove only the runtime entity |
-
-`install()` keeps existing Processes alive through the install command. System
-ends them immediately before switching the registered Program to the installed
-configuration and paths. The generator completes without a return value.
-
-`launch: true` requests a Process with an empty Launch; a Launch object selects
-its configuration. System creates this Process after installation, before
-startup, even if the installing caller has ended. A requested launch failure
-throws without rolling back the completed installation.
-
-```ts
-for await (const chunk of program.install({ launch: { name: "editor", replace: true } })) {
-  console.log(chunk.text)
+if (program) {
+  console.log(program.identity, program.name, program.version)
+  console.log(program.server?.start, program.client?.start)
 }
 ```
 
-For installation, `purge: true` deletes existing installed Program storage before
-applying declaration settings. Source-project storage is not copied or deleted.
-For uninstallation, `purge: true` also ends Processes, deletes installed storage,
-and removes the runtime Program. Omission preserves storage.
-Creation and installation apply declared settings.
-See [Security](/system/security).
-`system.program.forceCreate(source)` is the Program-domain operation for replacing
-the current runtime entity while preserving installed files and storage.
+`system.program.list()` returns the Programs visible to the caller.
+`system.program.find(identity)` returns one visible Program or `null`.
+`system.program.create(source)` creates an uninstalled runtime Program from a
+definition or an absolute `program.json` path. `forceCreate()` claims the same
+identity for a new runtime Program while preserving installed files and
+storage.
 
-## Events
+`assetId` identifies the current runtime incarnation used by Client asset URLs.
+It may change when the Program is replaced; the public Program identity does
+not.
 
-An individual Program emits `processCreate` with the created Process,
-`processExit` with `{ process, status, code, signal }`, `forget` with
-`undefined`, and `uninstall` with `{ purge }`.
+## Processes belong to the Program
 
-## Runtime forms
+A Program is the only place from which one of its Processes is created. It can
+list, find, create, replace, run, and exit those Processes without turning the
+System-wide Process collection into a second ownership path.
 
-<Tabs items={["Installed", "Attached"]}>
-  <Tab value="Installed">
-    Production files live under System storage. The Program can be reconstructed
-    after a System restart and may keep one startup launch.
-  </Tab>
-  <Tab value="Attached">
-    Development or production files run directly from a local project. The
-    Program remains tethered to the connection that started it.
-  </Tab>
-</Tabs>
+```ts
+const process = await program.createProcess({
+  name: "editor",
+  client: true,
+  options: { document: "welcome.txt" },
+})
+
+const same = await program.findProcess("editor")
+console.log(same === process)
+```
+
+`processes()` returns all live Processes owned by the Program.
+`firstProcess()` and `lastProcess()` select them by creation time, and
+`findProcess()` accepts either an identity or a Program-local name.
+`exitProcesses()` ends them all and returns their identities.
+
+See [Processes](/runtime/processes) for Launch, replacement, parentage, and
+attached runs.
+
+## Saved launches
+
+The Program owns two persisted Launch values with different purposes.
+`program.launch` is used when a person opens the Program from its icon.
+`program.startup` is used when the System starts and immediately after the
+Program is installed.
+
+```ts
+await program.launch.set({
+  name: "main",
+  options: { document: "home.txt" },
+})
+
+await program.startup.enable({ name: "background", server: true })
+```
+
+`launch.get()` and `startup.get()` return the stored Launch or `null`.
+`startup.disable()` removes only the startup instruction; it does not stop a
+currently running Process. Both capabilities work on installed and attached
+Programs. Only installed Programs are reconstructed during System boot.
+
+A declaration may provide `launch` or `startup` as `true` or as a Launch.
+`true` stores an empty Launch. Omission makes no decision and leaves a stored
+value unchanged. Declared values are applied when the Program is created and
+when it is installed.
+
+## Program-owned resources
+
+Resources survive independently from any one Process:
+
+- `data` stores durable files.
+- `cache` stores disposable files.
+- `store` provides persistent key-value state.
+- `database` provides writable SQLite data.
+- `logs` provides read-only access to captured Endpoint output.
+- `permissions` owns the Program's authoritative Client permission state.
+
+All Processes of the Program see the same resources. Access through a Client
+still follows the caller's visible Program scope and the applicable permission
+boundary.
+
+## Installation and runtime form
+
+An installed Program runs from files owned by the System and can be restored
+after a restart. An attached Program runs directly from a project and remains
+tied to the connection that introduced it. Both are the same Program domain;
+their file ownership and lifetime differ.
+
+`install()` and `uninstall()` are async generators because their commands can
+produce ordered `stdout` and `stderr` chunks:
+
+```ts
+for await (const chunk of program.install({
+  launch: { name: "main", client: true },
+  purge: true,
+})) {
+  console.log(chunk.stream, chunk.text)
+}
+```
+
+Installation keeps the existing Processes alive while the installation command
+runs. Immediately before the Program switches to its installed definition and
+paths, those Processes end. An explicit `launch` runs from the new Program
+first, followed by configured startup. A failure in either launch does not
+undo a completed installation.
+
+For installation, `purge: true` removes previous installed storage before the
+new declaration is applied. Uninstallation normally removes only the installed
+form. With `purge: true`, it also ends Processes, removes storage, and forgets
+the runtime Program. `forget()` always ends live Processes and removes the
+runtime Program without uninstalling its files.
+
+## Lifecycle
+
+A Program emits `processCreate` and `processExit` for its own Processes. It
+emits `uninstall` with `{ purge }` when its installed form is removed, and
+`forget` when the runtime Program leaves the registry. The System-level Program
+collection publishes the corresponding `create`, `install`, `uninstall`, and
+`forget` events for all visible Programs.

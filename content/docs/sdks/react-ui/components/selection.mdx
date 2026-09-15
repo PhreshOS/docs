@@ -1,90 +1,11 @@
 ---
 title: Selection
-description: Represent boolean, exclusive, and listed choices with native accessible behavior.
+description: Represent boolean, exclusive, and listed choices with accessible controls.
 ---
 
-Selection components share the same Appearance-aware control values and expose
-normalized values instead of leaking the property names of their internal React
-Aria primitives.
-
-## Shared contracts
-
-Visual values are uniform across the selection components:
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `color` | `ControlColor` | `default:base` | Selected or active color |
-| `size` | `ScaleLevel` | `medium` | Indicator and field size |
-| `material` | `MaterialOptions` | Appearance material | Indicator or Select Surface overrides |
-| `disabled` | `boolean` | `false` | Disable interaction |
-
-Field properties remain attached to the component that owns them:
-
-| Property | Owners | Meaning |
-| --- | --- | --- |
-| `label`, `description` | All selection components | Accessible visible content and description |
-| `errorMessage`, `required`, `invalid` | Checkbox, Switch, RadioGroup, Select | Group or field validation |
-| `readOnly` | Checkbox, Switch, RadioGroup | Preserve focus while blocking changes |
-
-An individual Radio is an option inside RadioGroup. It does not independently
-own the group's required, invalid, read-only, or error state. Select does not
-expose a read-only mode; use `disabled` when its value must not be changed.
-
-## Checkbox
-
-Checkbox represents one independent boolean value.
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `checked` | `boolean` | Uncontrolled | Controlled checked state |
-| `defaultChecked` | `boolean` | `false` | Initial uncontrolled state |
-| `onChange` | `(checked: boolean) => void` | None | Next checked state |
-| `indeterminate` | `boolean` | `false` | Mixed-state presentation |
-
-## Switch
-
-Switch has the same boolean value contract as Checkbox. It represents an on/off
-setting and therefore does not expose an indeterminate state.
-
-## Radio and RadioGroup
-
-`RadioGroup` owns the selected string, validation, orientation, form name, and
-arrow-key navigation. Each `Radio` contributes one required `value` and its
-label.
-
-| Property | Owner | Default | Meaning |
-| --- | --- | --- | --- |
-| `value` | RadioGroup | Uncontrolled | Controlled selected string |
-| `defaultValue` | RadioGroup | None | Initial uncontrolled selection |
-| `onChange` | RadioGroup | None | Receives the next selected string |
-| `orientation` | RadioGroup | `vertical` | Layout and keyboard orientation |
-| `value` | Radio | Required | Option identity |
-
-Group `size`, `color`, `disabled`, and `material` values flow to its Radio
-children. A Radio can override the values that belong to an individual option.
-
-## Select
-
-Select owns one string selection presented through a trigger and popup listbox.
-It preserves keyboard navigation, typeahead, disabled options, focus restoration,
-form submission, and form reset.
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `options` | `readonly SelectOption[]` | Required | Available string-valued options |
-| `value` | `string \| null` | Uncontrolled | Controlled selection |
-| `defaultValue` | `string \| null` | `null` | Initial uncontrolled selection |
-| `onChange` | `(value: string \| null) => void` | None | Next selection |
-| `placeholder` | `ReactNode` | None | Trigger content without a selection |
-| `radius` | `Radius` | Appearance radius | Trigger and option radius |
-
-```ts title="select-option.ts"
-interface SelectOption {
-  value: string
-  label: string
-  disabled?: boolean
-}
-```
+Checkbox, Switch, Radio, and Select express different selection domains while
+sharing the same visual control language. Their `color`, `size`, `material`,
+disabled state, labels, and feedback follow one path through React UI.
 
 <ComponentPreview>
   <Preview>
@@ -101,14 +22,13 @@ interface SelectOption {
         options={[
           { value: "us", label: "United States" },
           { value: "eu", label: "Europe" },
-          { value: "retired", label: "Retired", disabled: true },
         ]}
       />
     </Grid>
   </Preview>
   <PreviewCode>
 
-    ```tsx title="selection.tsx"
+    ```tsx
     <Checkbox label="Include notifications" defaultChecked />
     <Switch label="Automatic updates" />
 
@@ -130,6 +50,50 @@ interface SelectOption {
   </PreviewCode>
 </ComponentPreview>
 
-Checkbox, Switch, and Radio render their own Surface-based indicator. Select
-uses Surface for both its trigger and popup. Unselected Select options remain
-transparent; keyboard focus is represented independently from selection.
+## Boolean choices
+
+Checkbox represents an independent boolean and can also display an
+`indeterminate` mixed state. Switch uses the same `checked`, `defaultChecked`,
+and boolean `onChange` contract but represents an on/off setting, so it has no
+mixed state.
+
+Both support `readOnly`, validation, description, and error feedback. Their
+Surface-based indicator receives `material` customization.
+
+## One choice from a group
+
+`RadioGroup` owns one selected string, validation, orientation, form name, and
+arrow-key navigation. Each `Radio` contributes a required `value` and its own
+label. Group color, size, disabled state, and material flow to children; an
+individual Radio may override values that belong to that option.
+
+```tsx
+<RadioGroup value={channel} onChange={setChannel} orientation="horizontal">
+  <Radio value="stable" label="Stable" />
+  <Radio value="preview" label="Preview" />
+</RadioGroup>
+```
+
+Read-only and invalid state belong to the group because selection and
+validation belong to the group.
+
+## One choice from a list
+
+Select presents one string value through a trigger and popup listbox. Each
+option contains `value`, `label`, and an optional `disabled` state.
+
+```ts
+const options = [
+  { value: "us", label: "United States" },
+  { value: "eu", label: "Europe" },
+  { value: "retired", label: "Retired", disabled: true },
+] as const
+```
+
+`value` may be a string or `null`; `defaultValue` defaults to `null`.
+`onChange` receives the next value. React Aria preserves keyboard navigation,
+typeahead, focus restoration, form submission, and form reset.
+
+The trigger and popup are Surfaces. Unselected options stay transparent, while
+focus and selection remain distinct states. Select uses the current Appearance
+transaction and animation preference for popup presence.

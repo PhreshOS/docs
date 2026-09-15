@@ -1,153 +1,108 @@
 ---
 title: Storage
-description: Access native files, uploads, System state, and Program resources.
+description: Understand native files, uploads, and persistence owned by each Program.
 icon: Database
 ---
 
-This page owns PhreshOS file persistence: System state, native filesystem
-access, Program resources, and the flat upload collection. These remain
-separate contracts even where they follow the same file-operation conventions.
+PhreshOS separates persistence by meaning. `Storage` represents directories and
+files within a filesystem boundary. `uploads` is a flat collection of public
+files. Program store and SQL provide structured persistence without pretending
+to be filesystems.
 
-## System state
+## Selecting a location
 
-Production state lives beneath `~/.phreshos` by default. `PHRESHOS_HOME`
-selects another root for that state.
-
-The System home contains owner credentials, the System database, installed
-Program files, Program resources, uploads, and logs. While
-the System is running, the home also determines its local gateway address.
-
-## Storage contract
-
-Native storage and Program `data` and `cache` expose the same two domain
-objects with different private boundary policies. A `Storage` is a directory
-location. A `StorageFile` is a file location. Selecting either location is
-synchronous and performs no filesystem operation:
+A `Storage` value is a directory location. A `StorageFile` is a file location.
+`navigate()` and `file()` only derive new handles; they perform no filesystem
+access and preserve the boundary of the Storage from which they came.
 
 ```ts
 const reports = system.storage.navigate("Documents", "reports")
-const report = reports.file("today.json")
+const today = reports.file("today.json")
+
+await reports.create()
+await today.write({ complete: true })
 ```
 
-The declarative boundary remains attached to every derived object and is not
-part of the public API. `navigate()` changes only the current directory entry
-point; it cannot widen that boundary.
+This distinction lets code construct a path before deciding whether to read,
+write, watch, move, or delete it. `name()` and `path()` return the selected
+location. `stat()` returns metadata or `null` when the entry does not exist.
 
-| `Storage` operation | Contract |
-| --- | --- |
-| `name()`, `path()` | Return the selected directory's name or absolute path |
-| `navigate(...parts)` | Select a directory and return another `Storage` |
-| `file(...parts)` | Select a file and return a `StorageFile` |
-| `create()` | Create the directory and missing ancestors |
-| `stat()` | Return directory metadata or `null` |
-| `list(options?)` | Return sorted `Storage` and `StorageFile` children; recursion and depth are optional |
-| `copy(destination, options?)`, `move(destination, options?)` | Copy or move to an exact `Storage` destination |
-| `delete()`, `clear()` | Remove the directory, or empty it while preserving it |
-| `space()` | Return filesystem capacity, available, and used bytes |
-| `watch(options?)` | Yield ordered `change` and `rename` events until cancelled |
+## Directories and files
 
-| `StorageFile` operation | Contract |
-| --- | --- |
-| `name()`, `path()` | Return the selected file's name or absolute path |
-| `stat()` | Return file size and modification time, or `null` |
-| `stream(options?)`, `bytes(options?)`, `text(options?)` | Read the complete file or a byte range |
-| `json()` | Read and parse the complete file as JSON |
-| `write(content, options?)`, `append(content)` | Replace atomically or append typed `WritableContent` |
-| `copy(destination, options?)`, `move(destination, options?)` | Copy or move to an exact `StorageFile` destination |
-| `delete()` | Remove the file; absence is accepted |
+A directory can be created, listed, copied, moved, deleted, or cleared. Its
+`space()` operation reports filesystem capacity, available bytes, and used
+bytes. `watch()` yields ordered `change` and `rename` events until its signal is
+aborted or iteration ends.
 
-`WritableContent` is JSON data, a `Blob`, an `ArrayBuffer`, an
-`ArrayBufferView`, or a `ReadableStream<Uint8Array>`. No operation accepts
-`unknown` as file content.
+```ts
+for await (const change of reports.watch({ recursive: true })) {
+  console.log(change.event, change.path)
+}
+```
 
-## Native storage
+A file can be read as a stream, bytes, UTF-8 text, or parsed JSON. Byte reads
+accept an offset and length. `write()` replaces the file atomically and permits
+overwrite by default; `append()` extends it. Copying and moving reject an
+existing destination unless `overwrite: true` is supplied.
 
-`system.storage` enters the native filesystem at the operating-system user's
-home directory. That entry point is not a containment boundary: absolute paths
-and resolved parent paths may address files elsewhere. A Client requires a
-`storage` scope covering both the target path and operation, or the `all`
-permission.
+Writable content may be JSON data, a `Blob`, an `ArrayBuffer`, an
+`ArrayBufferView`, or a `ReadableStream<Uint8Array>`. The contract deliberately
+does not accept an untyped `unknown` value.
 
-`path()` returns the current entry point. `navigate()` and `file()` create
-handles without accessing the filesystem. Reading either handle's `path()`
-accepts any operation grant covering it. Reads, metadata, listing, space, and
-watching require `read`; creating, writing, and appending require `write`;
-deleting and clearing require `delete`.
-See [Security](/system/security#permissions) for the scope grammar.
+## Native and Program boundaries
+
+`system.storage` begins at the operating-system user's home directory. It is an
+entry point, not a containment boundary: an absolute path may select another
+native location. A Client needs a `storage` scope covering the operation and
+path it actually uses.
+
+Every Program exposes `data` and `cache` through the same Storage contract.
+Their implementations are contained within Program-owned roots and cannot
+escape through parent segments or symbolic links. `data` is durable;
+`cache` is disposable. All Processes belonging to the Program share both.
+
+```ts
+const settings = program.data.file("settings.json")
+const cachedIndex = program.cache.file("search", "index.bin")
+```
+
+Client access follows Program visibility. Returning any native absolute path
+through `path()` additionally requires a matching Storage permission.
 
 ## Uploads
 
-`system.uploads` is a flat collection of public files owned by the System. It
-is a distinct contract from `Storage`; similarity in its read operations does
-not give it directory navigation or native filesystem semantics.
-
-`write(content)` stores one `WritableContent` value under an opaque generated
-key and returns its complete upload record:
+`system.uploads` stores public files under opaque generated keys. It is flat by
+design: there is no directory navigation, listing, deletion, or clearing
+contract.
 
 ```ts
-const upload = await system.uploads.write("Hello from PhreshOS")
+const upload = await system.uploads.write(imageBlob)
 
 console.log(upload.file, upload.size, upload.modifiedAt)
+const bytes = await system.uploads.bytes(upload.file)
 ```
 
-The record combines the opaque file key with the same `FileStat` returned by a
-Storage file: size in bytes and last modification time as Unix milliseconds.
+`write()` accepts the same `WritableContent` convention as Storage and returns
+the generated file key together with size and last-modified time. `stat()`
+returns that file metadata or `null`. Existing uploads can be read as streams,
+bytes, text, or JSON. A Client needs `uploads` to create one; reading a known
+public upload does not require that permission.
 
-| Upload operation | Contract |
-| --- | --- |
-| `path()` | Return the collection's absolute directory |
-| `write(content)` | Store `WritableContent` and return its upload record |
-| `stat(file)` | Return `FileStat` or `null` |
-| `stream(file)` | Open an upload as a byte stream |
-| `bytes(file)` | Read an upload as bytes |
-| `text(file)` | Read an upload as UTF-8 text |
-| `json(file)` | Read and parse an upload as JSON |
+## Structured Program state
 
-The contract intentionally exposes no listing, deletion, or clearing
-operation. Completed uploads are public, so a Client can use `stat()`,
-`stream()`, `bytes()`, `text()`, and `json()` without a permission. Creating an
-upload with `write()` requires `uploads` or `all`. Exposing the native directory
-with `path()` requires a matching `storage` scope or `all`.
+`program.store` is persistent key-value state. Values can be read, tested,
+replaced, deleted, or cleared. `set(key, value, ttl?)` can attach an expiration
+time in milliseconds.
 
-## Program resources
+```ts
+await program.store.set("draft", { title: "Welcome" })
+const draft = await program.store.get("draft")
+```
 
-Every Program handle exposes the same resource families in every SDK:
+`program.database` is a writable SQLite database. `program.logs` exposes the
+same query shape over read-only captured Client and Server output. Both accept
+tagged SQL templates or a SQL string with bound values.
 
-| Resource | Purpose |
-| --- | --- |
-| `data` | Durable filesystem-like files |
-| `cache` | Disposable filesystem-like files |
-| `store` | Key-value state |
-| `database` | Writable SQLite application data |
-| `logs` | Read-only structured Program logs |
-
-Program `data` and `cache` are contained within their own roots. Their paths
-cannot traverse outside the root or pass through a symbolic link. A Client can
-access resources belonging to its own Program and to Programs granted by
-`programs`; `all` grants unrestricted access. Returning a native path through
-their `path()` operation additionally requires a matching `storage` scope or
-`all`.
-
-## Program store
-
-`program.store` is persistent key-value state rather than a filesystem:
-
-| Operation | Result |
-| --- | --- |
-| `get(key)` | Stored value, or `undefined` when absent or expired |
-| `set(key, value, ttl?)` | Whether the value was stored; optional TTL is milliseconds |
-| `delete(keyOrKeys)` | Whether any value was removed |
-| `has(key)` | Whether a non-expired value exists |
-| `clear()` | Remove every stored value |
-
-## Program SQL
-
-Both `program.database` and `program.logs` expose `query()`. It accepts a tagged
-template, or a SQL string with an optional values array, and returns the rows.
-Template interpolations become bound values. The database is writable; logs
-are read-only.
-
-Each captured log row has `createdAt`, Process identity in `process`, Endpoint
-`source`, `kind`, and text `content`. Sources are `client` or `server`. Standard kinds are
-`debug`, `log`, `info`, `warn`, `error`, `stdout`, `stderr`, and `exit`;
-applications may use another string kind.
+Production System state lives beneath `~/.phreshos` by default.
+`PHRESHOS_HOME` selects another root for the System database, installed
+Programs, Program resources, uploads, credentials, logs, and local gateway.

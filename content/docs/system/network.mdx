@@ -1,43 +1,30 @@
 ---
 title: Network
-description: Use Fetch and WebSocket through the shared System contract.
+description: Use standard Fetch and WebSocket values through System authority.
 icon: Globe
 ---
 
-The System exposes two outbound network operations: `fetch()` performs one
-request and `websocket()` acquires one persistent connection. Both preserve
-their platform-standard web contracts rather than introducing PhreshOS-specific
-request, response, or socket types.
+`system.network` gives every SDK the same two outbound network capabilities.
+It preserves the web platform contracts: Fetch returns a standard `Response`,
+and WebSocket returns a standard `WebSocket`. PhreshOS controls authority and
+lifetime without inventing another request or socket model.
 
 ## Fetch
 
-`system.network.fetch()` accepts `RequestInfo | URL` and optional `RequestInit`, then
-returns a standard `Response`.
-
 ```ts
-const response = await system.network.fetch("https://example.com/data.json", {
+const response = await system.network.fetch("https://api.example.com/items", {
   headers: { accept: "application/json" },
 })
 
-const data = await response.json()
+const items = await response.json()
 ```
 
+The operation accepts `RequestInfo | URL` and an optional `RequestInit`.
 Supplying a `Request` preserves its method, headers, body, and abort signal.
-Node and Server execute the request locally when that preserves the observable
-contract. A Client crosses its System boundary. In every environment the
-request remains owned by the active System connection or execution Context.
-
-A Client requires a `network` scope covering the request URL, or the `all`
-permission. The scope authorizes the target selected by the caller. Standard
-HTTP redirect handling remains part of that authorized request; this
-permission is a System capability boundary, not a packet-level firewall.
+Server and Node can execute the request locally when that preserves the same
+observable result; a Client crosses its System boundary.
 
 ## WebSocket
-
-`system.network.websocket()` accepts the same URL and optional protocols as the
-standard `WebSocket` constructor. Its promise resolves with a native
-`WebSocket` in its ordinary `CONNECTING`, `OPEN`, `CLOSING`, or `CLOSED`
-lifecycle.
 
 ```ts
 const socket = await system.network.websocket("wss://example.com/events")
@@ -47,20 +34,22 @@ socket.addEventListener("message", event => {
 })
 ```
 
-Opening, messages, failures, and closure use the standard properties, methods,
-and events. PhreshOS does not add another socket contract. Node and Server open
-the socket locally and close it when the owning System connection or Server
-Endpoint ends. A Client first acquires authority through the Desktop boundary,
-then creates the browser-native socket. Reloading or closing its frame ends the
-connection naturally.
+The returned socket uses the standard browser-compatible lifecycle, methods,
+properties, and events. The acquisition is asynchronous because a Client may
+need to cross the System boundary before receiving that socket.
 
-A Client requires a `network` scope covering the normalized WebSocket URL, or
-the `all` permission. Permission failure rejects the acquisition promise.
+Server and Node sockets close when their owning execution Context or System
+connection ends. A Client-owned socket follows the browser frame that received
+it.
 
-## Authority boundary
+## Client authority
 
-Server and Node retain full System authority. Client permission checks govern
-only `system.network.fetch()` and `system.network.websocket()`; they do not redefine the
-browser's native `fetch()` or `WebSocket` APIs. Revoking a permission prevents
-future System operations but cannot revoke a `Response` or `WebSocket` already
-returned to the Client.
+A Client needs a `network` scope covering the requested URL or the applicable
+`all` fallback. HTTP and WebSocket schemes are distinct. Permission failure
+rejects the operation before the value is returned.
+
+The permission governs `system.network.fetch()` and
+`system.network.websocket()`, not the browser's native networking APIs. Once a
+`Response` or WebSocket has been returned, changing the permission does not
+retroactively revoke that value. See [Permissions](/system/permissions) for
+the scope grammar.

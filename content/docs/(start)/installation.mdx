@@ -1,27 +1,25 @@
 ---
 title: Installation
-description: Install, inspect, and control the PhreshOS System.
+description: Install PhreshOS and control its native per-user service.
 icon: Download
 ---
 
-Installation adds the PhreshOS CLI, installs the official System release, and
-registers its lifecycle with the host operating system.
+Installation adds the `phresh` CLI, installs an official System release, and
+registers that System with the current user's operating-system service manager.
 
 ## Requirements
 
-- Node.js `24.15.0` or newer.
+- Node.js `24.15.0` or newer for the current System release.
 - macOS, Linux, or Windows under a normal user account.
-- Permission to configure a native per-user service.
-
-Confirm the active Node.js version before installing:
+- Permission to register a native per-user service.
 
 ```sh
 node --version
 ```
 
-<Callout title="Why Node.js 24.15.0?">
-  The CLI can run on Node.js `20.10` or newer, but the current PhreshOS System
-  release requires Node.js `24.15.0` or newer.
+<Callout title="CLI runtime">
+  The CLI itself supports Node.js `20.10` or newer. The installed System
+  currently requires Node.js `24.15.0` or newer.
 </Callout>
 
 ## Install
@@ -65,15 +63,15 @@ node --version
 phresh system install
 ```
 
-Installation verifies the official archive checksum, installs production
-dependencies into an immutable version directory, selects that release, and
-configures a native per-user service.
+The CLI verifies the release checksum, installs production dependencies in a
+versioned directory, selects that release, registers the per-user service, and
+starts it.
 
 </Step>
 
 </Steps>
 
-## Control the service
+## Service lifecycle
 
 ```sh
 phresh system status
@@ -83,46 +81,33 @@ phresh system enable
 phresh system disable
 ```
 
-Starting and stopping control current execution. Enabling and disabling control
-automatic startup.
-
-<Tabs items={["macOS", "Linux", "Windows"]}>
-  <Tab value="macOS">
-    PhreshOS uses a per-user `launchd` service.
-  </Tab>
-  <Tab value="Linux">
-    PhreshOS uses `systemd --user` when a real user manager is available. A
-    container without an init manager uses a detached owner process and reports
-    that automatic startup is unavailable.
-  </Tab>
-  <Tab value="Windows">
-    PhreshOS uses a least-privilege per-user scheduled task.
-  </Tab>
-</Tabs>
+Start and stop affect current execution. Enable and disable control automatic
+startup. macOS uses a per-user `launchd` service, Linux uses `systemd --user`
+when a user manager is available, and Windows uses a least-privilege per-user
+scheduled task.
 
 ## System home
 
-State lives in `~/.phreshos` by default. Set `PHRESHOS_HOME` to an absolute path
-before invoking the CLI when you intentionally operate another System home.
+Persistent state lives under `~/.phreshos` by default. Set `PHRESHOS_HOME` to an
+absolute path before invoking the CLI when you intentionally want another
+System home.
 
 ```sh
 export PHRESHOS_HOME=/absolute/path/to/system-state
 phresh system status
 ```
 
-<Callout type="warn" title="One home, one gateway">
-  The CLI and the running System must use the same System home. Otherwise, the
-  CLI correctly reports that no local gateway is listening.
-</Callout>
+The CLI and running System must select the same home because that location also
+determines the owner-local gateway address.
 
-## Production ports
+## Desktop port
 
-Production selects the first available port from `4300-4399`. Set
-`PHRESHOS_PORT` to select one port, an inclusive range, or an ordered mixture.
+Production chooses the first available port from `4300-4399`.
+`PHRESHOS_PORT` can select one port, an inclusive range, or an ordered list.
 
 ```sh
 export PHRESHOS_PORT=4196,4234,5000-5100
 phresh system start
 ```
 
-Development retains Vite's default port selection.
+Development retains Vite's port selection.

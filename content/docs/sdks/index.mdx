@@ -1,69 +1,40 @@
 ---
 title: Overview
-description: One domain model adapted to each PhreshOS environment.
+description: Choose the PhreshOS adapter for each execution environment.
 icon: Braces
 ---
 
-PhreshOS separates contracts from environment adapters. Core defines the
-domain model; each environment SDK implements or composes that model without
-redefining it. React UI interprets Appearance as environment-neutral React
-components without introducing another System or domain model.
+PhreshOS has one domain model and several environment adapters. Core defines
+shared meaning. Client, Server, and Node implement that meaning where they run.
+React adapts live contracts to component state. React UI provides the visual
+language. The CLI presents Project and System operations to a terminal.
 
 <Cards>
-  <Card
-    title="CLI"
-    description="Operate the same model from a terminal."
-    href="/sdks/cli"
-  />
-  <Card
-    title="Core"
-    description="Shared contracts, schemas, constructors, and Program configuration."
-    href="/sdks/core"
-  />
-  <Card
-    title="Client"
-    description="Use the shared model inside a Desktop Client Endpoint."
-    href="/sdks/client"
-  />
-  <Card
-    title="Server"
-    description="Use the shared model inside a Server Endpoint."
-    href="/sdks/server"
-  />
-  <Card
-    title="Node"
-    description="Connect external tools and compose local Program projects."
-    href="/sdks/node"
-  />
-  <Card
-    title="React"
-    description="Core contracts and explicit subscriptions adapted to React."
-    href="/sdks/react"
-  />
-  <Card
-    title="React UI"
-    description="Appearance-aware React components and visual primitives."
-    href="/sdks/react-ui"
-  />
+  <Card title="CLI" description="Operate projects, runtime domains, and the System from a terminal." href="/sdks/cli" />
+  <Card title="Core" description="Use shared contracts, Program configuration, and boundary utilities." href="/sdks/core" />
+  <Card title="Client" description="Use Context, Desktop, and System inside a Client Endpoint." href="/sdks/client" />
+  <Card title="Server" description="Use Context and trusted System authority inside a Server Endpoint." href="/sdks/server" />
+  <Card title="Node" description="Connect external tools and operate local Program projects." href="/sdks/node" />
+  <Card title="React" description="Provide roots and follow domain state through React." href="/sdks/react" />
+  <Card title="React UI" description="Build interfaces from Appearance-aware components." href="/sdks/react-ui" />
 </Cards>
 
-## One domain model
+## Shared meaning, different boundaries
 
-Client, Server, and Node implement the same `Program`, `Process`, `Endpoint`,
-and `Service` contracts from Core. Their transports and authority boundaries
-may differ, but the public entities do not. Shared contracts have one import
-path; environment SDKs export only the roots and creators they own. Repeated
-navigation to one live entity in the same SDK context returns the same
-canonical handle.
+Client, Server, and Node return the same Core Program, Process, Endpoint,
+Service, Connection, and Session domains. The operation may execute locally or
+cross a transport, and the caller may have different authority, but the public
+contract remains the same.
 
 ```ts
 import { Program } from "@phreshos/core"
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
-const [program] = await system.program.list()
+const program = await system.program.find("terminal")
 
-console.log(program instanceof Program) // true
-
-await system.disconnect()
+console.log(program instanceof Program)
 ```
+
+Environment packages export the roots and constructors they own. They do not
+re-export Core under new names or redefine shared domain objects.

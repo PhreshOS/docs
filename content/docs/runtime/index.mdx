@@ -1,56 +1,40 @@
 ---
 title: Overview
-description: The small set of objects that make up a running PhreshOS System.
+description: Understand the four components that make up a running PhreshOS Program.
 icon: Cpu
 ---
 
-The Program is the domain root. Everything live belongs to its ownership
-hierarchy.
+The PhreshOS runtime is built from four components: **Program**, **Process**,
+**Endpoint**, and **Service**. Together they describe what software exists,
+what is running, where its code executes, and how other software reaches it.
 
-`Program`, `Process`, `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, and
-`Service` are shared runtime classes. `Endpoint` is the common base of the two
-Endpoint kinds; it is not another ownership level. A Service addresses an
-Endpoint without entering the ownership tree.
+A Program is the stable root. It can own multiple live Processes. Every
+Process has one permanent Server Endpoint and one permanent Client Endpoint,
+even when one of those Endpoints is not currently running.
+
+```text
+Program
+└── Process
+    ├── Server Endpoint
+    └── Client Endpoint
+```
+
+A Service does not add another level to this tree. It is a stable address for
+an Endpoint that chose to be reachable as a Service. This distinction keeps
+ownership and discovery separate: the Process owns the Endpoint, while the
+Service lets other code communicate with it.
 
 <Cards>
-  <Card
-    title="Programs"
-    description="Stable software identity, installation, and owned resources."
-    href="/runtime/programs"
-  />
-  <Card
-    title="Processes"
-    description="Live execution aggregates created from immutable launch intent."
-    href="/runtime/processes"
-  />
-  <Card
-    title="Endpoints"
-    description="Server and Client execution owned by each Process."
-    href="/runtime/endpoints"
-  />
-  <Card
-    title="Services"
-    description="Stable addresses for live Endpoint capabilities."
-    href="/runtime/services"
-  />
-  <Card
-    title="Context"
-    description="Capabilities belonging to the currently executing Endpoint."
-    href="/runtime/context"
-  />
-  <Card
-    title="Communication"
-    description="Context, exact destinations, questions, and observation."
-    href="/runtime/communication"
-  />
+  <Card title="Programs" description="Stable software identities and the resources they own." href="/runtime/programs" />
+  <Card title="Processes" description="Individual live executions created from a Launch." href="/runtime/processes" />
+  <Card title="Endpoints" description="The Server and Client execution sides of a Process." href="/runtime/endpoints" />
+  <Card title="Services" description="Stable addresses for reachable Endpoint capabilities." href="/runtime/services" />
+  <Card title="Context" description="The capabilities belonging to the Endpoint currently executing." href="/runtime/context" />
+  <Card title="Communication" description="Publications, questions, observation, and transferable values." href="/runtime/communication" />
 </Cards>
 
-## Shared contracts
-
-Client, Server, and Node SDKs implement the same contracts for these domain
-objects. Repeated lookup of one live entity within the same SDK context returns
-its canonical handle, so reference equality and `instanceof` remain meaningful.
-
-Context, Desktop, Window, storage, and appearance are contracts rather than
-additional ownership levels. Each belongs to the domain entity or environment
-identified on its canonical page.
+Client, Server, and Node expose these components through the same Core
+contracts. The environment changes how an operation reaches the System and
+which authority it has; it does not change what a Program or Process means.
+Within one SDK context, reaching the same entity again returns the same handle,
+so reference equality and Core class checks remain meaningful.

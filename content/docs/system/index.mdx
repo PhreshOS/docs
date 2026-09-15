@@ -1,73 +1,46 @@
 ---
 title: Overview
-description: The authoritative runtime and the Desktop that represents it.
+description: Understand the authoritative System and the capabilities it provides.
 icon: MonitorCog
 ---
 
-The System is the authoritative runtime. It owns Program and Process lifecycle,
-communication routing, authentication, persistence, appearance, and access to
-host capabilities. The Desktop represents that state graphically.
+The System is the authority behind PhreshOS. It owns software identity and
+execution, routes communication, persists state, controls access to the host,
+and decides which Client capabilities are visible. A Desktop represents that
+state graphically, but it does not become a second authority.
+
+The `System` contract is the common entry point in Client, Server, and Node.
+Each environment reaches it differently and may have different authority, yet
+the capability names and returned domain handles remain the same.
+
+```ts
+const programs = await system.program.list()
+const processes = await system.process.list()
+
+console.log(programs.length, processes.length)
+```
 
 <Cards>
-  <Card
-    title="Desktop"
-    description="Authoritative Window state and local browser representation."
-    href="/system/desktop"
-  />
-  <Card
-    title="Appearance"
-    description="Themes, preferences, iframe color schemes, and React UI."
-    href="/system/appearance"
-  />
-  <Card
-    title="Storage"
-    description="Native files, uploads, System state, and Program-owned resources."
-    href="/system/storage"
-  />
-  <Card
-    title="Network"
-    description="Use Fetch and WebSocket through the connected System environment."
-    href="/system/network"
-  />
-  <Card
-    title="Shell"
-    description="Stream an operating-system command through the shared System contract."
-    href="/system/shell"
-  />
-  <Card
-    title="Security"
-    description="Owner authentication, Client authority, and permissions."
-    href="/system/security"
-  />
+  <Card title="Desktop" description="Windows, layers, viewport, and local representation." href="/system/desktop" />
+  <Card title="Appearance" description="The complete visual source and its Desktop resolution." href="/system/appearance" />
+  <Card title="Storage" description="Native files, uploads, and Program-owned persistence." href="/system/storage" />
+  <Card title="Network" description="Standard Fetch and WebSocket through System authority." href="/system/network" />
+  <Card title="Shell" description="Owned operating-system command execution." href="/system/shell" />
+  <Card title="Security" description="Authentication and visible Client authority." href="/system/security" />
 </Cards>
 
-## Contract
+## One capability root
 
-| Member | Capability |
-| --- | --- |
-| `program` | System-wide Program collection and lifecycle events |
-| `process` | System-wide Process collection and lifecycle events |
-| `connection` | Live browser Connection collection and lifecycle events |
-| `session` | Authentication Session collection and lifecycle events |
-| `storage` | Native filesystem access |
-| `uploads` | Flat System-owned upload collection |
-| `appearance` | Read and replace authoritative Appearance |
-| `service(key)` | Stable communication address for one Endpoint Service |
-| `program.forceCreate(source)` | Replace one runtime Program without removing installed resources |
-| `network.fetch(input, init?)` | Outbound web request |
-| `network.websocket(url, protocols?)` | Outbound standard WebSocket connection |
-| `shell(command, options?)` | Owned operating-system command stream |
+`system.program`, `system.process`, `system.connection`, and `system.session`
+are observable collections. They find and list the domain objects currently
+visible to the caller and publish their System-wide lifecycle events.
 
-Client, Server, and Node implement this same contract. Authority may reject an
-operation; it does not replace the contract with a narrower shape.
+`system.storage`, `system.uploads`, `system.appearance`, and `system.network`
+expose persistent and host capabilities. `system.service(key)` creates a stable
+communication address, while `system.shell()` runs a command whose lifetime is
+owned by its returned iterator.
 
-## Local connection
-
-External Node tools and the CLI reach the running System through an owner-local
-gateway: a Unix-domain socket with owner-only permissions on POSIX systems or an
-owner-created named pipe on Windows. It opens no network port.
-
-The gateway is an external transport mechanism, not a browser `Connection` or
-authentication `Session`. Node and the CLI use ordinary System contracts
-through it; code that owns this transport adds only `disconnect()` to end its
-lifetime.
+External Node tools and the CLI connect through an owner-local gateway. On
+POSIX it is a Unix-domain socket; on Windows it is an owner-created named pipe.
+This gateway is an external trusted transport, not a browser Connection or an
+authentication Session.

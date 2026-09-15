@@ -1,24 +1,14 @@
 ---
 title: Permissions
-description: Inspect stored Client authority and request owner decisions.
+description: Inspect Client authority and ask the owner to replace one decision.
 ---
 
-Client permissions expand authority for later Client operations. Permission
-names and their value domains come from Core's closed catalog; a Program cannot
-invent either one.
+The Client SDK exposes permission state from two positions.
+`context.permissions` belongs to the Client currently executing and can request
+an owner's decision. `program.permissions` is the authoritative state owned by
+a Program and requires `all` when used from a Client.
 
-## Context permissions
-
-`context.permissions` reads and checks the Program's authoritative stored
-permissions. Declared entries are applied during Program creation and
-installation according to the [permission persistence rules](/system/security#permissions).
-
-| Operation | Result |
-| --- | --- |
-| `get(name)` | Exact stored assignment: a canonical list, `false`, or `null` |
-| `allows(name, value?)` | Whether current stored authority covers the request |
-| `request(name, value?)` | Requested canonical list, `false`, or `null` |
-| `timeout(milliseconds).request(...)` | The same request with another deadline |
+## Current Context authority
 
 ```ts
 import { context } from "@phreshos/client"
@@ -26,51 +16,36 @@ import { context } from "@phreshos/client"
 const scope = ["https://api.example.com"] as const
 
 if (!await context.permissions.allows("network", scope)) {
-  const granted = await context.permissions.request("network", scope)
-  console.log(granted)
+  const result = await context.permissions.request("network", scope)
+  console.log(result)
 }
 ```
 
-Requests wait for up to two minutes by default. Every call asks the owner, even
-when current authority already covers a narrower request. Approval replaces
-that exact permission and returns its canonical value. Denial or dismissal
-returns `false` or `null` without changing storage.
+`get(name)` reads the exact stored assignment without applying fallback
+authority. `allows(name, value?)` answers whether the complete stored state
+covers the requested capability. Neither prompts the owner or changes storage.
 
-## Program permissions
+`request()` always asks the owner. Approval replaces that exact permission and
+returns its canonical array. Denial returns `false`; dismissal or timeout
+returns `null`. The default deadline is two minutes, and
+`timeout(milliseconds)` creates the same request capability with another
+deadline.
 
-`program.permissions` directly manages the only permission state belonging to
-that Program: `storage/permissions.json`.
-
-| Operation | Result |
-| --- | --- |
-| `get(name)` | Stored canonical value |
-| `all()` | Every stored value indexed by permission name |
-| `allows(name, value?)` | Whether stored values cover the request |
-| `set(name, value)` | `Promise<void>` |
-| `delete(name)` | `Promise<void>` |
+## Program permission state
 
 ```ts
 const program = await context.program()
 
 await program.permissions.set("network", ["https://api.example.com"])
-console.log(await program.permissions.get("network"))
+console.log(await program.permissions.all())
 await program.permissions.delete("network")
 ```
 
-Client access to `program.permissions` itself requires `all`. Server and Node
-retain owner-level System access.
+`get()` reads one exact assignment, `all()` returns the stored record, and
+`allows()` applies the same effective coverage rules used by Client operations.
+`set()` accepts `true`, a valid value list, or `false`. `delete()` removes the
+exact assignment so broader fallback may apply again.
 
-## Canonical values
-
-`true` is assignment and request shorthand for a permission's default list. It
-is resolved before storage or return. Arrays are unordered sets and duplicate
-values are removed. `false` records denial, while `null` represents no stored
-assignment and belongs to `delete()` rather than `set()`.
-
-An explicit assignment has priority over the `all` fallback, which supplies
-unassigned permissions. Related domain authority remains independent:
-`programs` also exposes matching Services, while `connections` also grants
-`desktopConnection`. The reverse grants do not apply.
-
-[Security](/system/security) defines every permission, its value grammar,
-creation-time seeding, fallback authority, and exact operation coverage.
+Core owns permission names and value domains. See
+[Permissions](/system/permissions) for declaration persistence, the catalog,
+scope grammar, fallback priority, and visible-domain behavior.

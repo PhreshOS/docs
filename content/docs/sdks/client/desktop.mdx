@@ -1,54 +1,39 @@
 ---
 title: Desktop
-description: Read and update the Desktop containing the current Client.
+description: Use the browser environment containing the current Client.
 ---
 
-`desktop` represents the graphical environment containing this Client
-Endpoint. It exposes the Desktop viewport and its effective preferences without
-exposing Desktop implementation details.
+The Client `desktop` represents the graphical environment containing this
+Endpoint. It exposes the current viewport, effective preferences, and—when
+permitted—the browser Connection carrying the Desktop.
 
 ```ts
 import { desktop } from "@phreshos/client"
-```
 
-## Connection
-
-```ts
-const connection = await desktop.connection()
-const session = await connection.session()
-```
-
-`desktop.connection()` returns the browser Connection carrying this Desktop.
-It requires `desktopConnection` or the broader `connections` permission. Within
-one Client SDK context it is the same canonical handle returned by
-`system.connection.find()` for that identity.
-
-## Viewport
-
-```ts
 const { size } = await desktop.viewport.snapshot()
-console.log(size.width, size.height)
+const preferences = await desktop.preferences.snapshot()
 
-const cleanup = desktop.viewport.subscribe("resize", snapshot => {
-  console.log(snapshot.size)
+console.log(size, preferences)
+```
+
+`desktop.viewport` publishes `resize` with a complete `{ size }` snapshot in
+CSS pixels. `desktop.preferences` publishes `change` with complete effective
+`{ theme, animations }` values. Subscriptions observe later changes; call
+`snapshot()` when the current value is needed.
+
+Updating preferences accepts direct values or `"default"` to follow the native
+environment and requires `desktopPreferences`.
+
+```ts
+await desktop.preferences.update({
+  theme: "default",
+  animations: true,
 })
 ```
 
-The snapshot contains the current Desktop dimensions in CSS pixels. A
-subscription observes future resizes and does not replay the snapshot.
+`desktop.connection()` returns the canonical Connection carrying this Desktop.
+It requires `desktopConnection` or `connections` and is the same handle that a
+visible `system.connection.find()` returns for that identity.
 
-## Preferences
-
-```ts
-const preferences = await desktop.preferences.snapshot()
-console.log(preferences.theme, preferences.animations)
-
-await desktop.preferences.update({ theme: "default" })
-```
-
-Preferences describe the effective theme and animation choices for this
-Desktop. Updating them requires `desktopPreferences` or `all`; reading them is
-part of normal Client access.
-
-`desktop` is not a global Window registry. The current Client's authoritative
-and local Window values remain under [Context](/sdks/client/context).
+The current Client's Window is not a Desktop-global registry. Its authoritative
+and local handles remain under [Context](/sdks/client/context).

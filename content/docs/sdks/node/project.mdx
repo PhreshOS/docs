@@ -1,13 +1,13 @@
 ---
 title: Project
-description: Load, build, run, develop, install, and package a Program project.
+description: Turn one local Program project into development, installation, and release behavior.
 ---
 
-`Project` owns local authoring concerns around one `phresh.config.ts`. It turns
-that configuration into a runtime definition before asking a supplied System
-to create or install anything.
+`Project` owns the authoring boundary around one `phresh.config.ts`. It resolves
+project-relative configuration into a runtime `ProgramDefinition` before it
+asks a supplied System to create or install anything.
 
-## Open a project
+## Opening a project
 
 ```ts
 import { Project } from "@phreshos/node"
@@ -15,89 +15,58 @@ import { Project } from "@phreshos/node"
 const project = await Project.open()
 ```
 
-`Project.open(source?)` accepts the current directory by default, a directory,
-or a `phresh.config.ts` path. It loads the default export, validates the
-configuration, and sets `project.directory` to the absolute project root.
+`Project.open(source?)` accepts the current directory by default, another
+directory, or a `phresh.config.ts` path. It loads the default export, validates
+it, and records the absolute project root in `project.directory`.
 
-`Project.define(config, options?)` creates the same Project from an already
-loaded configuration:
+`Project.define(config, { directory }?)` starts from an already loaded
+configuration. Its directory defaults to the current working directory.
 
-```ts
-const project = Project.define(config, { directory: "/absolute/project" })
-```
+The Project can expose the validated package manifest and resolved production
+or development Program definitions. `build()` runs the optional
+`buildCommand`.
 
-The directory defaults to the current working directory.
+## Running from the project
 
-## Inspect the project
-
-| Operation | Result |
-| --- | --- |
-| `manifest()` | Validated `package.json` manifest |
-| `productionDefinition()` | Resolved production `ProgramDefinition` |
-| `developmentDefinition()` | Resolved development `ProgramDefinition` |
-| `build()` | Completion of the optional `buildCommand` |
-
-Definitions resolve project-relative resources into absolute paths. They are
-available when an application wants to compose the System operations itself.
-
-## Start production
-
-```ts
-import { Project, System } from "@phreshos/node"
-
-const project = await Project.open()
-const system = await System.connect()
-const lifecycle = await project.start(system)
-
-for await (const event of lifecycle) {
-  console.log(event)
-}
-```
-
-`start(system, options?)` runs the optional build, force-creates the production
-Program, and returns its attached Process lifecycle generator. Await the method
-before iterating the generator.
-
-`options.options` supplies the Process's immutable string options. `options.signal`
-aborts the attached Process and iteration.
-
-## Start development
+`start(system)` builds, force-creates the production Program, and returns its
+attached Process lifecycle. `dev(system)` does the same with the development
+Endpoint declarations.
 
 ```ts
 const lifecycle = await project.dev(system, {
   options: { document: "example.txt" },
 })
 
-for await (const event of lifecycle) console.log(event)
+for await (const event of lifecycle) {
+  console.log(event)
+}
 ```
 
-`dev()` uses the development endpoint declarations. When a Client development
-declaration has a `startCommand` without a fixed URL, Project selects an
-available local port, passes `PHRESHOS_CLIENT_PORT` and
-`PHRESHOS_CLIENT_BASE`, waits for the Client, then starts the Process.
+When a Client development command has no fixed URL, Project chooses an
+available port, supplies `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`, and
+waits for that Client server before launching the Process.
 
 Closing the generator, aborting its signal, or disconnecting the supplied
-System ends the attached lifecycle.
+System ends the attached Process.
 
-## Install
+## Installing
 
 ```ts
-const installation = await project.install(system)
+const installation = await project.install(system, {
+  launch: { name: "main", client: true },
+})
 
 for await (const output of installation) {
   console.log(output.stream, output.text)
 }
 ```
 
-`install(system, options?)` builds, force-creates the production Program, and returns the
-Program installation generator. Installation output remains streamed rather
-than being consumed internally by Project.
+Installation builds, force-creates the production Program, and returns the
+Program's installation generator without consuming its output. Its `launch`
+and `purge` options retain the Program installation meaning documented under
+[Programs](/runtime/programs#installation-and-runtime-form).
 
-The options are the same as [Program installation](/runtime/programs):
-`launch` requests a Process after installation, before startup, and `purge`
-deletes existing installed Program storage.
-
-## Package a release
+## Packaging a release
 
 ```ts
 const packed = await project.pack()
@@ -106,15 +75,10 @@ console.log(packed.archivePath)
 console.log(packed.digest)
 ```
 
-`pack()` builds and writes:
+`pack()` builds the project and writes its resolved `program.json`, versioned
+zip archive, and SHA-256 checksum. The returned `PackedProject` gives the paths,
+archive content, and digest. A Client release must contain its `index.html` and
+all declared resources must exist.
 
-- `program.json`, the resolved release declaration;
-- `<identity>@<version>.zip`, the Program archive; and
-- `<identity>@<version>.zip.sha256`, its SHA-256 checksum.
-
-The returned `PackedProject` contains `archive`, `archivePath`,
-`declarationPath`, `checksumPath`, and `digest`. A Client release must contain
-`client/index.html`; missing declared files reject packaging.
-
-[Program configuration](/sdks/core/program-configuration) defines every
-authoring field consumed by Project.
+[Program configuration](/sdks/core/program-configuration) defines the
+authoring values that Project resolves.

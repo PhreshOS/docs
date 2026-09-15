@@ -1,84 +1,71 @@
 ---
 title: Communication
-description: Publications, questions, observation, traffic envelopes, and boundary values.
+description: Understand publications, questions, observation, and values crossing Endpoint boundaries.
 icon: MessagesSquare
 ---
 
-Communication is one contract shared by Context, Endpoint, and Service
-surfaces. SDK transports may differ; message meaning and lifecycle do not.
+PhreshOS communication lets Endpoints exchange application values without
+making transport details part of the application contract. Context, Endpoint,
+and Service expose the same communication language from different positions:
+the current receiver, an exact Endpoint, or a stable Service address.
 
-## Publications
+## Publishing a value
 
-`publish(event, payload?)` is synchronous and fire-and-forget. It returns no
-delivery result, and an unavailable destination silently drops the
-publication.
-
-`context.publish()` produces destinationless output from the executing
-Endpoint. `endpoint.publish()` targets that exact Endpoint, and
-`service.publish()` targets the Endpoint at that Service address. An Endpoint
-root subscription observes its destinationless output; `traffic` observes its
-directed output.
-
-Context receives messages addressed to its executing Endpoint:
+`publish(event, payload?)` is synchronous and fire-and-forget. It reports no
+delivery result. If its destination is unavailable, the publication is simply
+not delivered.
 
 ```ts
-context.subscribe("changed", message => {
+context.subscribe("document.changed", message => {
   console.log(message.from, message.payload)
 })
 
-context.publish("changed", { value: 1 })
+context.publish("client.ready")
 ```
 
-Context messages are `{ from, payload }`. Endpoint traffic messages are
-`{ to, payload }`. An inaccessible sender or destination is represented as
-`null`, never as a fabricated or partially visible handle.
+Context receives messages as `{ from, payload }`. Traffic originating from an
+Endpoint is observed as `{ to, payload }`. An identity outside the observer's
+authority is represented by `null`, so communication never leaks a partial or
+invented handle.
 
-## Boundary values
+`context.publish()` produces output from the executing Endpoint without a
+destination. `endpoint.publish()` targets that exact Endpoint.
+`service.publish()` targets the Endpoint currently occupying a Service address.
 
-Communication payloads are not limited to JSON. The shared boundary-value
-model preserves `undefined`, `bigint`, `Date`, `Map`, `Set`, `RegExp`, `URL`,
-`Error`, and binary data in addition to JSON-compatible values. This behavior
-is the same whether the communicating Endpoints are reached through the
-Client, Server, or Node SDK.
+## Observing future events
 
-Binary data remains binary throughout the route; it is not converted to text
-or Base64. An `ArrayBuffer` or any typed-array view is normalized to a
-`Uint8Array` at the receiving boundary. Functions and symbols are not boundary
-values and arrive as `null`.
-
-## Observation
-
-Every `Subscribable` exposes the same three operations:
-
-| Operation | Result |
-| --- | --- |
-| `subscribe(event, subscriber)` | Persistent registration and its cleanup |
-| `subscribe(subscriber)` | Persistent registration across correlated `{ event, message }` captures |
-| `wait(event, timeout?)` | Promise for the next matching message |
-| `events(event?, options?)` | Async iterator for one event or all correlated captures |
-
-Event iterator options are `{ signal, capacity }`. Capacity defaults to `64`;
-`Infinity` removes the queue bound. `wait()` uses ten seconds by default.
-
-Subscriptions observe future messages and do not replay current state. A
-persistent registration ends only when its cleanup runs or its owning boundary
-is destroyed. Iteration ends when closed, aborted, or future delivery becomes
-impossible.
-
-## Questions and answers
-
-Server Endpoints and Server Services are `Askable`:
+Every `Subscribable` offers three ways to observe the same future event stream:
 
 ```ts
-const result = await server.ask("status.read")
-const slower = await server.timeout(30_000).ask("report.create", {
+const cleanup = target.subscribe("changed", value => console.log(value))
+const next = await target.wait("changed")
+
+for await (const value of target.events("changed")) {
+  console.log(value)
+}
+```
+
+`subscribe()` creates a persistent registration and returns its cleanup.
+`wait()` resolves once with the next matching message and uses a ten-second
+deadline by default. `events()` returns a long-lived async iterator; its
+optional `signal` cancels iteration, while `capacity` controls its queued
+messages and defaults to `64`.
+
+These operations observe future messages. They do not read or replay current
+state. Calling `subscribe(subscriber)` or `events()` without an event name
+preserves each event as a correlated `{ event, message }` capture.
+
+## Asking a Server
+
+Questions are directed to Server Endpoints and Server Services. Unlike a
+publication, `ask()` waits for one success or failure answer:
+
+```ts
+const status = await server.ask("status.read")
+const report = await server.timeout(30_000).ask("report.create", {
   format: "pdf",
 })
 ```
-
-An ask rejects when its destination is known to be unavailable or stops before
-answering. Once delivered, an unanswered question waits for its deadline
-because a boundary cannot infer whether an answerer exists.
 
 The executing Server registers an answerer through its Context:
 
@@ -86,20 +73,22 @@ The executing Server registers an answerer through its Context:
 const cleanup = context.answer("status.read", () => ({ ready: true }))
 ```
 
-An observed answer records either `{ success: true, result }` or
-`{ success: false, error }`.
+An ask rejects when its destination is unavailable or disappears before
+answering. Once delivered, an unanswered question waits until its deadline;
+the transport cannot infer whether application code intends to answer later.
 
-## Traffic
+Endpoint traffic can observe outgoing questions through `subscribeAsks()` and
+`asks()`. Server traffic can additionally observe answers through
+`subscribeAnswers()` and `answers()`. Captures retain the event,
+`questionId`, destination, payload, and answer outcome.
 
-`endpoint.traffic` observes communication originating from one Endpoint,
-including destinations that an Endpoint subscription does not expose.
+## Values across the boundary
 
-| Traffic contract | Additional observation |
-| --- | --- |
-| Endpoint and Client traffic | `subscribeAsks()` and `asks()` |
-| Server traffic | `subscribeAsks()`, `asks()`, `subscribeAnswers()`, and `answers()` |
+Payloads are not restricted to JSON. PhreshOS preserves `undefined`, `bigint`,
+`Date`, `Map`, `Set`, `RegExp`, `URL`, `Error`, and binary data alongside
+JSON-compatible values. An `ArrayBuffer` or typed-array view arrives as a
+`Uint8Array`; binary content is not converted to text or Base64. Functions and
+symbols are not transferable values and arrive as `null`.
 
-Question and answer captures contain `event`, `questionId`, and `message`. The
-question message holds `{ to, payload }`; the answer message holds
-`{ to, outcome }`. Ordinary traffic remains available through `subscribe()`,
-`wait()`, and `events()`.
+This value contract is the same across Client, Server, and Node even though the
+underlying transport differs.

@@ -1,17 +1,18 @@
 ---
 title: Subscription hooks
-description: Observe domain events, traffic questions, and answers through React.
+description: Observe future domain events, questions, and answers through React.
 ---
 
-Subscription hooks bind one Core communication registration to a mounted React
-component. They observe future messages and retain the latest projected result;
-they do not request or replay a current snapshot.
+Subscription hooks bind one communication registration to a mounted component
+and retain the latest projected result. They observe future messages only; they
+do not read or replay current state.
 
-## Named events
+## Named and correlated events
+
+`useSubscribe(target, event)` returns the latest message for one event, or
+`undefined` before the first message arrives.
 
 ```tsx
-import { useSubscribe } from "@phreshos/react"
-
 function LatestPosition({ window }: { window: Window }) {
   const position = useSubscribe(window, "move")
 
@@ -20,12 +21,8 @@ function LatestPosition({ window }: { window: Window }) {
 }
 ```
 
-`useSubscribe(target, event)` returns the latest message for that named event,
-or `undefined` before the first future message arrives. The event name and
-message are inferred from the target's Core event vocabulary. A target with a
-closed vocabulary rejects an unknown event name in TypeScript.
-
-## Project an event
+The event name and message type come from the target's Core contract. Supplying
+a projection stores its result instead:
 
 ```tsx
 const titleLength = useSubscribe(
@@ -35,92 +32,33 @@ const titleLength = useSubscribe(
 )
 ```
 
-`useSubscribe(target, event, project)` applies the projection to every matching
-message and retains its latest result. The projection may return a value or a
-Promise; the hook returns the awaited result type.
+The projection may be asynchronous. If results overlap, only the newest event
+may update the hook. Omitting the event name observes every event as its
+correlated `{ event, message }` capture.
 
-When asynchronous projections overlap, only the newest invocation may update
-the hook. A slow result belonging to an older event is discarded rather than
-replacing the result of a newer event.
+## Questions and answers
 
-## Observe every event
-
-```tsx
-const latest = useSubscribe(window, capture => ({
-  event: capture.event,
-  value: capture.message,
-}))
-```
-
-`useSubscribe(target, project)` registers across every event exposed by the
-target. Its projection receives the correlated `{ event, message }` capture
-defined by Core. The hook does not flatten that capture or lose its event name.
-
-## Questions
-
-`useSubscribeAsks(target, project)` observes questions sent by an Endpoint or
-Service traffic surface. The target must satisfy `AskSubscribable` by exposing
-`subscribeAsks()` and returning its cleanup.
+`useSubscribeAsks()` observes questions originating from Endpoint or Service
+traffic. `useSubscribeAnswers()` observes answers originating from Server
+traffic.
 
 ```tsx
-const question = useSubscribeAsks(server.traffic, capture => ({
-  event: capture.event,
-  questionId: capture.questionId,
-  destination: capture.message.to,
-  payload: capture.message.payload,
-}))
+const question = useSubscribeAsks(server.traffic, capture => capture)
+const answer = useSubscribeAnswers(server.traffic, capture => capture)
 ```
 
-The capture preserves the event, question identity, destination, and payload.
-Observing a question does not answer it or change its deadline.
+Both preserve the event, question identity, destination, and payload or answer
+outcome. Observation does not answer a question or change its deadline. A
+failed answer remains an outcome value rather than becoming a React render
+error.
 
-## Answers
+## Registration lifetime
 
-`useSubscribeAnswers(target, project)` observes answers sent by Server traffic.
-The target must satisfy `AnswerSubscribable` by exposing `subscribeAnswers()`
-and returning its cleanup.
+Changing the target or event removes the old registration and creates the new
+one. Changing only the projection keeps the registration and uses the latest
+React closure. Unmounting removes the registration and prevents pending
+asynchronous projections from committing.
 
-```tsx
-const answer = useSubscribeAnswers(server.traffic, capture => ({
-  event: capture.event,
-  questionId: capture.questionId,
-  destination: capture.message.to,
-  outcome: capture.message.outcome,
-}))
-```
-
-The outcome remains the Core answer outcome: either a successful result or a
-failed error. The React adapter does not turn a failed answer into a thrown
-render error.
-
-## Complete traffic example
-
-```tsx
-import type { ServerEndpoint } from "@phreshos/core"
-import { useSubscribeAnswers, useSubscribeAsks } from "@phreshos/react"
-
-function ServerTraffic({ server }: { server: ServerEndpoint }) {
-  const question = useSubscribeAsks(server.traffic, capture => capture)
-  const answer = useSubscribeAnswers(server.traffic, capture => capture)
-
-  return <pre>{JSON.stringify({ question, answer }, null, 2)}</pre>
-}
-```
-
-Question and answer hooks return `undefined` before the first observed capture,
-support synchronous and asynchronous projections, retain only the latest
-projection, and remove their registration on unmount.
-
-## Subscription lifetime
-
-Changing a target or a named event removes the old registration and establishes
-the new one. Changing only a projection uses the latest React closure without
-restarting the registration.
-
-Unmounting removes the registration and invalidates pending asynchronous
-projections. It does not destroy the target or its SDK connection. If the target
-cannot register, the original boundary failure remains visible rather than
-being replaced by an empty result.
-
-See [Communication](/runtime/communication) for the canonical publication,
-capture, question, answer, timeout, and boundary-value contracts.
+These hooks do not destroy their target or SDK connection. See
+[Communication](/runtime/communication) for the underlying publication,
+capture, question, and answer contracts.

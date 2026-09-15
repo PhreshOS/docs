@@ -1,28 +1,11 @@
 ---
 title: Button
-description: Run one accessible action with normalized interaction and Surface material.
+description: Represent one accessible action with normalized interaction and Surface paint.
 ---
 
-`Button` renders a native button through React Aria and uses Surface for its
-paint. Pointer, Enter, and Space activation all invoke the same `onPress`
-contract.
-
-## Contract
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `children` | `ReactNode` | None | Visible action content |
-| `onPress` | `() => void` | None | Normalized activation callback |
-| `color` | `ControlColor` | `default:base` | Base semantic or direct color |
-| `size` | `ScaleLevel` | `medium` | Height, spacing, gap, and font-size level |
-| `radius` | `Radius` | Appearance radius | Semantic or direct corner radius |
-| `material` | `MaterialOptions` | Appearance material | Surface material overrides |
-| `disabled` | `boolean` | `false` | Prevent focus and activation |
-| `pending` | `boolean` | `false` | Prevent activation while preserving focus |
-| `type` | Native button type | `button` | Form behavior |
-
-Button also preserves the remaining applicable React Aria button properties,
-native styles, class name, and the ref to its native `HTMLButtonElement`.
+`Button` represents one action. Pointer activation, Enter, and Space all reach
+the same `onPress` callback through React Aria, while React UI supplies the
+material, color states, size, radius, and focus presentation.
 
 <ComponentPreview>
   <Preview>
@@ -36,34 +19,40 @@ native styles, class name, and the ref to its native `HTMLButtonElement`.
   </Preview>
   <PreviewCode>
 
-    ```tsx title="button-states.tsx"
-    import { Button } from "@phreshos/react-ui"
-
-    export default function Actions() {
-      return <>
-        <Button>Default</Button>
-        <Button color="primary:base">Primary</Button>
-        <Button color="danger:base">Delete</Button>
-        <Button disabled>Disabled</Button>
-        <Button pending>Pending</Button>
-      </>
-    }
+    ```tsx
+    <Button>Default</Button>
+    <Button color="primary:base">Primary</Button>
+    <Button color="danger:base">Delete</Button>
+    <Button disabled>Disabled</Button>
+    <Button pending>Pending</Button>
     ```
 
   </PreviewCode>
 </ComponentPreview>
 
-## Interaction
+The default color is `"default:base"`. `size` defaults to `medium` and derives
+height, spacing, gap, and font size from Appearance. `radius` and `material`
+follow the same contracts as other Surface-based controls.
 
-A Button without `color` derives its paint from Appearance's `default` color.
-Supplying `color` selects another base paint. The component chooses its text
-contrast from that base color once; hover and pressed shades do not recalculate
-the text color or change the Button's geometry.
+Button chooses text contrast from its resting base color. Hover and pressed
+states change the fill shade without recalculating that text color or changing
+geometry.
 
-`disabled` removes the Button from activation and focus. `pending` blocks
-activation but intentionally remains focusable so an in-progress action does
-not destroy keyboard position.
+`disabled` prevents both focus and activation. `pending` blocks activation but
+keeps the Button focusable, so starting work does not destroy keyboard
+position. Both default to `false`.
 
-`onPress` is the action contract. It replaces separate pointer and keyboard
-handlers; use native form submission through `type="submit"` when the form
-owns the action instead.
+```tsx
+<Button
+  color="primary:base"
+  size="large"
+  material={{ opacity: 0.8 }}
+  onPress={() => save()}
+>
+  Save
+</Button>
+```
+
+The component renders a native `HTMLButtonElement`, forwards its ref, preserves
+applicable React Aria button properties, and defaults `type` to `button`. Use
+`type="submit"` when a form owns the action.

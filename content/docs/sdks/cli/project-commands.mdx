@@ -1,94 +1,73 @@
 ---
 title: Project commands
-description: Create, configure, run, install, and package Program projects.
+description: Create, run, install, and package a Program project.
 ---
 
-Project commands operate on source code, `phresh.config.ts`, or a Program
-release. Commands requiring a running System establish their own temporary Node
-SDK connection.
+Project commands operate on source code and `phresh.config.ts`. When an
+operation needs the running System, the CLI creates a temporary Node SDK
+connection and owns it for the command lifetime.
 
-## Command reference
-
-| Command | Outcome |
-| --- | --- |
-| `phresh create [directory]` | Create a complete Program project from the maintained template |
-| `phresh init` | Add `phresh.config.ts` to an existing project |
-| `phresh dev` | Run the development Program attached to this terminal |
-| `phresh start` | Build and run the production Program without installing |
-| `phresh install [name]` | Install this project or one official Program |
-| `phresh uninstall [name]` | Uninstall this project or one installed Program |
-| `phresh pack` | Build and produce the release declaration, archive, and checksum |
-
-## Create and initialize
+## Creating a project
 
 ```sh
 phresh create example-program --package-manager bun
 cd example-program
 ```
 
-Without enough arguments in an interactive terminal, `create` asks for the
-missing choices. `--no-install` creates the files without installing package
-dependencies.
+`create [directory]` generates the maintained full Program template. In an
+interactive terminal it asks for missing choices. `--no-install` creates the
+project without installing its dependencies.
 
-```sh
-phresh init --server --client
-```
+`phresh init` adds a typed `phresh.config.ts` to an existing project. It derives
+identity, version, and description from `package.json`; Server and Client flags
+select the Endpoint shape. `--force` replaces an existing configuration.
 
-`init` reads identity, version, and description from `package.json`, then
-creates a typed Program configuration. Endpoint flags select production and
-development locations or execution commands. `--force` replaces an existing
-configuration.
-
-## Development and production
+## Running attached code
 
 ```sh
 phresh dev
 phresh start
 ```
 
-Both commands attach the created Process to the terminal. Endpoint output is
-written here, ending the command stops the attached Process, and its exit status
-becomes the command status. `start` runs the optional production build first;
-`dev` uses development declarations and waits up to 15 seconds for a declared
-Client URL.
+Both commands create an attached Process whose lifetime belongs to the terminal
+command. `dev` resolves development Endpoint declarations. `start` runs the
+optional production build and uses production declarations. Endpoint output is
+written to the terminal, and ending the command ends the Process.
 
-Launch options use the open `--run-option-<name>=<value>` grammar:
+Launch options use open names so a Program can define its own values:
 
 ```sh
 phresh dev --run-option-document=example.txt
 ```
 
-## Install and uninstall
+## Installing and uninstalling
+
+Without a name, `phresh install` builds and installs the current project. A
+name selects a verified official release.
 
 ```sh
 phresh install
 phresh install terminal --run
 ```
 
-Without a name, `install` builds and installs the current project. A name
-selects a verified official release. The System executes the Program's
-[stored startup](/runtime/programs#owned-capabilities) after installation.
-`--run` requests a Process created by System after successful installation,
-before startup.
-
-`phresh install --purge` deletes existing installed Program storage.
-Source-project storage is left untouched.
+`--run` asks the System to create a Process from the installed Program before
+configured startup runs. `--purge` removes previous installed Program storage
+as part of replacement; it does not delete source-project storage.
 
 ```sh
-phresh uninstall
+phresh uninstall terminal
 phresh uninstall terminal --purge
 ```
 
-Uninstalling normally removes installed files while preserving Processes, data,
-and retained runtime state. `--purge` removes those Program-owned values
-as well.
+Ordinary uninstallation removes the installed form while preserving retained
+runtime state and storage. `--purge` removes all Program-owned installed state.
 
-## Package
+## Packaging
 
 ```sh
 phresh pack
 ```
 
-`pack` runs `buildCommand`, validates declared endpoint files, then writes the
-canonical `program.json`, release archive, and SHA-256 checksum described by
-[Node Project](/sdks/node/project).
+`pack` runs `buildCommand`, validates declared files, and creates the resolved
+`program.json`, versioned release archive, and SHA-256 checksum. This is the
+same Project packaging contract exposed by [Node Project](/sdks/node/project).

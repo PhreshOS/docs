@@ -1,19 +1,13 @@
 ---
 title: Quick start
-description: Install PhreshOS and run your first Program.
+description: Install PhreshOS and create a Program connected to it.
 icon: Rocket
 ---
 
-This guide installs the System and creates a Program project connected to it.
+This guide installs the PhreshOS System as a per-user service and creates a
+Program project that runs inside it.
 
-## Install and create
-
-You need Node.js `24.15.0` or newer and a machine on which you can run a per-user
-service. PhreshOS stores its state on that machine.
-
-```sh
-node --version
-```
+You need Node.js `24.15.0` or newer on macOS, Linux, or Windows.
 
 <Steps>
 
@@ -54,8 +48,8 @@ node --version
 phresh system install
 ```
 
-The command installs the official System release, configures its native per-user
-service, starts it, and reports the desktop address.
+The command installs the official release, registers and starts its native
+service, then reports the Desktop address.
 
 </Step>
 
@@ -67,7 +61,8 @@ service, starts it, and reports the desktop address.
 phresh create
 ```
 
-The generated project connects its development Process to your local System.
+Follow the prompts. When creation completes, the terminal displays the
+remaining instructions for the options you selected.
 
 </Step>
 
@@ -76,24 +71,8 @@ The generated project connects its development Process to your local System.
 ## Continue
 
 <Cards>
-  <Card
-    title="What is PhreshOS?"
-    description="Understand the System, Desktop, and Program model."
-    href="/what-is-phreshos"
-  />
-  <Card
-    title="Create your first Program"
-    description="Walk through the generated Server and Client project."
-    href="/first-program"
-  />
-  <Card
-    title="Runtime model"
-    description="Learn Programs, Processes, Endpoints, and communication."
-    href="/runtime"
-  />
-  <Card
-    title="SDKs and CLI"
-    description="Choose the interface for each execution environment."
-    href="/sdks"
-  />
+  <Card title="What is PhreshOS?" description="Understand the System, Desktop, and runtime model." href="/what-is-phreshos" />
+  <Card title="First Program" description="Understand the generated project and its execution path." href="/first-program" />
+  <Card title="Runtime" description="Learn Programs, Processes, Endpoints, Services, and communication." href="/runtime" />
+  <Card title="SDKs" description="Choose the interface for each execution environment." href="/sdks" />
 </Cards>

@@ -1,80 +1,45 @@
 ---
 title: System access
-description: Use the complete System contract through a Node connection.
+description: Use complete System capabilities through a trusted Node connection.
 ---
 
-A connected Node `System` implements the complete Core System contract with
-owner-level authority.
+A connected Node `System` exposes the complete Core System contract with owner
+authority. It can navigate every Program, Process, Connection, Session, and
+Service and use Storage, uploads, Appearance, Network, and shell without a
+Client permission boundary.
 
 ```ts
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
-```
-
-## Shared capabilities
-
-| Member | Capability |
-| --- | --- |
-| `program` | List, find, create, and observe Programs |
-| `process` | List, find, and observe Processes |
-| `connection` | List, find, and observe browser Connections |
-| `session` | List, find, and observe authentication Sessions |
-| `service(key)` | Address one Server or Client Service |
-| `storage` | Access the native filesystem |
-| `uploads` | Read and create uploads |
-| `appearance` | Read and replace System Appearance |
-| `network.fetch()` | Perform an outbound standard request |
-| `network.websocket()` | Open a standard WebSocket |
-| `shell()` | Stream an operating-system command |
-
-```ts
 const program = await system.program.find("terminal")
 const process = await program?.firstProcess()
 
 console.log(program?.name, process?.identity)
 ```
 
-The complete operation contracts live under [System](/system). Node does not
-rename or narrow them.
+The operation contracts remain those documented under [System](/system). Node
+does not rename them or provide parallel Node-only domain objects.
 
-## Owner-local execution
+## Local work under connection ownership
 
-When crossing the gateway would make no observable difference, Node executes a
-capability directly while keeping it attached to the connection lifetime:
-
-- `network.fetch()` uses the Node standard Fetch implementation.
-- `network.websocket()` creates the Node standard WebSocket.
-- `shell()` supervises the native command tree.
-- `storage` enters at the operating-system user's home directory.
+When crossing the gateway would not change meaning, Node performs work with
+its own platform facilities. Fetch and WebSocket return the standard values,
+shell supervises a native command tree, and native Storage starts from the
+operating-system user's home.
 
 ```ts
 const response = await system.network.fetch("https://api.example.com/status")
-console.log(response.status)
 
 for await (const event of system.shell("node --version")) {
   if (event.event === "output") console.log(event.text)
 }
 ```
 
-Local execution is an implementation choice beneath the same contract. The
-returned values, errors, cancellation, and disconnection behavior remain tied
-to this System connection.
+Local execution does not move ownership away from the connected System.
+Disconnecting still ends attached sockets, streams, subscriptions, and command
+trees.
 
-## Canonical handles
-
-Repeated navigation to the same live entity through one connection returns the
-same canonical handle. Handles inherit Core constructors:
-
-```ts
-import { Program } from "@phreshos/core"
-
-const first = await system.program.find("terminal")
-const second = await system.program.find("terminal")
-
-console.log(first === second)
-console.log(first instanceof Program)
-```
-
-Canonical identity is connection-local. A handle from another connection
-represents the same domain entity but is not the same JavaScript object.
+Repeated navigation through one connection returns the same canonical handle.
+The same domain identity reached through another Node connection is represented
+by another JavaScript object.

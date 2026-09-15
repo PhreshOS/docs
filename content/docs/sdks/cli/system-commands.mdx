@@ -1,64 +1,49 @@
 ---
 title: System commands
-description: Install and manage the native PhreshOS service.
+description: Install and control the native per-user PhreshOS service.
 ---
 
-`phresh system` owns installation and operating-system service lifecycle. These
-commands do not operate Programs or Processes; those remain top-level runtime
-domains.
+`phresh system` manages the installed System and its host service. Program and
+Process operations remain top-level runtime commands because they belong to the
+domain model, not to native service management.
 
-## Command reference
-
-| Command | Outcome |
-| --- | --- |
-| `phresh system install` | Install or update the official System and start its service |
-| `phresh system uninstall` | Remove the installed release and service while keeping persistent data |
-| `phresh system status` | Report version, Desktop address, service state, and startup state |
-| `phresh system version` | Report the installed System version |
-| `phresh system start` | Start the registered background service |
-| `phresh system stop` | Stop the background service |
-| `phresh system enable` | Enable automatic startup where supported |
-| `phresh system disable` | Disable automatic startup where supported |
-
-## Install
+## Installation
 
 ```sh
 phresh system install
 ```
 
-Installation resolves the official stable release for the current platform,
-installs its files, registers the native service, starts it, waits for gateway
-readiness, and reports the Desktop address.
+The command resolves the official stable release for the current platform,
+installs and selects it, registers the per-user service, starts it, waits for
+the gateway, and reports the Desktop address.
 
-`phresh system install --purge` deletes the selected `PHRESHOS_HOME` after
-stopping the service and before activating the installed System. This permanently
-removes existing Programs, settings, and other System data.
+`phresh system install --purge` stops the existing service and deletes the
+selected `PHRESHOS_HOME` before activating the release. This removes Programs,
+settings, credentials, uploads, and every other persisted System value.
 
-## Inspect and operate
+## Service lifecycle
 
 ```sh
 phresh system status
 phresh system stop
 phresh system start
+phresh system enable
+phresh system disable
 ```
 
-`status` distinguishes installation, service registration, running state,
-gateway readiness, and automatic startup. A running service may briefly report
-as starting before the gateway becomes ready.
+`status` distinguishes installation, service registration, current execution,
+gateway readiness, and automatic startup. Start and stop control current
+execution. Enable and disable control future operating-system startup and
+report when the host cannot provide that facility.
 
-`start` and `stop` affect current execution. `enable` and `disable` affect
-future operating-system startup. The latter pair reports unavailable startup
-support rather than pretending every platform provides the same native
-mechanism.
+`phresh system version` reports the selected installed release.
 
-## Uninstall
+## Removal
 
 ```sh
 phresh system uninstall
 ```
 
-System uninstall stops and unregisters the service and removes installed
-release files. Persistent System data remains available for a later
-installation.
-
-`phresh system uninstall --purge` also deletes the selected `PHRESHOS_HOME`.
+Uninstallation stops and unregisters the service and removes installed release
+files. Persistent System state remains for a later installation unless
+`--purge` is supplied.

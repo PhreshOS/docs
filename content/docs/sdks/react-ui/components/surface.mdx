@@ -1,47 +1,11 @@
 ---
 title: Surface
-description: Render one material-owning element on any compatible React host.
+description: Put React UI material on one compatible host element.
 ---
 
-`Surface` is the material-owning React UI primitive. It renders a `div` by
-default and can use another compatible React element or component as its host.
-Material customization is grouped under `material`, using the same contract as
-every other component built on Surface. Color and radius remain independent
-because they describe the host's palette and geometry rather than its material.
-
-## Contract
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `as` | `SurfaceHost` | `"div"` | Element or component that hosts the Surface |
-| `color` | `Color` | `"background:base"` | Semantic Appearance color and level, or a CSS color |
-| `radius` | `Radius` | Appearance radius | Semantic level, pixel value, or CSS radius |
-| `material` | `MaterialOptions` | Appearance material | Material paint and backdrop customization |
-
-`MaterialOptions` has one uniform shape wherever React UI exposes a `material`
-prop:
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `opacity` | `ScaleLevel \| number` | Appearance material value | Material paint opacity; content stays opaque |
-| `backdrop` | `ScaleLevel \| number` | Appearance material value | Backdrop blur in CSS pixels |
-| `grain` | `ScaleLevel \| number` | Appearance material value | Grain scale |
-| `grainAmount` | `ScaleLevel \| number` | Appearance material value | Grain amount |
-| `distortion` | `ScaleLevel \| number` | Appearance material value | Refraction displacement |
-| `saturation` | `ScaleLevel \| number` | Appearance material value | Backdrop saturation multiplier |
-
-A [numeric level](/sdks/react-ui/appearance#numeric-scale) derives a value
-from the current Appearance; a number supplies the value directly. Numeric
-material values are finite and clamped to Core's published
-[Appearance limits](/system/appearance#values).
-
-Omitting `radius` uses the Appearance radius unchanged. Explicitly supplying
-`"medium"` produces the same value because the medium scale factor is `1`.
-
-The selected host's native properties and ref type remain available. Surface
-also accepts `children`, `className`, and `style` through that host contract.
-
-## Default Surface
+`Surface` is the material-owning primitive of React UI. It combines a host
+element, material paint, an edge, a color, and one shared geometry. It renders a
+`div` by default but can preserve another element or component as its host.
 
 <ComponentPreview>
   <Preview>
@@ -51,7 +15,7 @@ also accepts `children`, `className`, and `style` through that host contract.
   </Preview>
   <PreviewCode>
 
-    ```tsx title="default-surface.tsx"
+    ```tsx
     import { Surface } from "@phreshos/react-ui"
 
     export default function Example() {
@@ -64,137 +28,69 @@ also accepts `children`, `className`, and `style` through that host contract.
   </PreviewCode>
 </ComponentPreview>
 
-Surface owns its paint and edge. The host background remains transparent so
-the material layers can render beneath the content. The host receives the
-resolved foreground color unless `style.color` overrides it.
+Surface owns only the material system. It does not add dimensions, padding,
+layout, or elevation. The host stays transparent while material layers paint
+beneath its content. It receives the resolved Appearance foreground unless
+`style.color` makes another explicit choice.
 
-Surface does not add dimensions, padding, layout, or shadow. It establishes
-relative positioning when no position is supplied and isolates its material
-layers from surrounding stacking contexts. An explicit `style.position` is
-preserved.
+## Color, radius, and material
 
-## Color and radius
+`color` accepts an Appearance color and level such as `"primary:soft"`, or a
+direct CSS color. Surface defaults to `"background:base"`.
 
-A [semantic color](/sdks/react-ui/appearance#component-values) combines an
-Appearance color with a resting level:
+`radius` accepts `xsmall`, `small`, `medium`, `large`, or `xlarge`; a pixel
+number; or a CSS radius. Omission uses the Appearance radius, which is the same
+result as the `medium` level.
 
-<ComponentPreview>
-  <Preview style={{ gridTemplateColumns: "repeat(auto-fit, minmax(10rem, 1fr))", gap: "1rem" }}>
-    <Surface color="primary:soft" radius="large" style={{ padding: 16 }}>
-      Semantic color
-    </Surface>
-    <Surface color="oklch(72% 0.14 190)" radius="1.25rem" style={{ padding: 16 }}>
-      Direct color
-    </Surface>
-  </Preview>
-  <PreviewCode>
+Material customization remains grouped:
 
-    ```tsx title="surface-color.tsx"
-    <Surface color="primary:soft" radius="large">Semantic color</Surface>
-    <Surface color="oklch(72% 0.14 190)" radius="1.25rem">Direct color</Surface>
-    ```
+```tsx
+<Surface
+  color="background:soft"
+  radius="large"
+  material={{
+    opacity: "large",
+    backdrop: 18,
+    grain: "small",
+    grainAmount: 0.2,
+    distortion: 24,
+    saturation: 1.15,
+  }}
+  style={{ padding: 20 }}
+>
+  Customized material
+</Surface>
+```
 
-  </PreviewCode>
-</ComponentPreview>
+Each material option accepts a numeric level derived from the corresponding
+Appearance value or a direct number. The option changes the material, not the
+content opacity or the host geometry. Omitted options inherit Appearance.
 
-The material edge is part of Surface and follows the actual resolved colors;
-it does not assume that Theme names describe their luminance. Radius applies
-to the host and all material layers through one inherited geometry.
+The edge is part of Surface and shares its resolved color and radius. Surface
+keeps the edge and material aligned to the same host geometry.
 
-## Material customization
+## Selecting another host
 
-Supply only the values that differ from the current Appearance:
+`as` replaces the default `div` without adding a wrapper:
 
-<ComponentPreview>
-  <Preview>
-    <Surface
-      color="background:soft"
-      material={{
-        opacity: "large",
-        backdrop: 18,
-        grain: "small",
-        grainAmount: 0.2,
-        distortion: 24,
-        saturation: 1.15,
-      }}
-      style={{ padding: 20 }}
-    >
-      Customized material
-    </Surface>
-  </Preview>
-  <PreviewCode>
+```tsx
+import { useRef } from "react"
+import { Surface } from "@phreshos/react-ui"
 
-    ```tsx title="custom-material.tsx"
-    <Surface
-      color="background:soft"
-      material={{
-        opacity: "large",
-        backdrop: 18,
-        grain: "small",
-        grainAmount: 0.2,
-        distortion: 24,
-        saturation: 1.15,
-      }}
-      style={{ padding: 20 }}
-    >
-      Customized material
-    </Surface>
-    ```
+export default function NativeAction() {
+  const ref = useRef<HTMLButtonElement>(null)
 
-  </PreviewCode>
-</ComponentPreview>
+  return <Surface as="button" ref={ref} type="button">
+    Native action
+  </Surface>
+}
+```
 
-Material options change the visual substance, not the host's geometry or
-content opacity. A zero value disables the corresponding effect where zero is
-valid. Surface keeps refraction and native backdrop filtering in separate
-layers so one effect does not replace the other.
+This remains a native button; it does not gain React UI Button interaction.
+Use [Button](/sdks/react-ui/components/button) when that higher-level behavior
+is required.
 
-## Host another element
-
-`as` changes the host without introducing another wrapper:
-
-<ComponentPreview>
-  <Preview>
-    <Surface as="button" type="button" style={{ padding: 16 }}>
-      Continue
-    </Surface>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx title="native-action.tsx"
-    import { useRef } from "react"
-    import { Surface } from "@phreshos/react-ui"
-
-    export default function NativeAction() {
-      const ref = useRef<HTMLButtonElement>(null)
-
-      return <Surface as="button" ref={ref} type="button">
-        Continue
-      </Surface>
-    }
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-This remains a native button; it does not acquire the higher-level behavior of
-React UI's `Button`. Use `Button` when the action needs that component's state,
-accessibility, and interaction contract.
-
-A custom component is a valid `SurfaceHost` when it applies the received
-`style` and renders the received `children` on the same host element, then
-forwards its ref to that element. Failing to preserve any of those three parts
-breaks the material's geometry or the caller's host access.
-
-<Cards>
-  <Card
-    title="Appearance"
-    description="Understand where Surface defaults and themed values come from."
-    href="/sdks/react-ui/appearance"
-  />
-  <Card
-    title="System Appearance"
-    description="Read the authoritative System contract represented by React UI Appearance."
-    href="/system/appearance"
-  />
-</Cards>
+A custom `SurfaceHost` must forward its ref and place the received `style` and
+`children` on the same host element. Those three facts are what let Surface
+preserve geometry, material, and native access without knowing the component's
+identity.

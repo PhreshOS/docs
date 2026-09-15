@@ -1,11 +1,12 @@
 ---
 title: Overview
-description: Build Appearance-aware React interfaces without a System runtime dependency.
+description: Build interfaces from the same Appearance and component language as PhreshOS.
 ---
 
-`@phreshos/react-ui` provides the visual primitives and accessible controls
-used by PhreshOS interfaces. It consumes the shared Appearance contract, but
-it does not know about a System, Program, Process, Endpoint, or Desktop.
+`@phreshos/react-ui` provides the material, layout, and accessible control
+primitives used by PhreshOS interfaces. It consumes Core's Appearance contract
+without depending on a running System or knowing anything about Programs,
+Processes, Endpoints, or Desktops.
 
 ## Install
 
@@ -34,13 +35,13 @@ it does not know about a System, Program, Process, Endpoint, or Desktop.
 
 <Callout title="Peer dependencies">
   React UI requires `react` and `react-dom` version 19.2 or later within the
-  current major version. It uses the application's React instances.
+  current major version.
 </Callout>
 
 ## Quick start
 
-React UI works without a provider. In that case, components use Core's
-`defaultAppearance` and reactively follow the browser's color scheme.
+Components work without a provider. They use Core's `defaultAppearance` and
+follow the browser's color-scheme and reduced-motion preferences.
 
 <ComponentPreview>
   <Preview>
@@ -63,65 +64,28 @@ React UI works without a provider. In that case, components use Core's
   </PreviewCode>
 </ComponentPreview>
 
-`Surface` owns the visible material, while its dimensions, layout, spacing,
+`Surface` supplies material and edge paint. Its dimensions, padding, layout,
 and semantic content remain ordinary React and CSS concerns.
 
-## Public surface
+## The component model
 
-| Area | Exports | Reference |
-| --- | --- | --- |
-| Appearance | `AppearanceProvider`, Appearance and Theme hooks, scales, radius, and spacing | [Appearance](/sdks/react-ui/appearance) |
-| Material | `Surface`, `Panel` | [Surface](/sdks/react-ui/components/surface), [Panel](/sdks/react-ui/components/panel) |
-| Layout | `Flex`, `Grid` | [Layout](/sdks/react-ui/components/layout) |
-| Actions | `Button` | [Button](/sdks/react-ui/components/button) |
-| Text fields | `Input`, `Textarea` | [Text fields](/sdks/react-ui/components/text-fields) |
-| Selection | `Checkbox`, `Switch`, `Radio`, `RadioGroup`, `Select` | [Selection](/sdks/react-ui/components/selection) |
-| Range | `Slider` | [Slider](/sdks/react-ui/components/slider) |
-
-React UI differs from `@phreshos/react`. React UI renders visual primitives;
-the [React SDK](/sdks/react) supplies Core domain contracts and follows their
-live state. An application can use either package independently or compose
-both.
+Appearance is one source value. Components derive the scales and interaction
+states they need rather than requiring a separate theme object for every
+control. Surface-based components expose `color` independently from grouped
+`material` customization, while layout components add no visual paint.
 
 <Cards>
-  <Card
-    title="Appearance"
-    description="Provide or resolve Appearance and Theme for a React subtree."
-    href="/sdks/react-ui/appearance"
-  />
-  <Card
-    title="Surface"
-    description="Render material while preserving the selected host's React contract."
-    href="/sdks/react-ui/components/surface"
-  />
-  <Card
-    title="Panel"
-    description="Compose an outer Surface, optional header, and inset content Surface."
-    href="/sdks/react-ui/components/panel"
-  />
-  <Card
-    title="Layout"
-    description="Express Flexbox and Grid relationships through shared layout values."
-    href="/sdks/react-ui/components/layout"
-  />
-  <Card
-    title="Button"
-    description="Run accessible actions through normalized pointer and keyboard input."
-    href="/sdks/react-ui/components/button"
-  />
-  <Card
-    title="Text fields"
-    description="Edit single-line and multiline string values."
-    href="/sdks/react-ui/components/text-fields"
-  />
-  <Card
-    title="Selection"
-    description="Represent boolean, exclusive, and listed choices."
-    href="/sdks/react-ui/components/selection"
-  />
-  <Card
-    title="Slider"
-    description="Select and submit one numeric range value."
-    href="/sdks/react-ui/components/slider"
-  />
+  <Card title="Appearance" description="Supply the visual source and complete environment preferences." href="/sdks/react-ui/appearance" />
+  <Card title="Surface" description="Host material on a compatible element or component." href="/sdks/react-ui/components/surface" />
+  <Card title="Panel" description="Compose an outer Surface and an inset content Surface." href="/sdks/react-ui/components/panel" />
+  <Card title="Layout" description="Arrange children with Appearance-aware Flex and Grid gaps." href="/sdks/react-ui/components/layout" />
+  <Card title="Scroll area" description="Keep scroll ownership local to one component." href="/sdks/react-ui/components/scroll-area" />
+  <Card title="Button" description="Run one accessible action through normalized interaction." href="/sdks/react-ui/components/button" />
+  <Card title="Text fields" description="Edit single-line and multiline text." href="/sdks/react-ui/components/text-fields" />
+  <Card title="Selection" description="Represent boolean, exclusive, and listed choices." href="/sdks/react-ui/components/selection" />
+  <Card title="Slider" description="Select one numeric value through a range." href="/sdks/react-ui/components/slider" />
 </Cards>
+
+React UI and the [React SDK](/sdks/react) are independent. React UI renders the
+visual language; React adapts live PhreshOS domain state. Applications may use
+either package alone or compose them.

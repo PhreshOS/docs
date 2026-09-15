@@ -1,14 +1,12 @@
 ---
 title: Shell
-description: Run an operating-system command through the shared System contract.
+description: Run an operating-system command whose lifetime belongs to its result stream.
 icon: Terminal
 ---
 
-`system.shell()` runs one operating-system shell command and returns the event
-generator that owns it. The Client, Server, and Node SDKs expose the same
-contract.
-
-## Events
+`system.shell()` runs one operating-system command and returns the async
+generator that owns it. The generator exposes ordered lifecycle and output
+without writing directly to the caller's terminal.
 
 ```ts
 for await (const event of system.shell("npm install", {
@@ -21,33 +19,24 @@ for await (const event of system.shell("npm install", {
 }
 ```
 
-The default working directory is the operating-system user's home. Supplied
-environment values are merged over the System process environment. Output is
-reported exactly as `stdout` and `stderr` chunks; the SDK does not write it to
-the caller's terminal.
+The first event reports the operating-system process ID. Output events preserve
+exact `stdout` or `stderr` chunks. The final event reports whether the command
+exited or was signaled, together with its code and signal when available. A
+non-zero code remains an ordinary `exited` event; inability to perform the
+command rejects iteration.
 
-The final `exit` contains `status` (`exited` or `signaled`), numeric `code` or
-`null`, and signal name or `null`.
+The working directory defaults to the operating-system user's home. Supplied
+environment values extend the System process environment.
 
-## Lifetime
+The generator owns the complete command process tree. Aborting its signal,
+ending iteration early, or losing the owning System connection terminates that
+tree. Server and Node may execute locally, while Client execution crosses the
+System boundary; the lifetime remains the same in each environment.
 
-The generator owns the complete operating-system process tree. Aborting its
-signal, closing the generator, or disconnecting its System connection
-terminates that tree. A non-zero exit is an `exited` event, while failures to
-perform the operation reject iteration.
-
-Node and Server execute the command locally because doing so preserves the
-contract without crossing a boundary. Client execution crosses its Desktop
-boundary. This is an implementation difference only; ownership and observable
-behavior remain attached to the same System connection.
-
-<Callout title="Not a PhreshOS Process">
-  A shell command does not create a PhreshOS Process. Use a Program's Process
-  capability when the work must enter the Program, Process, Endpoint, and
-  Service domain model.
+<Callout title="Shell execution is not a PhreshOS Process">
+  Use a Program's Process operations when work must participate in Program
+  ownership, Endpoints, Services, startup, and runtime lifecycle.
 </Callout>
 
-## Authority
-
-A Client can call `system.shell()` only when its Program's authoritative
-permission state grants `all`. Server and Node retain full System authority.
+A Client needs `all` to execute a shell command. Server and Node have trusted
+System authority.

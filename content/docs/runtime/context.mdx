@@ -1,64 +1,66 @@
 ---
 title: Context
-description: Capabilities belonging to the currently executing Endpoint.
+description: Understand the capabilities belonging to the Endpoint currently executing.
 icon: Focus
 ---
 
-A Context is the execution-local view of one live Endpoint. It identifies that
-execution, receives messages addressed to it, and exposes only capabilities
-that belong to being the current Endpoint.
+A Context is the runtime's first-person view. It belongs to one live Endpoint
+incarnation and answers questions such as: Which Process am I part of? What
+launched me? Who created that Process? Which messages are addressed to me?
 
-## Shared contract
+This is different from retaining an Endpoint handle. The handle is a permanent
+address; the Context exists only while the current incarnation is executing.
 
-Every Client and Server Context has the same execution operations:
+## Execution identity
 
-| Operation | Result |
-| --- | --- |
-| `context.process()` | Current Process handle |
-| `context.name()` | Current Process name, or `null` |
-| `context.parent()` | Parent Process visible to this Context, or `null` |
-| `context.program()` | Current Program handle |
-| `context.options()` | Every immutable launch option |
-| `context.options(name)` | One immutable launch option, or `undefined` |
-| `context.isService()` | Whether this Endpoint incarnation is a Service |
-| `context.stop()` | End the current Endpoint incarnation |
+Client and Server Contexts expose the same identity and launch information:
 
-Context also implements the common publication and observation contract.
-Inbound messages have the shape `{ from, payload }`; `from` is `null` when the
-sending Endpoint is outside the Context's authority boundary.
+```ts
+const program = await context.program()
+const process = await context.process()
+const parent = await context.parent()
+const options = await context.options()
+
+console.log(program.identity, process.identity, parent?.identity, options)
+```
+
+`name()` returns the current Process name or `null`. `parent()` returns the
+visible parent Process or `null`. `isService()` reports the role of this exact
+Endpoint incarnation. `stop()` ends the incarnation and releases the boundary
+operations and registrations it owns.
+
+The Context also receives messages addressed to its Endpoint and can publish
+destinationless output. Inbound messages contain `{ from, payload }`; `from`
+is `null` when the sender lies outside the Context's visible scope.
 
 ## Client Context
 
-The Client Context adds capabilities inherent to an executing Client:
+A Client Context adds the capabilities that exist because it is running inside
+a Desktop:
 
-| Capability | Contract |
-| --- | --- |
-| `context.server` | Paired Server Endpoint handle |
-| `context.window` | Authoritative Window state and operations |
-| `context.localWindow` | This Desktop's physical Window representation |
-| `context.permissions` | Stored authority checks and owner-approved replacement requests |
+- `server` is the paired Server Endpoint in the same Process.
+- `window` is the authoritative Window.
+- `localWindow` is this Desktop's physical representation of that Window.
+- `permissions` reads current Client authority and requests an owner's decision.
 
-These are context-owned capabilities. `localWindow`, in particular, does not
-become a System-wide Window controller.
+```ts
+await context.window.changeTitle("Notes")
+await context.localWindow.raise()
+```
+
+Authoritative and local Window operations are deliberately separate. See
+[Desktop](/system/desktop) for their ownership and layer rules.
 
 ## Server Context
 
-The Server Context adds the paired `context.client` Endpoint handle and
-`context.answer()`:
+A Server Context adds the paired `client` Endpoint and the ability to answer
+questions addressed to the Server:
 
 ```ts
-context.answer("status.read", ({ from, payload }) => {
-  return { ready: true }
+const cleanup = context.answer("document.read", ({ payload }) => {
+  return loadDocument(payload)
 })
 ```
 
-`answer(event, answerer)` registers one question handler and returns its cleanup
-function. Only a Server Context answers because questions are addressed to
-Server Endpoints.
-
-## Lifetime
-
-A Context begins with its Endpoint incarnation and ends with that incarnation.
-Pending operations and registrations owned by its boundary are released when
-the Endpoint stops. A Context is not a retained handle to a future incarnation.
-`context.stop()` follows the same final-Endpoint constraint as `endpoint.stop()`.
+`answer()` returns the cleanup for that registration. Only a Server Context can
+answer because questions are always addressed to Server Endpoints.

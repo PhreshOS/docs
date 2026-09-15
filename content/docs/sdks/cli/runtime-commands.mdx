@@ -1,20 +1,18 @@
 ---
 title: Runtime commands
-description: Inspect and operate Programs, Processes, Endpoints, and Windows.
+description: Navigate and operate the Program, Process, Endpoint, and Window domains.
 ---
 
-Runtime commands follow the ownership hierarchy of the shared domain model.
-They connect to the running System, resolve the requested handles, execute one
-operation, and close their Node connection.
+Runtime commands follow the same ownership model as the SDKs. Each command
+connects to the running System, resolves the requested handles, performs one
+operation, and closes its Node connection.
 
-## Program
+## Programs
 
-| Command | Operation |
-| --- | --- |
-| `program list` | List Programs with installed, search, limit, and offset filters |
-| `program inspect` | Read one Program declaration and installation state |
-| `program agent` | Read the Program's own agent documentation |
-| `program wait` | Wait for registry lifecycle, or `processCreate`, `processExit`, `forget`, and `uninstall` on one Program |
+`program list` searches and pages visible Programs. `program inspect` reads one
+Program's declaration and installation state. `program agent` prints the
+Program's own agent document. `program wait` observes either the System Program
+registry or one Program's Process, uninstall, and forget lifecycle.
 
 ```sh
 phresh program list --installed-only
@@ -22,16 +20,10 @@ phresh program inspect --program terminal --json
 phresh program wait --event uninstall --program terminal
 ```
 
-## Process
+## Processes
 
-| Command | Operation |
-| --- | --- |
-| `process list` | List live Processes, optionally within one Program |
-| `process inspect` | Read one Process and its Endpoint state |
-| `process create` | Create a Process from launch flags |
-| `process findOrCreate` | Find the named Process or create it atomically |
-| `process exit` | End one Process or every Process of a Program |
-| `process wait` | Wait for Process creation or exit |
+Process commands list, inspect, create, find-or-create, exit, and observe live
+Processes. A Program identity gives a local Process name its namespace.
 
 ```sh
 phresh process create \
@@ -41,27 +33,20 @@ phresh process create \
   --client
 ```
 
-Launch flags preserve the human-facing syntax and are translated into Core's
-`Launch` contract. `--server-service` and `--client-service` select Service
-incarnations. `--no-server` and `--no-client` disable an Endpoint for that
-Process. Run options use repeatable `--option name=value` values.
+Endpoint flags translate directly into Core's Launch contract.
+`--server-service` and `--client-service` select Service roles;
+`--no-server` and `--no-client` omit an Endpoint. Repeatable
+`--option name=value` entries become immutable Process options.
 
-`--name main --replace` ends the existing Process named `main` within the
-selected Program before creating its replacement. This applies to both
-`process create` and `process findOrCreate`.
+With `--name main --replace`, creation ends the existing Program-local named
+Process before starting its replacement.
 
-## Endpoint
+## Endpoints
 
-| Command | Operation |
-| --- | --- |
-| `endpoint inspect` | Read existence, readiness, Service state, and coordinates |
-| `endpoint start` | Start a new Endpoint incarnation |
-| `endpoint stop` | Stop the current incarnation |
-| `endpoint waitReady` | Wait until the Endpoint is ready |
-| `endpoint waitLifecycle` | Wait for lifecycle `start` or `stop` |
-| `endpoint ask` | Ask a Server Endpoint and print its answer |
-| `endpoint publish` | Publish one event without awaiting delivery |
-| `endpoint wait` | Wait for one future Endpoint event |
+Endpoint commands inspect, start, and stop Server or Client incarnations. They
+can wait for either kind's lifecycle, publish or await an event, and ask a
+Server Endpoint a question. `wait-ready` is available for Server Endpoints,
+whose readiness is distinct from existence.
 
 ```sh
 phresh endpoint ask \
@@ -72,23 +57,15 @@ phresh endpoint ask \
   --json
 ```
 
-Endpoint coordinates require `--process` and `--endpoint server|client`.
-`--program` disambiguates a Program-local Process name. Payloads are JSON at
-the CLI boundary even though SDK communication supports richer binary values.
+The Process and Endpoint kind form the address. `--program` is required when
+the Process coordinate is a local name. CLI payloads use JSON even though SDK
+communication supports richer binary boundary values.
 
-## Window
+## Windows
 
-| Command | Operation |
-| --- | --- |
-| `window inspect` | Read the complete authoritative Window state |
-| `window move` | Change position |
-| `window resize` | Change size |
-| `window setGeometry` | Change position and size atomically |
-| `window minimize` | Minimize, or restore visibility with `--restore` |
-| `window maximize` | Maximize, or restore stored geometry with `--restore` |
-| `window changeTitle` | Replace the Window title |
-| `window raise` | Raise within the current layer |
-| `window wait` | Wait for a future Window event |
+Window commands read and change authoritative Window state: move, resize,
+atomic geometry, minimize, maximize, title, layer-local raising, and future
+events.
 
 ```sh
 phresh window set-geometry \
@@ -100,6 +77,6 @@ phresh window set-geometry \
   --height 100%
 ```
 
-Geometry accepts pixels or the same workspace-relative expressions as the Core
-Window contract. Camel-case command names also expose kebab-case aliases where
-shown by `phresh describe`.
+Geometry accepts the same pixel and workspace-relative values as Core.
+`--restore` supplies `false` to minimize or maximize. Camel-case commands also
+provide the kebab-case aliases shown by `phresh describe`.

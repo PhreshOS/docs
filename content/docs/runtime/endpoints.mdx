@@ -1,90 +1,81 @@
 ---
 title: Endpoints
-description: Server and Client execution within each Process.
+description: Understand the permanent Server and Client execution addresses inside a Process.
 icon: Unplug
 ---
 
-Every Process owns one permanent `ServerEndpoint` handle and one permanent
-`ClientEndpoint` handle. Both implement the shared Endpoint contract; each adds
-only capabilities inherent to its execution role.
+An Endpoint is one execution side of a Process. Every Process owns a permanent
+Server Endpoint handle and a permanent Client Endpoint handle. A handle remains
+the same while its live incarnation starts, stops, and starts again.
 
-## Shared contract
+The permanent handle is important: identity belongs to the Process structure,
+while `exists()` describes whether code is currently running at that address.
+`endpoint.lifecycle` publishes `start` and `stop` whenever that incarnation
+changes.
 
-| Member | Contract |
-| --- | --- |
-| `traffic` | Directed publications and questions originating here |
-| `lifecycle` | `start` and `stop` transitions at this permanent address |
-| `process()` | Owning Process |
-| `exists()` | Whether a current incarnation exists |
-| `waitReady(timeout?)` | Wait for a usable incarnation; ten seconds by default |
-| `start()` | Start a fresh incarnation |
-| `stop()` | Stop the incarnation without implicitly ending the Process |
-| `isService()` | Whether the current incarnation is a Service |
+## Shared behavior
 
-Endpoints also implement `publish()`, `subscribe()`, `wait()`, and `events()`
-for application communication. These operations remain on the Endpoint root;
-only lifecycle transitions use `endpoint.lifecycle`.
+Both Endpoint kinds can publish application events, observe messages, inspect
+their outgoing traffic, find their owning Process, and report whether their
+current incarnation is a Service.
 
-Starting rejects when the Process is gone, the Program did not declare that
-Endpoint, or an incarnation is already starting or live. Stopping rejects when
-the Endpoint is absent or stopping, or when it would remove the Process's final
-live Endpoint.
+```ts
+const client = process.client
 
-A Client is ready when it exists. A Server must also announce readiness.
-Temporary absence remains waitable while the Process exists; readiness rejects
-when that Process can no longer provide a future incarnation.
+client.lifecycle.subscribe("start", () => console.log("Client started"))
+client.lifecycle.subscribe("stop", () => console.log("Client stopped"))
 
-## Events
+await client.start()
+await client.waitReady()
+```
 
-| Surface | Events |
-| --- | --- |
-| Endpoint root | Application-defined publications |
-| `lifecycle` | `start: undefined`, `stop: undefined` |
-| `traffic` | Directed application events and outgoing questions |
-| Server `traffic` | Directed application events, questions, and answers |
+`waitReady()` waits for an incarnation that can be used. A Client is ready when
+it exists. A Server must also announce readiness. The default deadline is ten
+seconds, and temporary absence remains waitable while the owning Process can
+still provide another incarnation.
 
-Lifecycle events exist because a permanent Endpoint handle may observe
-multiple incarnations. A Process does not emit separate Endpoint start and stop
-events.
+Starting rejects when the Process is gone, that Endpoint kind was not declared,
+or an incarnation is already starting or live. Stopping an Endpoint never
+implicitly exits the Process, and it rejects if doing so would remove the
+Process's final live Endpoint.
 
 ## Server Endpoint
 
-`ServerEndpoint` adds `ask(event, payload?)` and `timeout(milliseconds)` because
-questions are addressed to Servers. `start(serverLaunch?)` may select the
-Service role for the new incarnation.
+The Server Endpoint runs host-side code and answers questions. Its
+`ask(event, payload?)` operation sends a question to the current Server
+incarnation, while `timeout(milliseconds)` selects another deadline.
 
-A Server executes host-side JavaScript in one of two declared modes:
+```ts
+const health = await process.server.ask("health.read")
+```
 
-<Tabs items={["Command", "Worker"]}>
-  <Tab value="Command">
-    `startCommand` starts and supervises an operating-system process tree.
-  </Tab>
-  <Tab value="Worker">
-    `entryFile` loads an ECMAScript module as a Worker owned by the System.
-  </Tab>
-</Tabs>
+A Server declaration chooses one execution mechanism: a supervised operating
+system command or an ECMAScript module loaded as a System-owned Worker. These
+mechanisms have the same Server SDK and Endpoint contract; they differ only in
+how the code is hosted.
 
-Both modes expose the same Server SDK contract. A Worker is not a security
-boundary and does not have an independent working directory.
+`server.start({ service: true })` may override the Service role for that new
+incarnation.
 
 ## Client Endpoint
 
-`ClientEndpoint` adds its permanent `window` capability.
-`start(clientLaunch?)` may select the Service role and initial Window title,
-size, position, layer, minimized state, and maximized state.
+The Client Endpoint runs in a Desktop iframe and owns a permanent `window`
+handle. Its launch can choose the Service role and initial title, size,
+position, layer, minimized state, and maximized state.
 
-A Client executes in a Desktop iframe. It may access its own Program, that
-Program's Processes and Services, and its Context and Desktop capabilities.
-Foreign Programs, Services, and mutable visual state require their applicable
-permissions; see [Security](/system/security).
+```ts
+await process.client.start({
+  title: "Inspector",
+  layer: "over",
+  size: { width: 520, height: 420 },
+})
+```
 
-The iframe permits scripts and forms. With effective `all`, it also permits
-same-origin access. Moving between those sandbox states requires a reload.
+The iframe loads `/program/<assetId>/assets/`. In production, that address
+serves installed Client files. During development, the System proxies the
+declared Client development server through the same address, including its
+WebSocket traffic.
 
-## Client assets
-
-The browser always loads `/program/<assetId>/assets/`. In production the System
-serves installed Client files. During development it proxies the declared
-HTTP(S) Client server, including WebSocket traffic, through the same address.
-Installation still requires Client files that the System can copy into
-installed storage.
+Client authority is structurally narrower than Server authority. A Client sees
+its own Program and the capabilities granted to it; see
+[Permissions](/system/permissions).

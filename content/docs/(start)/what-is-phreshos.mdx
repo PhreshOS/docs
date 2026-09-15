@@ -1,70 +1,49 @@
 ---
 title: What is PhreshOS?
-description: The System, the web desktop, and the model they share.
+description: Understand the System, the web Desktop, and the runtime model connecting them.
 icon: CircleQuestionMark
 ---
 
 PhreshOS is an open-source, server-authoritative operating system for running and
-managing web-based programs in a unified web desktop environment, with native
+managing web-based Programs in a unified web Desktop environment, with native
 agent access through shared APIs.
 
-## The model
+## System and Desktop
 
-One owner runs the System on a machine they control. The System keeps the
-authoritative state for installed software, live execution, communication,
-persistence, authentication, and access to host capabilities.
+One owner runs the System on a machine they control. The System is the source of
+truth for installed software, live execution, authentication, persistence,
+communication, and access to host capabilities.
 
-The browser is the machine's display, not its authority. The server owns the
-truth about Programs, Processes, authentication, persistence, and access to host
-resources. A Desktop connection represents that truth and provides the local
-pointer, keyboard, measurements, iframes, and temporary visual state needed to
-interact with it.
+The Desktop is that System's graphical representation. It owns browser-local
+interaction such as pointer input, keyboard input, viewport measurements,
+iframes, and visual transitions. It represents authoritative Window state
+without replacing it.
 
 <img
   src="/mental-models/phreshos.png"
-  alt="The PhreshOS System owns Programs, Processes, and symmetrical Server and Client Endpoints; Server and Client Services address their corresponding Endpoints; the Desktop represents the System through Windows"
+  alt="The System owns Programs, Processes, and symmetrical Server and Client Endpoints; Server and Client Services address their Endpoints; the Desktop represents the System through Windows"
   className="mental-model"
 />
 
-## One unit of composition
+## One runtime language
 
-Applications, background services, tools, and agents are Programs. Every
-Program enters the same Program, Process, Endpoint, and Service model. An
-official Program does not receive a separate architectural path.
+A Program is the stable software identity. Each live execution is a Process.
+The Process owns one Server Endpoint and one Client Endpoint. A Service gives a
+stable address to an Endpoint that chooses to be reachable.
 
-Client, Server, and Node SDKs preserve the same domain contracts. Their
-environments change implementation and authority, not the meaning of a
-Program, Process, Endpoint, or Service.
+Official applications and user-created applications enter this same model.
+Client, Server, and Node SDKs preserve the same domain contracts; only their
+environment, transport, and authority differ.
 
-## Goal
-
-PhreshOS aims to be the self-hosted application operating system where web
-applications, services, and agents operate as one coherent, interactive system.
-It provides managed execution, bidirectional communication, and system-wide
-identity and authorization, allowing each application to focus on its domain
-instead of rebuilding infrastructure.
+This gives Programs a shared way to launch and discover execution, exchange
+values, persist state, and use System capabilities without rebuilding those
+facilities independently.
 
 <Cards>
-  <Card
-    title="Programs and Processes"
-    description="See how installed software becomes live execution."
-    href="/runtime/programs"
-  />
-  <Card
-    title="Client SDK"
-    description="Access the System from a Desktop Client Endpoint."
-    href="/sdks/client"
-  />
-  <Card
-    title="Server SDK"
-    description="Access the System from a Server Endpoint."
-    href="/sdks/server"
-  />
-  <Card
-    title="Desktop"
-    description="Understand authoritative Windows and their local representations."
-    href="/system/desktop"
-  />
+  <Card title="Runtime" description="Understand the four components and their ownership." href="/runtime" />
+  <Card title="System" description="Understand the authority and capabilities behind the runtime." href="/system" />
+  <Card title="Desktop" description="Understand Windows and their local representation." href="/system/desktop" />
+  <Card title="First Program" description="See how one project enters this model." href="/first-program" />
 </Cards>
 
 <Callout title="Runs on a host operating system">

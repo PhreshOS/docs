@@ -1,22 +1,22 @@
 ---
 title: Contract discovery
-description: Read the CLI command contract as human guidance or structured data.
+description: Read the CLI command model as human help or structured data.
 ---
 
-Every CLI command is registered from an explicit command contract containing
-its name, aliases, arguments, options, guidance, examples, System requirement,
-and output schema.
+Every CLI command is registered from one explicit contract containing its
+path, aliases, arguments, options, guidance, examples, System requirement, and
+output shape. Human help and machine discovery read that same source.
 
-## Human guidance
+## Human help
 
 ```sh
 phresh process create --help
 ```
 
-Help renders the contract for a person at the terminal. Invalid commands and
-options show the relevant help path instead of guessing intent.
+Help explains the selected command for a terminal reader. Invalid paths,
+options, and values show the relevant help instead of guessing intent.
 
-## Machine-readable contract
+## Structured discovery
 
 ```sh
 phresh describe
@@ -24,43 +24,19 @@ phresh describe process create
 phresh describe --all --json
 ```
 
-`describe [path...]` returns the selected command. `--all` recursively includes
-every descendant. `--json` emits the result as one JSON value.
+`describe [path...]` returns one command description. `--all` recursively
+includes descendants, and `--json` emits one structured JSON value.
 
-The result includes:
-
-```ts
-{
-  path,
-  name,
-  aliases,
-  description,
-  arguments,
-  options,
-  guidance,
-  examples,
-  requiresSystem,
-  output,
-  commands,
-}
-```
-
-Each option identifies whether its value is absent, optional, or required,
-whether it repeats, its choices, and any default. Data output includes its
-description, structured value schema, and human presentation contract. The
-presentation declares tables, labeled fields, documents, or unrestricted
-values without changing the returned data.
-
-## One contract for people and agents
-
-`--help` and `describe` read the same command declarations. Agent tooling does
-not maintain a second CLI grammar, and a Program's `agent.md` documents only
-that Program's own commands rather than redefining this System-wide CLI.
+The result identifies the command path, name, aliases, description, arguments,
+options, guidance, examples, whether a System is required, output schema, and
+child commands. Option descriptions preserve value requirements, repetition,
+choices, and defaults. Output metadata describes both the structured value and
+its human presentation.
 
 ```sh
 phresh describe endpoint ask --json
 ```
 
-Contract discovery requires no running System. The selected command may still
-declare `requiresSystem: true`, allowing automation to decide whether it can
-execute it before making the attempt.
+Discovery itself needs no running System. The returned contract tells tooling
+whether the selected command does. A Program's `agent.md` remains responsible
+only for that Program's own tool language; it does not redefine the CLI.

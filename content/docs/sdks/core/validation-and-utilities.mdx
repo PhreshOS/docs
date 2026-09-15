@@ -1,43 +1,17 @@
 ---
 title: Validation and utilities
-description: Validate untyped values against Core's public contracts.
+description: Read untyped input into canonical Core values at real boundaries.
 ---
 
-Core validation functions are pure boundary helpers. They turn unknown input
-into one canonical contract value or reject it; they do not contact the System.
+Core parsers exist for places where TypeScript cannot establish the value:
+files, JavaScript callers, transport messages, and user input. A parser either
+returns the canonical contract value or rejects because the operation cannot
+continue with that value.
 
-## Guards and parsers
-
-| Operation | Result |
-| --- | --- |
-| `isServiceKey(value)` | Whether a value contains complete Service coordinates |
-| `isUploadFile(value)` | Whether text has the opaque upload-key grammar |
-| `isLayer(value)` | Whether a value names a Window layer |
-| `isRelativeValue(value)` | Whether a value follows Window geometry grammar |
-| `parseRelativeValue(value)` | Relative and pixel coefficients for one geometry value |
-| `isPermissionName(value)` | Whether a value names a permission in the closed catalog |
-| `parsePermissionName(value)` | One permission name or an error |
-| `parsePermission(name, value)` | Canonical value for one exact permission |
-| `parseClientPermissionDeclarations(value)` | Canonical Client permission declaration |
-| `parsePermissions(value)` | Stored Program grants |
-| `parseNetworkScope(value)` | Canonical network scope |
-| `networkScopeCovers(grant, request)` | Whether one network scope contains another |
-| `parseStorageScope(value)` | Canonical operation-and-path scope |
-| `describeStorageScope(value)` | Operations and path represented by a Storage scope |
-| `parseShellEvent(value)` | Canonical shell lifecycle event |
-| `parseProgramDefinition(value)` | Complete runtime Program definition |
-| `parseLaunch(value)` | Process launch without resolving Program or Desktop defaults |
-| `parseProgramSnapshot(value)` | Shared Program boundary state |
-| `parseProcessSnapshot(value)` | Shared Process boundary state |
-| `parseEndpointReference(value)` | Shared Endpoint address and owning Process state |
-| `parseAppearance(value)` | Validated, deeply frozen Appearance snapshot |
-| `createAppearanceSnapshot(value)` | Deeply frozen already-typed Appearance value |
+Already typed application values do not need to be repeatedly parsed.
 
 ```ts
-import {
-  isPermissionName,
-  parsePermission,
-} from "@phreshos/core"
+import { isPermissionName, parsePermission } from "@phreshos/core"
 
 function readPermission(name: unknown, value: unknown) {
   if (!isPermissionName(name)) throw new Error("Unknown permission")
@@ -45,24 +19,43 @@ function readPermission(name: unknown, value: unknown) {
 }
 ```
 
-Parsers are useful where JavaScript, files, user input, or transport traffic can
-bypass static TypeScript checking. Already typed application values do not need
-to be repeatedly parsed.
+## Domain boundary helpers
+
+The public guards recognize Service keys, upload keys, Window layers, relative
+geometry values, and permission names. Parsers canonicalize Launch values,
+Program definitions, installation options, Appearance, permissions, network
+and Storage scopes, shell events, and shared domain snapshots.
+
+Scope helpers also answer containment questions:
+`networkScopeCovers(grant, requested)` compares network regions, while
+`describeStorageScope(scope)` exposes a Storage scope's operation set, path,
+and recursive flag.
+
+```ts
+import { networkScopeCovers, parseNetworkScope } from "@phreshos/core"
+
+const grant = parseNetworkScope("https://*.example.com/v1/**")
+console.log(networkScopeCovers(grant, "https://api.example.com/v1/items"))
+```
+
+Runtime parsing validates only values needed by the boundary. Additional object
+properties remain inert rather than invalidating an otherwise usable value.
 
 ## Immutable contract data
 
-| Export | Meaning |
-| --- | --- |
-| `clientPermissionCatalog` | Every permission name and its accepted value domain |
-| `layers` | Valid Window layers |
-| `appearanceLimits` | Valid numerical Appearance ranges |
-| `defaultAppearance` | Complete default Appearance source value |
+Core exports stable values that consumers need to interpret contracts:
+
+- `clientPermissionCatalog` maps each permission to its value domain.
+- `layers` contains the valid Window layers.
+- `appearanceLimits` contains the supported numeric Appearance bounds.
+- `defaultAppearance` is one complete valid Appearance.
 
 ```ts
-import { clientPermissionCatalog, defaultAppearance } from "@phreshos/core"
+import { appearanceLimits, defaultAppearance, layers } from "@phreshos/core"
 
-console.log(clientPermissionCatalog.network)
-console.log(defaultAppearance.radius)
+console.log(layers)
+console.log(appearanceLimits.radius)
+console.log(defaultAppearance.transaction)
 ```
 
-These values are contract data, not mutable application configuration.
+These exports are immutable contract data, not a mutable System configuration.

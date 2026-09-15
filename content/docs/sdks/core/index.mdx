@@ -1,12 +1,15 @@
 ---
 title: Overview
-description: Use the authoritative PhreshOS contracts and immutable contract data.
+description: Use the shared language implemented by every PhreshOS environment.
 ---
 
-`@phreshos/core` defines the public meaning shared by every PhreshOS
-environment. It contains domain constructors, TypeScript contracts, Program
-configuration, immutable defaults, and pure validation. It does not connect to
-a System, cross a transport, persist data, execute commands, or render UI.
+`@phreshos/core` defines the contracts shared across PhreshOS. It gives a
+Program, Process, Endpoint, Service, Window, or System capability one meaning
+that Client, Server, Node, and React can all use without translating the domain
+into environment-specific shapes.
+
+Core does not connect to a System or perform the work described by those
+contracts. Environment SDKs provide concrete implementations.
 
 ## Install
 
@@ -37,8 +40,8 @@ a System, cross a transport, persist data, execute commands, or render UI.
   Core has no peer dependencies.
 </Callout>
 
-Environment SDKs declare Core as a peer dependency so an application uses one
-shared set of constructors and contracts.
+Environment SDKs use Core as a peer dependency so an application has one set
+of domain classes and contracts:
 
 ```ts
 import { Program } from "@phreshos/core"
@@ -50,29 +53,20 @@ const program = await system.program.find("terminal")
 console.log(program instanceof Program)
 ```
 
-## Public surface
+## What Core provides
 
-| Area | Core owns |
-| --- | --- |
-| Configuration | `defineConfig()` and authoring contracts for `phresh.config.ts` |
-| Runtime domains | Program, Process, Endpoint, Service, Context, and communication contracts |
-| System domains | System, Connection, Session, Storage, Uploads, Desktop, Window, permissions, and Appearance contracts |
-| Contract data | Permission catalog, Window layers, Appearance limits, and default Appearance |
-| Validation | Guards and parsers for values entering from untyped boundaries |
+Core contains three related kinds of public value:
 
-Core exports shared domain constructors. Client, Server, and Node return
-instances inheriting those constructors rather than defining consumer-specific
-versions of the same domains.
+- domain contracts and classes shared by more than one environment;
+- authoring contracts used to describe a Program project;
+- immutable contract data and parsers used at untyped boundaries.
+
+It contains no transport connection, persistence engine, command runner, or UI
+implementation. That boundary keeps a change in how the System is reached from
+changing what its domain objects mean.
 
 <Cards>
-  <Card title="Program configuration" description="Declare production and development Program endpoints." href="/sdks/core/program-configuration" />
-  <Card title="Domain contracts" description="Understand the shared entities and capability traits." href="/sdks/core/domain-contracts" />
-  <Card title="Validation and utilities" description="Validate untyped values against Core's closed contracts." href="/sdks/core/validation-and-utilities" />
+  <Card title="Program configuration" description="Describe one Program project and its Endpoint declarations." href="/sdks/core/program-configuration" />
+  <Card title="Domain contracts" description="Use the shared entities and reusable behavior contracts." href="/sdks/core/domain-contracts" />
+  <Card title="Validation and utilities" description="Read untyped boundary values into canonical contracts." href="/sdks/core/validation-and-utilities" />
 </Cards>
-
-## Dependency boundary
-
-Core describes valid values and behavior. An SDK implements those contracts for
-one environment. A transport decides how values cross a boundary. Keeping these
-roles separate means changing a connection mechanism cannot change what a
-Program, Process, Endpoint, or Service means.

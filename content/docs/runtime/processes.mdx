@@ -1,108 +1,102 @@
 ---
 title: Processes
-description: Live execution aggregates created from immutable launch intent.
+description: Understand one live execution created from a Program and a Launch.
 icon: Workflow
 ---
 
-A Process is one live execution aggregate owned by a Program. Its identity,
-optional Program-local name, start time, launch options, and parentage remain
-fixed for its lifetime.
+A Process is one live execution of a Program. It groups the Server and Client
+Endpoints that belong to the same run and preserves the exact intent that
+created them.
 
-## State
+Its `identity`, optional Program-local `name`, `startedAt` time, launch options,
+and parent never change. Its Endpoint incarnations may start and stop
+independently. The Process remains addressable until it exits, and the final
+live Endpoint cannot be stopped as an independent operation.
 
-| Member | Meaning |
-| --- | --- |
-| `identity` | Immutable globally unique runtime identity |
-| `name` | Optional name unique among the Program's live Processes |
-| `startedAt` | Creation instant as a `Date` |
-| `server` | Permanent Server Endpoint handle |
-| `client` | Permanent Client Endpoint handle |
+## Launch defines the run
 
-`program()` returns the owning Program. `parent()` returns the Process whose
-creation call produced this Process, or `null`. `options()` returns every
-immutable launch option. `options(name)` returns one string option or
-`undefined`.
-
-An exited parent remains available as the same retained Process handle, whose
-`exited()` operation returns `true`. `null` means the Process never had a
-parent; it does not mean that its parent has exited.
-
-## Program-scoped operations
-
-Process operations on a Program address only Processes belonging to that
-Program:
-
-| Operation | Result |
-| --- | --- |
-| `processes()` | Every live Process |
-| `firstProcess()` | Earliest-started Process or `null` |
-| `lastProcess()` | Latest-started Process or `null` |
-| `findProcess(identityOrName)` | Matching Process or `null` |
-| `createProcess(launch?)` | Always create a Process |
-| `findOrCreateProcess(launch)` | Find the named Process or atomically create it |
-| `exitProcesses()` | End every Process and return their identities |
-| `runProcess(launch?, { signal }?)` | Create a Process owned by an async generator |
-
-`system.process.list()` and `system.process.find(identity)` provide the
-System-wide collection.
-
-## Launch
-
-A launch selects a Process name, which declared Endpoints start, per-incarnation
-Service roles, Client Window overrides, and immutable string options. Omitting
-an Endpoint selection uses its declaration default.
-
-With `name` and `replace: true`, creating a Process terminates the existing
-Process with that name in the same Program, then creates its replacement.
-Replacement requires a name. Concurrent replacement requests are serialized.
-Without replacement, creating a duplicate name rejects; `findOrCreate` returns
-the existing Process only when its resolved launch matches.
-
-`options` supplies this Launch's string values and defaults to `{}`.
-These options are fixed for the Process lifetime and readable by
-both Endpoints. This applies to every launch, including startup and attached
-development runs.
+A `Launch` decides which declared Endpoints start, whether either Endpoint is a
+Service, the Client's initial Window state, and the string options shared by
+both Endpoints. Omitted Endpoint choices use the Program declaration.
 
 ```ts
 const process = await program.createProcess({
   name: "main",
   server: { service: true },
-  client: true,
-  options: { mode: "primary" },
+  client: {
+    title: "Notes",
+    size: { width: 900, height: 640 },
+  },
+  options: { workspace: "personal" },
 })
 ```
 
-## Attached run
+`process.options()` returns the complete immutable option object;
+`process.options(name)` returns one value. Context exposes the same options to
+the running Endpoint.
 
-`runProcess()` yields `started`, `output`, and `exited` in order. Output contains its
-`stream` and exact `text`; the final event contains the Process and `Exit`.
+A name gives the Process a stable address inside its Program. Creating another
+live Process with the same name normally rejects. With `replace: true`, the
+System ends the existing named Process and creates the requested replacement as
+one serialized operation.
 
 ```ts
-const controller = new AbortController()
+await program.createProcess({
+  name: "main",
+  replace: true,
+  client: true,
+})
+```
 
-for await (const event of program.runProcess(
-  { server: true, client: true },
-  { signal: controller.signal },
-)) {
+`findOrCreateProcess()` is different: without replacement, it returns the
+named Process when its resolved Launch already matches, creates it when absent,
+and rejects when the name is occupied by a different Launch.
+
+## Endpoints are permanent handles
+
+Every Process exposes `server` and `client`, regardless of which Endpoint kinds
+the Program declared or which ones are currently running. These are permanent
+addresses whose `exists()` state changes as Endpoint incarnations start and
+stop.
+
+```ts
+if (await process.server.exists()) {
+  await process.server.ask("status")
+}
+```
+
+This lets code retain an Endpoint handle and follow its lifecycle instead of
+replacing the object every time execution restarts.
+
+## Parentage records creation
+
+`program()` returns the owner. `parent()` returns the Process whose Endpoint
+created this Process, or `null` when there was no parent visible to the caller.
+Parentage records origin, not ownership: both Processes still belong to their
+own Programs. A retained parent handle remains meaningful after that parent
+exits.
+
+## Attached runs
+
+`runProcess()` gives the returned async generator ownership of a temporary
+Process. It yields the created Process, its output, and its exit in order:
+
+```ts
+for await (const event of program.runProcess({ server: true })) {
   if (event.event === "started") console.log(event.process.identity)
   if (event.event === "output") console.log(event.stream, event.text)
   if (event.event === "exited") console.log(event.exit)
 }
 ```
 
-Aborting the signal, returning early, or losing the owning connection exits the
-Process.
+Aborting the supplied signal, returning from the generator early, or losing
+the connection that owns the run exits the Process. This makes an attached run
+suitable for development and bounded jobs without inventing another Process
+kind.
 
-## Operations and events
+## Exit and observation
 
-`exit()` ends the Process and all live Endpoints. `exited()` reports whether it
-has ended. An individual Process emits `exit` with `{ status, code, signal }`.
-The owning Program emits `processCreate` with a Process and `processExit` with
-the Process plus its exit result. `system.process` emits the corresponding
-System-wide `create` and `exit` events.
-
-## Parentage
-
-Parentage records creation lineage, not ownership. A Client can traverse it
-only inside its own Program; the first cross-Program parent is represented as
-`null`.
+`exit()` ends the Process and all live Endpoints. `exited()` reports whether
+that terminal transition has happened. The Process emits one `exit` event with
+its status, exit code, and signal. Its Program and the System Process collection
+publish the same lifecycle at their respective scopes.

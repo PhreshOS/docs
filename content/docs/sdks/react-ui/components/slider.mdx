@@ -3,30 +3,10 @@ title: Slider
 description: Select and submit one numeric value with pointer, touch, and keyboard input.
 ---
 
-`Slider` represents one numeric value and preserves React Aria's range,
-orientation, keyboard, form, and commit behavior.
-
-## Contract
-
-| Property | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `label` | `ReactNode` | None | Visible accessible label |
-| `description` | `ReactNode` | None | Associated descriptive text |
-| `value` | `number` | Uncontrolled | Controlled value |
-| `defaultValue` | `number` | Range default | Initial uncontrolled value |
-| `onChange` | `(value: number) => void` | None | Every value change |
-| `onChangeEnd` | `(value: number) => void` | None | Committed value |
-| `minValue` | `number` | React Aria default | Minimum value |
-| `maxValue` | `number` | React Aria default | Maximum value |
-| `step` | `number` | React Aria default | Value increment |
-| `orientation` | `horizontal \| vertical` | `horizontal` | Range direction |
-| `name` | `string` | None | Native form field name |
-| `disabled` | `boolean` | `false` | Disable interaction |
-| `color` | `ControlColor` | `default:base` | Filled range and thumb color |
-| `size` | `ScaleLevel` | `medium` | Track and thumb geometry |
-
-When `label` is omitted, provide an accessible name. The forwarded ref targets
-the Slider field root; the component owns a real form input for submission.
+`Slider` represents one number inside a range. React Aria owns the accessible
+range behavior, keyboard interaction, pointer and touch dragging, native form
+value, and reset behavior; React UI supplies its Appearance-aware track and
+thumb.
 
 <ComponentPreview>
   <Preview>
@@ -42,35 +22,31 @@ the Slider field root; the component owns a real form input for submission.
   </Preview>
   <PreviewCode>
 
-    ```tsx title="volume.tsx"
-    import { Slider } from "@phreshos/react-ui"
-
-    export default function Volume() {
-      return <Slider
-        label="Volume"
-        description="Playback volume"
-        minValue={0}
-        maxValue={100}
-        step={5}
-        defaultValue={65}
-      />
-    }
+    ```tsx
+    <Slider
+      label="Volume"
+      description="Playback volume"
+      minValue={0}
+      maxValue={100}
+      step={5}
+      defaultValue={65}
+    />
     ```
 
   </PreviewCode>
 </ComponentPreview>
 
-## Behavior
+`value` and `onChange` create a controlled Slider. `defaultValue` supplies an
+uncontrolled initial value. `onChange` reports every movement;
+`onChangeEnd` reports the committed value after keyboard or pointer
+interaction.
 
-Arrow keys move by `step`; Home and End move to the range limits. Values are
-clamped to those limits. Pointer and touch dragging update the same numeric
-contract.
+`minValue`, `maxValue`, and `step` define the range. Values are clamped to its
+limits. Arrow keys move by one step, while Home and End select the limits.
+`orientation` defaults to horizontal and may be vertical. `name` connects the
+value to native form submission.
 
-`onChange` reports each change. `onChangeEnd` reports the committed value
-after keyboard or pointer interaction. Controlled and uncontrolled values both
-participate in native form submission, and an uncontrolled value returns to
-`defaultValue` when its form resets.
-
-Slider does not expose `material` or `radius`. Its track and thumb are range
-geometry rather than Surface containers. This is a contract difference, not a
-documentation exception.
+The default control color is `"default:base"`; `size` controls track and thumb
+geometry. Slider does not accept `material` or `radius` because its track and
+thumb are range geometry rather than Surface containers. Its thumb motion
+still follows Appearance transaction and animation preferences.

@@ -1,64 +1,45 @@
 ---
 title: Context
-description: Use capabilities belonging to the currently executing Client Endpoint.
+description: Use the identity and capabilities of the current Client Endpoint incarnation.
 ---
 
-`context` is the execution-local root for the current Client Endpoint. It owns
-execution identity, inbound communication, the paired Server Endpoint, Window
-access, and permission requests.
+The Client `context` is the first-person view of the code currently running.
+It identifies the Program and Process that own this Client, receives messages
+addressed to it, and exposes capabilities that exist only because this is the
+current Client Endpoint.
 
 ```ts
 import { context } from "@phreshos/client"
-```
 
-## Execution
-
-| Operation | Result |
-| --- | --- |
-| `context.program()` | Current Program |
-| `context.process()` | Current Process |
-| `context.name()` | Process name or `null` |
-| `context.parent()` | Parent Process or `null` |
-| `context.options()` | Every immutable launch option |
-| `context.options(name)` | One immutable launch option or `undefined` |
-| `context.isService()` | Whether this Client incarnation is a Service |
-| `context.stop()` | End this Client Endpoint incarnation |
-
-```ts
 const program = await context.program()
 const process = await context.process()
-const parent = await context.parent()
+const options = await context.options()
 
-console.log(program.identity, process.identity, parent?.identity)
+console.log(program.identity, process.identity, options)
 ```
 
-A parent handle remains a Process value even if that Process later exits.
-`null` means there is no parent visible to this Context.
+`name()` returns the Process name or `null`. `parent()` returns the visible
+Process that created this Process, or `null`. `isService()` reports whether the
+current Client incarnation is serving a Service address. `stop()` ends this
+incarnation and its Context-owned work.
 
-## Paired Server
+## The paired Server
 
-`context.server` is the permanent Server Endpoint address belonging to the same
-Process. It can publish, receive traffic, expose lifecycle state, and ask
-questions when its current incarnation exists.
+`context.server` is the permanent Server Endpoint in the same Process. Its
+handle remains stable even while the Server incarnation is absent.
 
 ```ts
-const ready = await context.server.exists()
-
-if (ready) {
-  const status = await context.server.ask("status.read")
-  console.log(status)
-}
+await context.server.waitReady()
+const status = await context.server.ask("status.read")
 ```
 
-Endpoint existence is independent from Process existence. Starting or stopping
-the paired Server changes its incarnation, not the identity of
-`context.server`.
+The handle also supports publication, traffic observation, lifecycle, start,
+stop, and Service state through the shared Endpoint contract.
 
-## Communication
+## Messages addressed to this Client
 
-Context subscriptions receive values addressed to this Client as
-`{ from, payload }`. `from` is `null` when the sender is outside Client
-authority.
+Context subscriptions receive `{ from, payload }`. The sender is `null` when
+its handle is outside Client visibility.
 
 ```ts
 const cleanup = context.subscribe("document.changed", message => {
@@ -68,32 +49,24 @@ const cleanup = context.subscribe("document.changed", message => {
 context.publish("client.ready")
 ```
 
-`context.publish()` emits destinationless output from the executing Client. See
-[Communication](/runtime/communication) for subscriptions, traffic, questions,
-timeouts, and transferable values.
+`context.publish()` produces output from this Client without selecting a
+destination. See [Communication](/runtime/communication) for the common
+observation and boundary-value contract.
 
-## Window capabilities
+## Authoritative and local Window access
 
-| Member | Ownership |
-| --- | --- |
-| `context.window` | Authoritative Window state and operations |
-| `context.localWindow` | This Desktop's physical representation of that Window |
+`context.window` changes the System's authoritative Window state.
+`context.localWindow` changes only this Desktop's representation.
 
 ```ts
 await context.window.changeTitle("Editor")
 await context.localWindow.raise()
 ```
 
-The two values intentionally differ. Authoritative Window operations update
-System state and publish events. Local Window operations change only the
-current Desktop representation, within the operations its layer permits.
-For example, only standard windows accept local title changes, and only under
-and over layers accept host Surface operations. See [Desktop](/system/desktop)
-for the complete operation and following contracts.
+The operations available on the local representation depend on its Window
+layer. See [Desktop](/system/desktop) for geometry, following, transactions,
+and Surface behavior.
 
-## Lifetime
-
-The Context begins and ends with this Client Endpoint incarnation. Calling
-`context.stop()` ends the incarnation and releases its pending boundary
-operations and registrations. It does not necessarily exit the Process when a
-Server Endpoint remains alive.
+`context.permissions` belongs here because permission requests are made by the
+currently executing Client. It can inspect stored authority and ask the owner
+to replace one permission decision.

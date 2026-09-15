@@ -1,107 +1,102 @@
 ---
 title: Desktop
-description: Represent authoritative Client Windows on one or more screens.
+description: Understand authoritative Windows and their local browser representation.
 icon: PanelsTopLeft
 ---
 
-A Desktop is one graphical representation of authoritative System state. A live
-Client owns one authoritative Window, while the Desktop owns its local visual
-representation.
+A Desktop is one graphical representation of the System. The System owns the
+authoritative state of each Client Window; the Desktop owns the measurements,
+pointer interaction, iframe, animation, and temporary presentation needed to
+show it on one screen.
 
-## Desktop contract
+This separation allows the same Window state to be represented by more than
+one Desktop without treating browser-local details as System truth.
 
-| Capability | Read | Change | Event |
-| --- | --- | --- | --- |
-| `desktop.viewport` | `snapshot()` → `{ size: { width, height } }` | — | `resize` with the complete snapshot |
-| `desktop.preferences` | `snapshot()` → `{ theme, animations }` | `update(preferences)` | `change` with the complete preferences |
+## Desktop state
 
-The Client may read both capabilities. Updating preferences requires
-`desktopPreferences` or `all`.
-[Appearance](/system/appearance) defines how preferences resolve visual values.
+`desktop.viewport` exposes the current workspace size in CSS pixels and emits a
+complete `{ size }` snapshot when it changes. `desktop.preferences` exposes the
+effective theme and animation choice for this Desktop and publishes complete
+replacements.
 
-## Window state
+```ts
+const { size } = await desktop.viewport.snapshot()
+const preferences = await desktop.preferences.snapshot()
 
-Every Client Endpoint owns a permanent `window` handle. Its authoritative state
-contains `title`, `position`, `size`, `minimized`, `maximized`, `front`, and `layer`.
+console.log(size.width, size.height, preferences.theme)
+```
 
-| Read | Mutation | Event |
-| --- | --- | --- |
-| `title()` | `changeTitle(title)` | `changeTitle` with the title |
-| `position()` | `move(position)` | `move` with the position |
-| `size()` | `resize(size)` | `resize` with the size |
-| position and size | `setGeometry(geometry)` | `geometry` with both values |
-| `minimized()` | `minimize(minimized?)` | `minimize` with the state |
-| `maximized()` | `maximize(maximized?)` | `maximize` with the state |
-| `front()` | `raise()` | `front` with the state |
-| `layer()` | — | — |
+`desktop.connection()` returns the browser Connection carrying this Desktop.
+It requires `desktopConnection` or the broader `connections` permission.
 
-Calling `minimize()` or `maximize()` without a value selects `true`. `raise()` brings the
-Window to the front of its own layer.
+## Authoritative Window state
 
-## Geometry and layers
+Every Client Endpoint has one permanent `window` handle. Its title, geometry,
+minimized state, maximized state, front state, and layer belong to the System.
+Reads return those authoritative values; mutations change them and publish the
+matching Window event.
 
-Geometry accepts finite pixels or linear workspace-relative expressions such
-as `"1/2"`, `"50%"`, or `"50% + 10"`. `setGeometry()` commits position and
-size atomically.
+```ts
+await context.window.setGeometry({
+  position: { x: 120, y: 80 },
+  size: { width: 900, height: 640 },
+})
 
-Presentation has one precedence order: minimized, maximized, then geometry.
-A minimized Window is hidden. Otherwise, a maximized Window fills its Desktop
-workspace; otherwise its stored geometry is displayed. Each Desktop resolves
-the workspace bounds locally.
+await context.window.maximize()
+```
 
-Both flags are independent. Maximizing never overwrites geometry, and restoring
-visibility never clears maximization. Geometry and maximization changes remain
-stored and observable while minimized. Clearing maximization reveals the current
-stored geometry, so restoration requires no separate saved rectangle.
+`move()` and `resize()` change one part of the geometry. `setGeometry()` commits
+position and size together. Geometry accepts finite pixels and relative values
+such as `"1/2"`, `"50%"`, and `"50% + 10"`.
 
-Numbers are absolute pixels. Percentages and fractions are relative values;
-addition and subtraction combine terms, while multiplication and division
-scale the preceding term. Other strings are rejected.
+Minimized and maximized are independent boolean facts. Presentation resolves
+them in this order: minimized, maximized, geometry. A minimized Window is
+hidden. Otherwise, a maximized Window fills the workspace. Otherwise, the
+stored geometry is shown. Neither state destroys the geometry underneath it,
+so restoring a Window needs no separate saved rectangle.
 
-Windows occupy `wallpaper`, `under`, `window`, or `over`, from back to front.
-The taskbar remains above them.
+Calling `minimize()` or `maximize()` without an argument sets that state to
+`true`. `raise()` makes the Window frontmost within its own layer.
 
-The `wallpaper` layer fills the Desktop's wallpaper area without window chrome.
-The System permits one running Client Endpoint in this layer at a time. A
-new launch terminates the entire Process occupying the layer before starting
-the replacement. This applies to both Process creation and starting a Client
-Endpoint in an existing Process.
+## Layers
 
-While that Client runs, Desktop displays it instead of the Appearance wallpaper.
-When it stops, Desktop returns to the Appearance wallpaper. The wallpaper role
-stays visible and fills its area regardless of authoritative geometry,
-minimization, maximization, or depth. Those Window values remain readable,
-mutable, and observable; they do not control this role's presentation.
+Windows occupy four isolated layers, ordered from back to front:
+`wallpaper`, `under`, `window`, and `over`. The taskbar remains above all four.
+Changing depth within one layer never crosses into another.
+
+The `window` layer contains standard application windows. `under` and `over`
+provide chrome-free presentation beneath and above standard windows while
+retaining their own Surface behavior.
+
+The `wallpaper` layer is an exclusive Desktop role. Only one Client Endpoint
+can occupy it. Starting another forcibly ends the existing occupant's entire
+Process before the replacement starts. While present, it replaces the ordinary
+Appearance wallpaper and fills the wallpaper area; when it stops, the Desktop
+returns to that wallpaper.
+
+Authoritative Window values remain readable and observable for a wallpaper
+Client, but they do not determine that role's presentation.
 
 ## Local Window
 
-`Window` is authoritative. `context.localWindow` is this Desktop's physical
-representation of that Window:
+`context.localWindow` controls only the representation on the current Desktop.
+Its operations do not mutate authoritative Window state or emit Window events.
 
-| Operation | Effect |
-| --- | --- |
-| `addSurface()` | Add the host Surface |
-| `removeSurface()` | Remove the host Surface |
-| `move(position)` | Move only the local representation |
-| `resize(size)` | Resize only the local representation |
-| `setGeometry(geometry)` | Change local position and size together |
-| `minimize(minimized?)` | Minimize or restore only the local representation |
-| `maximize(maximized?)` | Maximize or restore only the local representation |
-| `changeTitle(title)` | Change only the local title |
-| `follow(window)` | Follow the supplied permitted authoritative Window |
-| `unfollow()` | Stop following and retain the current local state |
-| `raise()` | Bring the representation to the front of its current layer |
-| `transaction(transaction)` | Bind Surface, geometry, minimize, maximize, and follow operations to visual timing |
+```ts
+await context.localWindow
+  .transaction({ duration: 180, easing: "ease-out", wait: true })
+  .setGeometry({
+    position: { x: 24, y: 24 },
+    size: { width: 720, height: 480 },
+  })
+```
 
-`AppearanceTransaction` requires both `duration` and `easing`. It is the same
-contract as `appearance.transaction`. `WaitedTransaction` adds `wait: true`;
-that form makes the requested operation resolve after visual completion rather
-than after the Desktop accepts it. Easing accepts the standard CSS names or a
-four-number cubic Bézier tuple.
+`transaction()` binds geometry, minimize, maximize, Surface, and following
+operations to one visual timing. `wait: true` makes the operation resolve after
+the visual transition rather than after the Desktop accepts it. `raise()` and
+`changeTitle()` do not have transaction forms.
 
-Local operations return `Promise<void>`, have no reads or events, and change
-only the current Desktop representation. Each layer accepts the operations for
-properties that Desktop owns in that role; other local operations reject:
+Local capability follows the role of the receiving layer:
 
 | Local operation | `window` | `under` / `over` | `wallpaper` |
 | --- | --- | --- | --- |
@@ -110,20 +105,11 @@ properties that Desktop owns in that role; other local operations reject:
 | `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
 | `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
-Standard windows initially follow their own authoritative Window. Under and
-over windows start with authoritative geometry and visibility but remain
-unfollowed. Wallpaper also starts unfollowed, using its fixed Desktop role.
-`follow(window)` tracks the properties its receiving layer permits and replaces
-any previous target. `unfollow()` preserves the current local state. A stopped
-target ends following without restoring an older rectangle.
+Standard windows initially follow their own authoritative Window. Under,
+over, and wallpaper representations begin unfollowed. `follow(window)` replaces
+the current target and adopts only the properties permitted by the receiving
+layer. `unfollow()` detaches while preserving the current local state.
 
-Local operations do not implicitly unfollow. Subsequent authoritative changes
-update only the properties that changed; a title change does not reset a local
-position override. Following does not copy the target's layer or Surface.
-Under and over followers do not copy titles. A wallpaper follower accepts the
-relationship without adopting geometry, title, visibility, or ordering changes.
-
-Pointer gestures, measurements, snap previews, iframe references, and animation
-state remain local. Desktop gestures explicitly commit authoritative changes.
-`raise()` and `changeTitle()` have no transaction form; the remaining local
-operations accept visual timing through `transaction()`.
+Local overrides do not implicitly break following. Later authoritative events
+update only the property they carry. Under and over layers do not follow a
+target's title, and no follower copies the target's layer or Surface.

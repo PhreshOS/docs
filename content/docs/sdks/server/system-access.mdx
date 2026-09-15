@@ -1,69 +1,41 @@
 ---
 title: System access
-description: Use the complete System contract from a Server Endpoint.
+description: Use complete System capabilities from a trusted Server Endpoint.
 ---
 
-`system` provides the complete shared System contract with Server authority.
-Unlike Client access, it is not narrowed through Program permissions.
+Server `system` implements the complete Core System contract with trusted
+authority. Program permissions describe Client scope and therefore do not
+apply to Server execution.
 
 ```ts
 import { system } from "@phreshos/server"
+
+const programs = await system.program.list()
+const connections = await system.connection.list()
 ```
 
-## Capabilities
+The root provides Program, Process, Connection, and Session collections;
+Service addresses; Storage and uploads; Appearance; Network; and shell
+execution. Each operation has the same name, input, result, and lifecycle as in
+the Client and Node implementations. See [System](/system) for those contracts.
 
-| Member | Capability |
-| --- | --- |
-| `program` | List, find, create, and observe Programs |
-| `process` | List, find, and observe Processes |
-| `connection` | List, find, and observe browser Connections |
-| `session` | List, find, and observe authentication Sessions |
-| `service(key)` | Address one Server or Client Service |
-| `storage` | Access the native filesystem |
-| `uploads` | Read and create uploads |
-| `appearance` | Read and replace System Appearance |
-| `network.fetch()` | Perform an outbound standard request |
-| `network.websocket()` | Open a standard WebSocket |
-| `shell()` | Stream an operating-system command |
+## Local implementation, shared behavior
+
+When no semantic boundary requires transport, the Server SDK uses facilities
+available in its host environment. Fetch and WebSocket use platform-standard
+implementations, shell supervises a native command tree, and Storage can access
+the filesystem directly.
 
 ```ts
-const terminal = await system.program.find("terminal")
-const processes = await system.process.list()
+const response = await system.network.fetch("https://api.example.com/status")
 
-console.log(terminal?.name, processes.length)
-```
-
-The operation contracts, defaults, and errors are documented under
-[System](/system). They do not acquire a Server-specific shape.
-
-## Local execution
-
-`network.fetch()`, `network.websocket()`, and `shell()` execute through native facilities of the
-Server environment when that preserves the shared result. They still belong to
-the Server boundary: stopping the endpoint aborts attached requests, sockets,
-streams, and command trees.
-
-```ts
 for await (const event of system.shell("node --version")) {
   if (event.event === "output") console.log(event.text)
 }
 ```
 
-Storage and upload implementations may also use direct filesystem access. This
-is an implementation choice, not a second public interface.
+This local execution remains owned by the Server Context. When the Endpoint
+stops, its attached requests, sockets, streams, and command trees are released.
 
-## Services
-
-```ts
-const browser = system.service({
-  program: "browser",
-  process: "main",
-  endpoint: "server",
-})
-
-const status = await browser.ask("status.read")
-```
-
-The `endpoint` coordinate determines whether TypeScript returns a
-`ServerService` or `ClientService`. Server Services can ask questions; Client
-Services cannot.
+`system.service(key)` returns `ServerService` or `ClientService` according to
+the `endpoint` coordinate. Only the Server Service supports questions.
