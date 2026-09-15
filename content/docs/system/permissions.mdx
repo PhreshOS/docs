@@ -50,7 +50,7 @@ owner to grant broad authority while explicitly restricting one capability.
 | --- | --- |
 | `services` | Every foreign Service, or Services belonging to selected Programs |
 | `programs` | Every Program, or selected Programs, including their Processes, Endpoints, Windows, Services, and resources |
-| `layers` | Every restricted Client Window layer, or selected `under`, `over`, and `wallpaper` layers |
+| `layers` | Every restricted Client Window layer, or selected `under`, `over`, `wallpaper`, and `start-menu` layers |
 | `network` | Every System network target, or selected URL scopes |
 | `storage` | Every native path and operation, or selected operation-and-path scopes |
 | `uploads` | Creation of public uploads |
@@ -119,7 +119,7 @@ returns `null`. The default deadline is two minutes, and
 ## Restricted Window layers
 
 The ordinary `window` layer needs no permission. Explicitly selecting `under`,
-`over`, or `wallpaper` from a Client requires `layers` coverage.
+`over`, `wallpaper`, or `start-menu` from a Client requires `layers` coverage.
 
 This check applies when a Client creates or runs a Process, stores startup or
 icon-launch configuration, or starts a Client Endpoint. Owner-initiated launches

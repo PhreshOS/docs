@@ -60,22 +60,25 @@ Calling `minimize()` or `maximize()` without an argument sets that state to
 
 ## Layers
 
-Windows occupy four isolated layers, ordered from back to front:
-`wallpaper`, `under`, `window`, and `over`. The taskbar remains above all four.
-Changing depth within one layer never crosses into another.
+Windows occupy five isolated layers, ordered from back to front: `wallpaper`,
+`under`, `window`, `over`, and `start-menu`. The taskbar remains above every
+Window layer. Changing depth within one layer never crosses into another.
 
 The `window` layer contains standard application windows. `under` and `over`
 provide chrome-free presentation beneath and above standard windows while
 retaining their own Surface behavior.
 
-The `wallpaper` layer is an exclusive Desktop role. Only one Client Endpoint
-can occupy it. Starting another forcibly ends the existing occupant's entire
-Process before the replacement starts. While present, it replaces the ordinary
-Appearance wallpaper and fills the wallpaper area; when it stops, the Desktop
-returns to that wallpaper.
+The `wallpaper` and `start-menu` layers are exclusive Desktop roles. Each can
+contain one Client Endpoint. Starting another occupant in the same role ends
+the existing occupant's entire Process before the replacement starts.
 
-Authoritative Window values remain readable and observable for a wallpaper
-Client, but they do not determine that role's presentation.
+Desktop gives each role its fixed presentation. A `wallpaper` Client fills the
+wallpaper area and replaces the Appearance wallpaper. A `start-menu` Client
+fills the existing Start Menu area and replaces the built-in Start Menu. When
+either Client stops, Desktop returns to that role's fallback.
+
+Authoritative Window values remain readable and observable for both Clients,
+but they do not determine either role's presentation.
 
 ## Local Window
 
@@ -98,17 +101,17 @@ the visual transition rather than after the Desktop accepts it. `raise()` and
 
 Local capability follows the role of the receiving layer:
 
-| Local operation | `window` | `under` / `over` | `wallpaper` |
+| Local operation | `window` | `under` / `over` | `wallpaper` / `start-menu` |
 | --- | --- | --- | --- |
 | Geometry, minimize, maximize, raise | Allowed | Allowed | Rejected |
 | `changeTitle()` | Allowed | Rejected | Rejected |
 | `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
 | `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
-Standard windows initially follow their own authoritative Window. Under,
-over, and wallpaper representations begin unfollowed. `follow(window)` replaces
-the current target and adopts only the properties permitted by the receiving
-layer. `unfollow()` detaches while preserving the current local state.
+Standard windows initially follow their own authoritative Window. Every other
+layer begins unfollowed. `follow(window)` replaces the current target and
+adopts only the properties permitted by the receiving layer. `unfollow()`
+detaches while preserving the current local state.
 
 Local overrides do not implicitly break following. Later authoritative events
 update only the property they carry. Under and over layers do not follow a
