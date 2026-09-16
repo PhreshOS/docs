@@ -4,6 +4,7 @@
   "pages": [
     "surface",
     "panel",
+    "overlays",
     "layout",
     "scroll-area",
     "button",

@@ -8,6 +8,8 @@ export {
   Grid,
   Input,
   Panel,
+  PanelContent,
+  PanelHeader,
   Radio,
   RadioGroup,
   Select,

@@ -1,0 +1,131 @@
+---
+title: Overlays
+description: Compose anchored content, menus, dialogs, and descriptions.
+---
+
+React UI overlays keep each public role as an explicit component. The root owns
+open state and lifecycle, the trigger owns the interaction that opens it, and
+the content owns its positioned Surface. Semantic content remains separate
+from positioning so each part receives only the properties it understands.
+
+## Popover
+
+A `Popover` presents non-modal content relative to a trigger. `Popover.Content`
+owns placement and material. `Popover.Dialog` supplies the accessible content
+boundary inside it.
+
+```tsx
+<Popover>
+  <Popover.Trigger>Details</Popover.Trigger>
+  <Popover.Content placement="bottom start">
+    <Popover.Dialog aria-label="Connection details">
+      <Popover.Title>Connection</Popover.Title>
+      <p>Connected to the local System.</p>
+      <Popover.Close>Done</Popover.Close>
+    </Popover.Dialog>
+  </Popover.Content>
+</Popover>
+```
+
+The content follows Appearance material, shadow, radius, and transaction
+defaults. Its `color`, `material`, `shadow`, and `radius` properties are the
+same Surface contracts used elsewhere in React UI.
+
+## Menus
+
+`Menu` owns a keyboard-navigable collection of commands or selectable options.
+It does not decide how that collection opens. A `DropdownMenu` opens it from a
+button, while a `ContextMenu` opens the same contract from a context request.
+
+```tsx
+<DropdownMenu>
+  <DropdownMenu.Trigger>Actions</DropdownMenu.Trigger>
+  <DropdownMenu.Content>
+    <Menu aria-label="Document actions">
+      <Menu.Item onAction={open}>Open</Menu.Item>
+      <Menu.Item onAction={rename}>Rename</Menu.Item>
+      <Menu.Separator />
+      <Menu.Item color="danger:base" onAction={remove}>Delete</Menu.Item>
+    </Menu>
+  </DropdownMenu.Content>
+</DropdownMenu>
+```
+
+```tsx
+<ContextMenu>
+  <ContextMenu.Trigger>
+    <button>Document</button>
+  </ContextMenu.Trigger>
+  <ContextMenu.Content>
+    <Menu aria-label="Document actions">
+      <Menu.Item onAction={open}>Open</Menu.Item>
+    </Menu>
+  </ContextMenu.Content>
+</ContextMenu>
+```
+
+The context-menu trigger must be a focusable element so the same operation is
+available from the keyboard. Disabled items remain visible but cannot run their
+action. Escape closes either menu and restores focus to its trigger.
+
+## Dialog
+
+A `Dialog` blocks interaction with the content behind it while it is open.
+Its backdrop owns dismissal, while its content owns the material and dialog
+semantics. Header, body, and footer remain independently composable.
+
+```tsx
+<Dialog>
+  <Dialog.Trigger>Rename</Dialog.Trigger>
+  <Dialog.Backdrop isDismissable>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Rename document</Dialog.Title>
+        <Dialog.Description>Enter a new document name.</Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Body>
+        <Input aria-label="Document name" />
+      </Dialog.Body>
+      <Dialog.Footer>
+        <Dialog.Close>Cancel</Dialog.Close>
+        <Button color="primary:base">Save</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Backdrop>
+</Dialog>
+```
+
+`AlertDialog` uses the same composition for a decision that must be explicit.
+It therefore ignores backdrop presses and Escape by default.
+
+```tsx
+<AlertDialog>
+  <AlertDialog.Trigger color="danger:base">Delete</AlertDialog.Trigger>
+  <AlertDialog.Backdrop>
+    <AlertDialog.Content>
+      <AlertDialog.Title>Delete permanently?</AlertDialog.Title>
+      <AlertDialog.Footer>
+        <AlertDialog.Close>Cancel</AlertDialog.Close>
+        <AlertDialog.Close color="danger:base">Delete</AlertDialog.Close>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Backdrop>
+</AlertDialog>
+```
+
+## Tooltip
+
+A `Tooltip` supplies a short description while its trigger is focused or
+hovered. It is descriptive rather than interactive; use a Popover when the
+content contains controls.
+
+```tsx
+<Tooltip>
+  <Tooltip.Trigger>Save</Tooltip.Trigger>
+  <Tooltip.Content>Save the current document</Tooltip.Content>
+</Tooltip>
+```
+
+All overlay entrance and exit behavior follows Appearance transactions and the
+active animation preference. Nested overlays close independently, and every
+portal is removed when the component that owns it unmounts.

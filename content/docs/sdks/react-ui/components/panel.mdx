@@ -15,12 +15,9 @@ Surface
 
 <ComponentPreview>
   <Preview>
-    <Panel
-      header={<strong style={{ padding: 12 }}>Connection</strong>}
-      contentProps={{ style: { padding: 16 } }}
-      style={{ width: 320, height: 160 }}
-    >
-      Ready
+    <Panel style={{ width: 320, height: 160 }}>
+      <PanelHeader><strong style={{ padding: 12 }}>Connection</strong></PanelHeader>
+      <PanelContent style={{ padding: 16 }}>Ready</PanelContent>
     </Panel>
   </Preview>
   <PreviewCode>
@@ -29,11 +26,9 @@ Surface
     import { Panel } from "@phreshos/react-ui"
 
     export default function ConnectionPanel() {
-      return <Panel
-        header={<strong>Connection</strong>}
-        contentProps={{ style: { padding: 16 } }}
-      >
-        Ready
+      return <Panel>
+        <Panel.Header><strong>Connection</strong></Panel.Header>
+        <Panel.Content style={{ padding: 16 }}>Ready</Panel.Content>
       </Panel>
     }
     ```
@@ -41,22 +36,20 @@ Surface
   </PreviewCode>
 </ComponentPreview>
 
-The outer Surface receives the ordinary Panel and Surface props. `header`
-occupies an automatic first row. `children` live in the constrained second row
-inside another Surface. Without a header, the content Surface is the only row.
+The outer Surface receives the ordinary Panel and Surface props. `Panel.Header`
+owns the optional leading region. `Panel.Content` is the constrained inner
+Surface and receives its own native and Surface properties.
 
-`contentProps` customizes only that inner Surface:
+The two Surfaces remain independently configurable:
 
 ```tsx
 <Panel
   color="background:base"
   material={{ opacity: 0.4 }}
-  contentProps={{
-    color: "background:soft",
-    material: { opacity: 0.1 },
-  }}
 >
-  Content
+  <Panel.Content color="background:soft" material={{ opacity: 0.1 }}>
+    Content
+  </Panel.Content>
 </Panel>
 ```
 
