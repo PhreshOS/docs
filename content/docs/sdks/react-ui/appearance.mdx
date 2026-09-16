@@ -41,6 +41,22 @@ function Foreground() {
 }
 ```
 
+Direction follows a parallel provider path without becoming part of
+Appearance. By default, React UI reads the explicit `dir` value of the
+document's HTML element. Supplying `direction="ltr"` or `direction="rtl"`
+replaces that value for the provider subtree, including directional keyboard
+behavior, overlay placement, scrolling, and animation.
+
+`useDocumentDirection()` observes only `<html dir>` and returns a concrete
+`"ltr" | "rtl"` value. A missing value, `auto`, or any unsupported value resolves
+to `"ltr"`. `useDirection()` returns the effective provider value.
+
+```tsx
+<AppearanceProvider direction="rtl">
+  <Application />
+</AppearanceProvider>
+```
+
 ## One source, derived levels
 
 Appearance provides one concrete spacing value, one radius value, and named

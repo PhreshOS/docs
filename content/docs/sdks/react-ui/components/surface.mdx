@@ -38,9 +38,9 @@ beneath its content. It receives the resolved Appearance foreground unless
 `color` accepts an Appearance color and level such as `"primary:soft"`, or a
 direct CSS color. Surface defaults to `"background:base"`.
 
-`radius` accepts `xsmall`, `small`, `medium`, `large`, or `xlarge`; a pixel
-number; or a CSS radius. Omission uses the Appearance radius, which is the same
-result as the `medium` level.
+`radius` accepts `xsmall`, `small`, `medium`, `large`, `xlarge`, or `full`; a
+pixel number; or a CSS radius. `full` produces a fully rounded shape. Omission
+uses the Appearance radius, which is the same result as the `medium` level.
 
 Material customization remains grouped:
 
@@ -90,7 +90,7 @@ This remains a native button; it does not gain React UI Button interaction.
 Use [Button](/sdks/react-ui/components/button) when that higher-level behavior
 is required.
 
-A custom `SurfaceHost` must forward its ref and place the received `style` and
-`children` on the same host element. Those three facts are what let Surface
-preserve geometry, material, and native access without knowing the component's
-identity.
+A custom `SurfaceHost` must forward its ref and place the received `style`,
+`dir`, and `children` on the same host element. That contract lets Surface
+preserve geometry, direction, material, and native access without knowing the
+component's identity.
