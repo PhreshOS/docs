@@ -70,29 +70,31 @@ and semantic content remain ordinary React and CSS concerns.
 ## Text direction
 
 React UI supports left-to-right and right-to-left interfaces through the same
-component contracts. `AppearanceProvider` establishes the direction guaranteed
-across DOM layout, keyboard behavior, overlay placement, scrolling, and
-direction-sensitive animation. It follows the explicit `dir` value on the
-document's HTML element unless `direction` supplies an override.
+component contracts. `UIProvider` creates a direction boundary that ordinary
+HTML descendants inherit through the DOM. It follows the explicit `dir` value
+on the document's HTML element unless `direction` supplies an override.
+Direction-sensitive JavaScript behavior and portalled content use that same
+resolved direction.
 
 ```tsx
-import { AppearanceProvider, Select } from "@phreshos/react-ui"
+import { UIProvider, Select } from "@phreshos/react-ui"
 
 export default function RightToLeftInterface() {
-  return <AppearanceProvider direction="rtl">
+  return <UIProvider direction="rtl">
     <Select
       label="Choice"
       options={[{ value: "one", label: "One" }]}
     />
-  </AppearanceProvider>
+  </UIProvider>
 }
 ```
 
-Nested providers inherit the current direction unless they explicitly replace
-it. `useDocumentDirection()` reacts only to changes of `<html dir>`, while
-`useDirection()` returns the direction guaranteed by the nearest provider.
-Direction set directly on other HTML elements remains ordinary browser behavior,
-but is outside React UI's complete behavioral guarantee.
+Every provider resolves an omitted direction from the document.
+`useDocumentDirection()` reacts only to changes of `<html dir>`, while
+`useDirection()` returns the direction established by the nearest provider and
+falls back to the document when there is no provider. Direction set directly on
+other HTML elements remains ordinary browser behavior; using `UIProvider` also
+covers behavior that requires JavaScript knowledge of direction.
 
 ## The component model
 

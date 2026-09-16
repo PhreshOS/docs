@@ -1,7 +1,7 @@
 'use client';
 
 export {
-  AppearanceProvider,
+  UIProvider,
   Button,
   Checkbox,
   Flex,

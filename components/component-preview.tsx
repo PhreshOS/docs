@@ -10,7 +10,7 @@ import { useTheme as useDocsTheme } from 'fumadocs-ui/provider/base';
 import type { Preferences } from '@phreshos/react-ui';
 import { Code2, Eye } from 'lucide-react';
 import { useSyncExternalStore, type ComponentProps, type HTMLAttributes } from 'react';
-import { AppearanceProvider, useBrowserPreferences } from './react-ui';
+import { UIProvider, useBrowserPreferences } from './react-ui';
 
 type ComponentPreviewProps = Omit<ComponentProps<typeof Tabs>, 'className' | 'defaultValue'> & {
   className?: string;
@@ -30,7 +30,7 @@ export function ComponentPreview({ children, className, ...properties }: Compone
 
   const preferences = theme === undefined ? browserPreferences : { ...browserPreferences, theme };
 
-  return <AppearanceProvider preferences={preferences}>
+  return <UIProvider preferences={preferences}>
     <Tabs
       {...properties}
       defaultValue="preview"
@@ -48,7 +48,7 @@ export function ComponentPreview({ children, className, ...properties }: Compone
       </TabsList>
       {children}
     </Tabs>
-  </AppearanceProvider>;
+  </UIProvider>;
 }
 
 function subscribeToHydration() {

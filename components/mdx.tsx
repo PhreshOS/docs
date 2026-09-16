@@ -9,7 +9,7 @@ import type { ComponentProps } from 'react';
 import { ComponentPreview, Preview, PreviewCode } from './component-preview';
 import { DocsCodeBlock } from './docs-code-block';
 import {
-  AppearanceProvider,
+  UIProvider,
   Button,
   Checkbox,
   Flex,
@@ -34,7 +34,7 @@ export function getMDXComponents(components?: MDXComponents) {
     ...TabsComponents,
     Accordion,
     Accordions,
-    AppearanceProvider,
+    UIProvider,
     Button,
     Checkbox,
     ComponentPreview,

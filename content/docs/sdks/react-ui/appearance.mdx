@@ -4,28 +4,29 @@ description: Supply and resolve the visual source used by React UI components.
 ---
 
 React UI consumes the same Core `Appearance` used by the System. The System may
-own a live value, but React UI only needs one complete Appearance and one
-complete set of environment preferences to render its components.
+own a live value, but React UI only needs one complete Appearance, one complete
+set of environment preferences, and one concrete direction to render its
+components.
 
 ## Resolution and inheritance
 
-Without a provider, `useAppearance()` returns `defaultAppearance` and
+Without a provider, `useAppearance()` returns `defaultAppearance`,
 `usePreferences()` follows the browser's effective theme and reduced-motion
-choice. `AppearanceProvider` can replace either value for one subtree.
+choice, and `useDirection()` follows the document. `UIProvider` supplies these
+three shared inputs to one subtree.
 
 ```tsx
-<AppearanceProvider
+<UIProvider
   appearance={appearance}
   preferences={{ theme: "dark", animations: true }}
 >
   <Application />
-</AppearanceProvider>
+</UIProvider>
 ```
 
 Preferences are one complete `{ theme, animations }` value. A provider either
 supplies that complete value or inherits it; fields are not merged separately.
-Appearance follows the same whole-value rule. Nested providers can therefore
-replace either contract without rendering a wrapper element.
+Appearance follows the same whole-value rule.
 
 `useBrowserPreferences()` exposes the browser fallback directly when an
 application wants to derive or modify it before supplying a provider.
@@ -41,20 +42,26 @@ function Foreground() {
 }
 ```
 
-Direction follows a parallel provider path without becoming part of
-Appearance. By default, React UI reads the explicit `dir` value of the
-document's HTML element. Supplying `direction="ltr"` or `direction="rtl"`
-replaces that value for the provider subtree, including directional keyboard
-behavior, overlay placement, scrolling, and animation.
+Direction remains separate from Appearance. `UIProvider` always creates a DOM
+direction boundary using `display: contents`, so ordinary HTML descendants
+inherit direction without gaining a layout container. Omission follows the
+explicit `dir` value of the document's HTML element. Supplying
+`direction="ltr"` or `direction="rtl"` establishes that direction instead.
+
+The DOM handles direction wherever native inheritance is sufficient. React UI
+reads the resolved direction in JavaScript only for behavior such as directional
+keyboard interaction, logical overlay placement, scrolling, animation, and
+restoring direction across a portal boundary.
 
 `useDocumentDirection()` observes only `<html dir>` and returns a concrete
 `"ltr" | "rtl"` value. A missing value, `auto`, or any unsupported value resolves
-to `"ltr"`. `useDirection()` returns the effective provider value.
+to `"ltr"`. `useDirection()` returns the nearest provider value, or the document
+direction when it is used outside a provider.
 
 ```tsx
-<AppearanceProvider direction="rtl">
+<UIProvider direction="rtl">
   <Application />
-</AppearanceProvider>
+</UIProvider>
 ```
 
 ## One source, derived levels
