@@ -70,11 +70,11 @@ and semantic content remain ordinary React and CSS concerns.
 ## Text direction
 
 React UI supports left-to-right and right-to-left interfaces through the same
-component contracts. `UIProvider` creates a direction boundary that ordinary
-HTML descendants inherit through the DOM. It follows the explicit `dir` value
-on the document's HTML element unless `direction` supplies an override.
-Direction-sensitive JavaScript behavior and portalled content use that same
-resolved direction.
+component contracts. When `direction` is supplied, `UIProvider` creates a
+direction boundary that ordinary HTML descendants inherit through the DOM.
+Without that property, it leaves the existing DOM direction unchanged.
+Direction-sensitive JavaScript behavior and portalled content use the nearest
+explicit provider direction, falling back to the document.
 
 ```tsx
 import { UIProvider, Select } from "@phreshos/react-ui"
@@ -89,12 +89,13 @@ export default function RightToLeftInterface() {
 }
 ```
 
-Every provider resolves an omitted direction from the document.
-`useDocumentDirection()` reacts only to changes of `<html dir>`, while
-`useDirection()` returns the direction established by the nearest provider and
-falls back to the document when there is no provider. Direction set directly on
-other HTML elements remains ordinary browser behavior; using `UIProvider` also
-covers behavior that requires JavaScript knowledge of direction.
+An omitted direction inherits through any higher `UIProvider`; it does not
+establish another boundary. `useDocumentDirection()` reacts only to changes of
+`<html dir>`, while `useDirection()` returns the nearest explicitly established
+provider direction and falls back to the document when there is none. Direction
+set directly on other HTML elements remains ordinary browser behavior; using
+`UIProvider` also covers behavior that requires JavaScript knowledge of
+direction.
 
 ## The component model
 

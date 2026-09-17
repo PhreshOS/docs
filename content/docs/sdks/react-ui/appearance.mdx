@@ -13,7 +13,9 @@ components.
 Without a provider, `useAppearance()` returns `defaultAppearance`,
 `usePreferences()` follows the browser's effective theme and reduced-motion
 choice, and `useDirection()` follows the document. `UIProvider` supplies these
-three shared inputs to one subtree.
+inputs independently to one subtree. Each property that is supplied establishes
+only its own boundary. An omitted property continues through the nearest higher
+provider or its own fallback, and a provider with no properties changes nothing.
 
 ```tsx
 <UIProvider
@@ -42,11 +44,11 @@ function Foreground() {
 }
 ```
 
-Direction remains separate from Appearance. `UIProvider` always creates a DOM
-direction boundary using `display: contents`, so ordinary HTML descendants
-inherit direction without gaining a layout container. Omission follows the
-explicit `dir` value of the document's HTML element. Supplying
-`direction="ltr"` or `direction="rtl"` establishes that direction instead.
+Direction remains separate from Appearance. Supplying `direction="ltr"` or
+`direction="rtl"` makes `UIProvider` create a DOM direction boundary using
+`display: contents`, so ordinary HTML descendants inherit direction without
+gaining a layout container. When direction is omitted, no boundary is created;
+the existing DOM inheritance and the nearest higher provider remain unchanged.
 
 The DOM handles direction wherever native inheritance is sufficient. React UI
 reads the resolved direction in JavaScript only for behavior such as directional
@@ -55,8 +57,8 @@ restoring direction across a portal boundary.
 
 `useDocumentDirection()` observes only `<html dir>` and returns a concrete
 `"ltr" | "rtl"` value. A missing value, `auto`, or any unsupported value resolves
-to `"ltr"`. `useDirection()` returns the nearest provider value, or the document
-direction when it is used outside a provider.
+to `"ltr"`. `useDirection()` returns the nearest explicitly supplied provider
+value, or the document direction when there is none.
 
 ```tsx
 <UIProvider direction="rtl">
