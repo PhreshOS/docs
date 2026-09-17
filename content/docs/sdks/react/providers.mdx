@@ -89,7 +89,7 @@ function DesktopSummary() {
   const connection = useDesktopConnection()
 
   return <p>
-    {size.width} × {size.height} · {preferences.theme}
+    {size.width} × {size.height} · {preferences.theme} · {preferences.scale * 100}%
     {connection ? ` · ${connection.identity}` : ""}
   </p>
 }

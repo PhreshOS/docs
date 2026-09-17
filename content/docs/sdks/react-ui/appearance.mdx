@@ -3,10 +3,11 @@ title: Appearance
 description: Supply and resolve the visual source used by React UI components.
 ---
 
-React UI consumes the same Core `Appearance` used by the System. The System may
-own a live value, but React UI only needs one complete Appearance, one complete
-set of environment preferences, and one concrete direction to render its
-components.
+React UI owns the visual `Appearance` its components consume: colors, spacing,
+radius, shadow, material, and transaction. The System's Appearance has the same
+visual shape and can be passed directly, while System-owned values such as
+wallpapers remain outside the React UI contract. React UI also accepts one
+complete set of environment preferences and one concrete direction.
 
 ## Resolution and inheritance
 
@@ -26,8 +27,10 @@ provider or its own fallback, and a provider with no properties changes nothing.
 </UIProvider>
 ```
 
-Preferences are one complete `{ theme, animations }` value. A provider either
-supplies that complete value or inherits it; fields are not merged separately.
+React UI Preferences are one complete `{ theme, animations }` value. A provider
+either supplies that complete value or inherits it; fields are not merged
+separately. A System Desktop preferences snapshot can be passed directly, but
+Desktop-only values such as `scale` remain outside the React UI contract.
 Appearance follows the same whole-value rule.
 
 `useBrowserPreferences()` exposes the browser fallback directly when an
@@ -144,5 +147,5 @@ prop because it selects paint rather than material behavior.
 control-state, and overlay changes. When preferences disable animations, React
 UI reduces the effective duration to zero without modifying Appearance.
 
-See [System Appearance](/system/appearance) for the complete source contract,
-defaults, limits, and wallpaper values.
+See [System Appearance](/system/appearance) for the System contract that extends
+these visual values with its wallpaper configuration.

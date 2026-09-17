@@ -91,14 +91,20 @@ CSS names or a four-number cubic Bézier tuple.
 
 ## Desktop preferences
 
-Each Desktop resolves effective `{ theme, animations }` preferences.
+Each Desktop resolves effective `{ theme, animations, scale }` preferences.
+`scale` is a dimensionless presentation multiplier from `0.5` through `2`, with
+an effective default of `1`. It is persisted and published as Desktop state;
+it does not itself alter viewport geometry or apply presentation scaling.
+
 `desktop.preferences.update()` accepts a direct light or dark theme, a boolean
-animation choice, or `"default"` to follow the browser environment.
+animation choice, or a concrete scale. `"default"` follows the browser for
+theme and animations and resets scale to `1`.
 
 ```ts
 await desktop.preferences.update({
   theme: "default",
   animations: true,
+  scale: 1.25,
 })
 ```
 

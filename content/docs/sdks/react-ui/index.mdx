@@ -4,9 +4,9 @@ description: Build interfaces from the same Appearance and component language as
 ---
 
 `@phreshos/react-ui` provides the material, layout, and accessible control
-primitives used by PhreshOS interfaces. It consumes Core's Appearance contract
-without depending on a running System or knowing anything about Programs,
-Processes, Endpoints, or Desktops.
+primitives used by PhreshOS interfaces. Its visual contracts are compatible
+with the corresponding System values without requiring a running System, and
+it knows nothing about Programs, Processes, Endpoints, or Desktops.
 
 ## Install
 
@@ -40,7 +40,7 @@ Processes, Endpoints, or Desktops.
 
 ## Quick start
 
-Components work without a provider. They use Core's `defaultAppearance` and
+Components work without a provider. They use React UI's `defaultAppearance` and
 follow the browser's color-scheme and reduced-motion preferences.
 
 <ComponentPreview>

@@ -18,16 +18,20 @@ console.log(size, preferences)
 
 `desktop.viewport` publishes `resize` with a complete `{ size }` snapshot in
 CSS pixels. `desktop.preferences` publishes `change` with complete effective
-`{ theme, animations }` values. Subscriptions observe later changes; call
+`{ theme, animations, scale }` values. Scale is a multiplier from `0.5` through
+`2` with a default of `1`; it is preference state and does not itself change
+viewport geometry. Subscriptions observe later changes; call
 `snapshot()` when the current value is needed.
 
-Updating preferences accepts direct values or `"default"` to follow the native
-environment and requires `desktopPreferences`.
+Updating preferences accepts direct values or `"default"` and requires
+`desktopPreferences`. The default theme and animation choices follow the native
+environment; the default scale is `1`.
 
 ```ts
 await desktop.preferences.update({
   theme: "default",
   animations: true,
+  scale: 1.25,
 })
 ```
 
