@@ -39,8 +39,8 @@ A Client Context adds the capabilities that exist because it is running inside
 a Desktop:
 
 - `server` is the paired Server Endpoint in the same Process.
-- `window` is the authoritative Window.
-- `localWindow` is this Desktop's physical representation of that Window.
+- `window` is the Client Endpoint's System-owned authoritative Window.
+- `localWindow` is the representation of that Window owned by this Desktop.
 - `permissions` reads current Client authority and requests an owner's decision.
 
 ```ts

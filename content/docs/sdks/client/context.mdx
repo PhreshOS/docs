@@ -55,8 +55,10 @@ observation and boundary-value contract.
 
 ## Authoritative and local Window access
 
-`context.window` changes the System's authoritative Window state.
-`context.localWindow` changes only this Desktop's representation.
+`context.window` is the general-purpose handle for the Client Endpoint's
+System-owned authoritative Window state. It reads, changes, and observes the
+shared Window. `context.localWindow` controls only the representation owned by
+the current Desktop.
 
 ```ts
 await context.window.changeTitle("Editor")

@@ -19,6 +19,13 @@ interaction such as pointer input, keyboard input, viewport measurements,
 iframes, and visual transitions. It represents authoritative Window state
 without replacing it.
 
+Every Client Endpoint has a System-owned authoritative Window. Its `window`
+handle reads, changes, and observes that shared state. A Desktop separately owns
+the `localWindow` that physically represents it on one screen, together with
+the mechanism that links or detaches the two. Standard windows follow their own
+authoritative Window by default; other layers define which state they represent
+and whether they begin linked.
+
 <img
   src="/mental-models/phreshos.png"
   alt="The System owns Programs, Processes, and symmetrical Server and Client Endpoints; Server and Client Services address their Endpoints; the Desktop represents the System through Windows"

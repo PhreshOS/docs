@@ -10,7 +10,11 @@ pointer interaction, iframe, animation, and temporary presentation needed to
 show it on one screen.
 
 This separation allows the same Window state to be represented by more than
-one Desktop without treating browser-local details as System truth.
+one Desktop without treating browser-local details as System truth. The Client
+Endpoint's `window` handle addresses the authoritative state. Its Context's
+`localWindow` handle addresses the representation owned by the current Desktop.
+The Desktop provides the mechanism that links these two representations or
+allows the local representation to remain detached.
 
 ## Desktop state
 
@@ -108,10 +112,12 @@ Local capability follows the role of the receiving layer:
 | `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
 | `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
-Standard windows initially follow their own authoritative Window. Every other
-layer begins unfollowed. `follow(window)` replaces the current target and
-adopts only the properties permitted by the receiving layer. `unfollow()`
-detaches while preserving the current local state.
+Standard windows follow their own authoritative Window by default, keeping
+System changes aligned with their ordinary Desktop representation until that
+representation is explicitly detached. Every other layer begins unfollowed.
+`follow(window)` replaces the current authoritative target and adopts only the
+properties permitted by the receiving layer. `unfollow()` detaches while
+preserving the current local state.
 
 Local overrides do not implicitly break following. Later authoritative events
 update only the property they carry. Under and over layers do not follow a
