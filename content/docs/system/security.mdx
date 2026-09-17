@@ -1,16 +1,17 @@
 ---
 title: Security
-description: Understand owner authentication and the visible authority of Client Endpoints.
+description: Understand owner authentication, Program permissions, and execution authority.
 icon: ShieldCheck
 ---
 
-PhreshOS security separates two questions. Authentication establishes which
-browser Connections belong to the System owner. Permissions determine what a
-Client Endpoint may see and do once it is running.
+PhreshOS security separates three questions. Authentication establishes which
+browser Connections belong to the System owner. Permissions determine which
+System capabilities a Program may see and use. The Server execution mode
+determines which capabilities its runtime has independently of the System API.
 
 The separation matters because a browser Connection and a Program are
 different authorities. One Session may authorize several Connections, while
-each Client Endpoint receives the permission state of its own Program.
+both Endpoints of a Process receive the permission state of their Program.
 
 <Cards>
   <Card
@@ -20,14 +21,16 @@ each Client Endpoint receives the permission state of its own Program.
   />
   <Card
     title="Permissions"
-    description="Program-owned Client authority, visible scope, and owner requests."
+    description="Program-owned System authority, visible scope, and owner requests."
     href="/system/permissions"
   />
 </Cards>
 
 Initial setup signs up the owner. Later browser Connections sign in by attaching
-a Session. Server Endpoints and the owner-local Node gateway already execute in
-trusted server authority; Client permissions do not apply to them.
+a Session. Program permissions constrain System operations in both Client and
+Server Endpoints. They do not claim to remove direct host capabilities granted
+by a Server's execution mode; a Sandbox is the mode that withholds those
+capabilities.
 
 The System provides no independent recovery authority above the owner's chosen
 authentication method.

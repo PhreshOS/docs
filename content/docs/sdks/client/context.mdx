@@ -69,6 +69,6 @@ The operations available on the local representation depend on its Window
 layer. See [Desktop](/system/desktop) for geometry, following, transactions,
 and Surface behavior.
 
-`context.permissions` belongs here because permission requests are made by the
-currently executing Client. It can inspect stored authority and ask the owner
-to replace one permission decision.
+`context.permissions` reads the current Program's authority and can ask the
+owner to replace one permission decision. The paired Server receives the same
+Program-owned permission state through its own Context.

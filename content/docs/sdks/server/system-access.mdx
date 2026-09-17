@@ -1,11 +1,11 @@
 ---
 title: System access
-description: Use complete System capabilities from a trusted Server Endpoint.
+description: Use the permission-constrained System contract from a Server Endpoint.
 ---
 
-Server `system` implements the complete Core System contract with trusted
-authority. Program permissions describe Client scope and therefore do not
-apply to Server execution.
+Server `system` implements the complete Core System contract across the Server
+execution boundary. Every operation is evaluated with the same Program-owned
+permissions used by the Client SDK.
 
 ```ts
 import { system } from "@phreshos/server"
@@ -19,12 +19,12 @@ Service addresses; Storage and uploads; Appearance; Network; and shell
 execution. Each operation has the same name, input, result, and lifecycle as in
 the Client and Node implementations. See [System](/system) for those contracts.
 
-## Local implementation, shared behavior
+## One boundary in every environment
 
-When no semantic boundary requires transport, the Server SDK uses facilities
-available in its host environment. Fetch and WebSocket use platform-standard
-implementations, shell supervises a native command tree, and Storage can access
-the filesystem directly.
+System operations do not execute directly through the Server runtime's local
+facilities. Network, shell, Storage, uploads, domain handles, and Context
+operations all cross the same boundary to the System. The System owns their
+implementation and applies the Program's permissions there.
 
 ```ts
 const response = await system.network.fetch("https://api.example.com/status")
@@ -34,8 +34,14 @@ for await (const event of system.shell("node --version")) {
 }
 ```
 
-This local execution remains owned by the Server Context. When the Endpoint
-stops, its attached requests, sockets, streams, and command trees are released.
+When the Endpoint stops, its attached requests, sockets, streams, and command
+trees are released.
+
+This guarantee applies to the System API, not to capabilities independently
+provided by the execution environment. A command or Worker can still use its
+Node.js host access directly. A Sandbox provides only its JavaScript runtime
+and the System boundary, making Program permissions the effective outside
+capability boundary for that Server.
 
 `system.service(key)` returns `ServerService` or `ClientService` according to
 the `endpoint` coordinate. Only the Server Service supports questions.

@@ -97,11 +97,11 @@ Resources survive independently from any one Process:
 - `store` provides persistent key-value state.
 - `database` provides writable SQLite data.
 - `logs` provides read-only access to captured Endpoint output.
-- `permissions` owns the Program's authoritative Client permission state.
+- `permissions` owns the Program's authoritative permission state.
 
-All Processes of the Program see the same resources. Access through a Client
-still follows the caller's visible Program scope and the applicable permission
-boundary.
+All Processes of the Program see the same resources. Access through either
+Endpoint still follows the caller's visible Program scope and the applicable
+permission boundary.
 
 ## Installation and runtime form
 

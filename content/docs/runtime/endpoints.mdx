@@ -50,9 +50,10 @@ const health = await process.server.ask("health.read")
 ```
 
 A Server declaration chooses one execution mechanism: a supervised operating
-system command or an ECMAScript module loaded as a System-owned Worker. These
-mechanisms have the same Server SDK and Endpoint contract; they differ only in
-how the code is hosted.
+system command, an ECMAScript module loaded in a Node.js Worker, or a bundled
+module loaded in a capability-contained Sandbox. These mechanisms have the
+same Server SDK and Endpoint contract; they differ only in the host authority
+available outside the System API.
 
 `server.start({ service: true })` may override the Service role for that new
 incarnation.
@@ -76,6 +77,6 @@ serves installed Client files. During development, the System proxies the
 declared Client development server through the same address, including its
 WebSocket traffic.
 
-Client authority is structurally narrower than Server authority. A Client sees
-its own Program and the capabilities granted to it; see
-[Permissions](/system/permissions).
+The Client receives the same Program-owned System permissions as its paired
+Server. Its browser environment remains structurally isolated from the host;
+see [Permissions](/system/permissions).

@@ -21,6 +21,10 @@ console.log(program.identity, process.identity, options)
 the paired Client can remain alive, and it releases answerers, subscriptions,
 and pending work owned by this Context.
 
+`context.permissions` reads the current Program's authority and can ask the
+owner to replace one permission decision. The paired Client receives the same
+Program-owned permission state through its own Context.
+
 ## The paired Client
 
 `context.client` is the permanent Client Endpoint in the same Process. Its

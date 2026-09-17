@@ -21,8 +21,8 @@ const items = await response.json()
 
 The operation accepts `RequestInfo | URL` and an optional `RequestInit`.
 Supplying a `Request` preserves its method, headers, body, and abort signal.
-Server and Node can execute the request locally when that preserves the same
-observable result; a Client crosses its System boundary.
+Client and Server SDKs cross their System boundaries. A trusted Node connection
+may execute the request locally when that preserves the same observable result.
 
 ## WebSocket
 
@@ -42,14 +42,14 @@ Server and Node sockets close when their owning execution Context or System
 connection ends. A Client-owned socket follows the browser frame that received
 it.
 
-## Client authority
+## Program authority
 
-A Client needs a `network` scope covering the requested URL or the applicable
-`all` fallback. HTTP and WebSocket schemes are distinct. Permission failure
-rejects the operation before the value is returned.
+A Client or Server Endpoint needs a `network` scope covering the requested URL
+or the applicable `all` fallback. HTTP and WebSocket schemes are distinct.
+Permission failure rejects the operation before the value is returned.
 
 The permission governs `system.network.fetch()` and
-`system.network.websocket()`, not the browser's native networking APIs. Once a
-`Response` or WebSocket has been returned, changing the permission does not
-retroactively revoke that value. See [Permissions](/system/permissions) for
-the scope grammar.
+`system.network.websocket()`, not network capabilities supplied directly by
+the browser or Server execution environment. Once a `Response` or WebSocket
+has been returned, changing the permission does not retroactively revoke that
+value. See [Permissions](/system/permissions) for the scope grammar.

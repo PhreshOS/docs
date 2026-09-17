@@ -4,8 +4,8 @@ description: Use PhreshOS from the Server Endpoint currently executing.
 ---
 
 `@phreshos/server` implements PhreshOS contracts for a Program's current Server
-Endpoint incarnation. It exposes the execution `context` and the complete
-trusted `system` root.
+Endpoint incarnation. It exposes the execution `context` and the
+permission-constrained `system` root.
 
 ## Install
 
@@ -44,12 +44,17 @@ import { Program, Process } from "@phreshos/core"
 Server exports only the roots it owns. Shared domain classes and types remain
 Core imports, and handles returned by Server inherit those classes.
 
-## Trusted execution
+## One Server contract
 
 `context` identifies the current Server, receives its messages, exposes its
 paired Client, and registers answers. `system` provides the same complete
-contract used by Client and Node, but Server execution is trusted and is not
-narrowed by Program permissions.
+contract used by Client and Node. Every System operation uses the executing
+Program's permissions, regardless of how the Server itself is hosted.
+
+The execution environment is a separate choice. A command or Worker may use
+host capabilities directly, while a Sandbox can leave its JavaScript runtime
+only through the permission-constrained System contract. Application imports
+remain the same in all three environments.
 
 The Context begins and ends with one Server incarnation. A future incarnation
 receives a new Context even though the permanent Server Endpoint handle remains
@@ -57,6 +62,6 @@ the same.
 
 <Cards>
   <Card title="Context" description="Use execution identity, paired Client communication, and answerers." href="/sdks/server/context" />
-  <Card title="System access" description="Use complete System capabilities with Server authority." href="/sdks/server/system-access" />
-  <Card title="Execution environments" description="Run the same Server contract in a host process or Worker." href="/sdks/server/execution-environments" />
+  <Card title="System access" description="Use Program-authorized System capabilities across the Server boundary." href="/sdks/server/system-access" />
+  <Card title="Execution environments" description="Choose command, Worker, or Sandbox execution without changing the Server contract." href="/sdks/server/execution-environments" />
 </Cards>

@@ -14,9 +14,12 @@ export default defineConfig({
   identity: "example-program",
   name: "Example Program",
   version: "1.0.0",
+  permissions: {
+    network: ["https://api.example.com"],
+  },
   server: {
     location: "dist/server",
-    entryFile: "main.js",
+    sandbox: "main.js",
   },
   client: {
     location: "dist/client",
@@ -50,15 +53,18 @@ A Server chooses exactly one execution mechanism:
 ```ts
 server: {
   location: "dist/server",
-  entryFile: "main.js",
+  worker: "main.js",
   development: {
-    startCommand: "vite-node server/main.ts",
+    command: "vite-node server/main.ts",
   },
 }
 ```
 
-`entryFile` loads an ECMAScript module as a System-owned Worker.
-`startCommand` runs a supervised operating-system process instead. Optional
+`command` starts a supervised operating-system process, `worker` loads an
+ECMAScript module in a Node.js Worker, and `sandbox` loads a bundled ECMAScript
+module in a capability-contained JavaScript runtime. A production Server
+chooses exactly one. Development remains separate and always uses its declared
+`development.command` with the project's development tooling. Optional
 `installCommand` and `uninstallCommand` prepare and clean the production Server
 location.
 
@@ -70,9 +76,6 @@ and maximized state:
 client: {
   location: "dist/client",
   size: { width: 800, height: 600 },
-  permissions: {
-    network: ["https://api.example.com"],
-  },
 }
 ```
 
@@ -97,12 +100,12 @@ export default defineConfig({
 
 Each accepts `true` for an empty Launch or a complete Launch object. Omission
 makes no decision about a value already stored. Creation and installation
-apply supplied values. Client permission declarations follow the same stages,
-replacing only the permissions they explicitly contain.
+apply supplied values. Top-level Program permission declarations follow the
+same stages, replacing only the permissions they explicitly contain.
 
 See [Programs](/runtime/programs#saved-launches) for the resulting behavior and
-[Permissions](/system/permissions#declaring-and-storing-permissions) for Client
-authority.
+[Permissions](/system/permissions#declaring-and-storing-permissions) for
+Program authority.
 
 ## From authoring to runtime
 

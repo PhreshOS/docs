@@ -1,23 +1,29 @@
 ---
 title: Permissions
-description: Understand Program-owned Client authority and its visible scope.
+description: Understand Program-owned System authority and its visible scope.
 icon: Shield
 ---
 
-Permissions describe what a Program's Client Endpoints may access. They do not
-assign authority to Server Endpoints, because Server code already executes in
-the trusted server environment.
+Permissions describe which System capabilities a Program may access. The same
+permission state applies through both its Client SDK and Server SDK, independent
+of the Server execution environment.
+
+Permissions constrain the System API. They do not remove capabilities granted
+directly by an execution environment: Client code retains browser APIs, while
+`command` and `worker` Servers retain their host capabilities. A `sandbox`
+Server has no ambient host access, so its only outside capabilities are the
+permission-constrained System operations.
 
 A permission is more than a guard in front of an operation. It also defines
-which domain handles exist within the Client's visible scope. This keeps hidden
+which domain handles exist within an Endpoint's visible scope. This keeps hidden
 Programs, Services, Connections, and Sessions opaque rather than revealing
 their identities through failed lookups or events.
 
 ## Visible scope
 
-A Client always sees its own Program, its Processes, its Services, read-only
-Appearance, its Desktop viewport and preferences, and the capabilities of its
-Context. Permissions extend that scope.
+An Endpoint always sees its own Program, its Processes, its Services, read-only
+Appearance, and the capabilities of its Context. A Client also receives its
+Desktop viewport and preferences. Permissions extend that scope.
 
 Collection `list()` operations return only visible handles. `find()` returns
 `null` when an identity is absent or inaccessible. Relationships and events
@@ -58,7 +64,7 @@ owner to grant broad authority while explicitly restricting one capability.
 | `desktopPreferences` | Changes to Desktop preferences |
 | `desktopConnection` | This Desktop's Connection and its attached Session |
 | `connections` | Every Connection and Session; also grants `desktopConnection` |
-| `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted Client capabilities |
+| `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted System capabilities |
 
 `programs` contributes access to the corresponding Services. `services` does
 not reveal the Program or its other resources. Similarly, `connections`
@@ -66,20 +72,20 @@ includes `desktopConnection`, while `desktopConnection` does not reveal other
 Connections.
 
 Program creation, force-creation, permission administration, and shell
-execution require `all`. Effective `all` also permits same-origin Client iframe
-access.
+execution require `all`. Effective `all` also permits same-origin access for
+the Program's Client iframe.
 
 ## Declaring and storing permissions
 
-A Program declares initial values under `client.permissions`:
+A Program declares initial values at the Program level:
 
 ```ts title="phresh.config.ts"
+permissions: {
+  services: ["web-browser"],
+  appearance: true,
+},
 client: {
   location: "dist/client",
-  permissions: {
-    services: ["web-browser"],
-    appearance: true,
-  },
 }
 ```
 
@@ -91,13 +97,13 @@ stored file is the authoritative permission state reconstructed at System boot.
 `program.permissions` reads and manages that state. `get(name)` returns one
 exact assignment, `all()` returns every stored assignment, and `allows()` tests
 effective authority. `set()` accepts `true`, a value list, or `false`;
-`delete()` removes the exact assignment. A Client needs `all` to administer a
-Program's permissions.
+`delete()` removes the exact assignment. An Endpoint needs `all` to administer
+a Program's permissions.
 
 ## Asking the owner
 
-The executing Client uses `context.permissions` to inspect its own authority or
-ask the owner for a replacement decision:
+The executing Endpoint uses `context.permissions` to inspect its Program's
+authority or ask the owner for a replacement decision:
 
 ```ts
 if (!await context.permissions.allows("network", ["https://api.example.com"])) {
@@ -119,12 +125,14 @@ returns `null`. The default deadline is two minutes, and
 ## Restricted Window layers
 
 The ordinary `window` layer needs no permission. Explicitly selecting `under`,
-`over`, `wallpaper`, or `start-menu` from a Client requires `layers` coverage.
+`over`, `wallpaper`, or `start-menu` through an Endpoint requires `layers`
+coverage.
 
-This check applies when a Client creates or runs a Process, stores startup or
-icon-launch configuration, or starts a Client Endpoint. Owner-initiated launches
-and execution of already stored startup configuration use owner authority.
-Omitting the layer follows the existing declaration or launch default.
+This check applies when an Endpoint creates or runs a Process, stores startup
+or icon-launch configuration, or starts a Client Endpoint. Owner-initiated
+launches and execution of already stored startup configuration use owner
+authority. Omitting the layer follows the existing declaration or launch
+default.
 
 ## Network scopes
 

@@ -33,6 +33,10 @@ The Context also receives messages addressed to its Endpoint and can publish
 destinationless output. Inbound messages contain `{ from, payload }`; `from`
 is `null` when the sender lies outside the Context's visible scope.
 
+`permissions` reads the executing Program's current authority and can request
+an owner's decision. Client and Server Contexts share this contract because
+permissions belong to the Program rather than to either Endpoint.
+
 ## Client Context
 
 A Client Context adds the capabilities that exist because it is running inside
@@ -41,7 +45,6 @@ a Desktop:
 - `server` is the paired Server Endpoint in the same Process.
 - `window` is the Client Endpoint's System-owned authoritative Window.
 - `localWindow` is the representation of that Window owned by this Desktop.
-- `permissions` reads current Client authority and requests an owner's decision.
 
 ```ts
 await context.window.changeTitle("Notes")
