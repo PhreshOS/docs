@@ -34,10 +34,13 @@ it exists. A Server must also announce readiness. The default deadline is ten
 seconds, and temporary absence remains waitable while the owning Process can
 still provide another incarnation.
 
-Starting rejects when the Process is gone, that Endpoint kind was not declared,
-or an incarnation is already starting or live. Stopping an Endpoint never
-implicitly exits the Process, and it rejects if doing so would remove the
-Process's final live Endpoint.
+`start()` ensures that an incarnation is live. If one already exists, the call
+resolves without replacing it or publishing another lifecycle event; launch
+values configure an incarnation only when one must be created. `stop()`
+similarly resolves when the incarnation is already absent. Both operations
+still reject when the Process handle is no longer valid. Starting also rejects
+when that Endpoint kind was not declared, while stopping rejects if it would
+remove the Process's final live Endpoint.
 
 ## Server Endpoint
 

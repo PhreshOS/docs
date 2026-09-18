@@ -131,8 +131,11 @@ undo a completed installation.
 For installation, `purge: true` removes previous installed storage before the
 new declaration is applied. Uninstallation normally removes only the installed
 form. With `purge: true`, it also ends Processes, removes storage, and forgets
-the runtime Program. `forget()` always ends live Processes and removes the
-runtime Program without uninstalling its files.
+the runtime Program. Calling ordinary uninstallation when the installed form is
+already absent completes without producing output or another lifecycle event.
+An explicit purge still removes the remaining runtime Program and storage.
+`forget()` always ends live Processes and removes the runtime Program without
+uninstalling its files.
 
 ## Lifecycle
 
