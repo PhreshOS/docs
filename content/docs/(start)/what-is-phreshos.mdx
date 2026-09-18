@@ -8,23 +8,36 @@ PhreshOS is an open-source, server-authoritative operating system for running an
 managing web-based Programs in a unified web Desktop environment, with native
 agent access through shared APIs.
 
-## System and Desktop
+## Why PhreshOS?
 
-One owner runs the System on a machine they control. The System is the source of
-truth for installed software, live execution, authentication, persistence,
-communication, and access to host capabilities.
+Web technologies are among the most expressive tools for building personal
+applications and internal software. They provide a rich interface model, a
+large ecosystem, and a runtime available on almost every device. What they do
+not provide on their own is a complete environment in which this software can
+live.
 
-The Desktop is that System's graphical representation. It owns browser-local
-interaction such as pointer input, keyboard input, viewport measurements,
-iframes, and visual transitions. It represents authoritative Window state
-without replacing it.
+A developer who wants a local application can package the web application with
+its own browser and server runtime. The result can use the host machine, but
+every application carries and manages that environment independently. A
+developer who wants the application to remain available remotely must usually
+build the surrounding infrastructure as well: authentication, persistence,
+communication, synchronization, process management, and an interface through
+which people or agents can reach it.
 
-Every Client Endpoint has a System-owned authoritative Window. Its `window`
-handle reads, changes, and observes that shared state. A Desktop separately owns
-the `localWindow` that physically represents it on one screen, together with
-the mechanism that links or detaches the two. Standard windows follow their own
-authoritative Window by default; other layers define which state they represent
-and whether they begin linked.
+PhreshOS provides this as one shared environment for every Program. Software built with
+web technologies can run on a controlled host, remain available independently
+of any one browser, present its interface remotely, communicate with other
+Programs, and use shared System capabilities. People reach it through the
+Desktop; agents and other software reach the same underlying System through its
+APIs.
+
+## How it works
+
+PhreshOS runs on a machine controlled by its owner. The System is the shared
+foundation: it knows which software exists, what is running, and how everything
+within the environment can work together. The Desktop is the graphical view of
+that System, available through a browser from wherever the owner chooses to
+make it accessible.
 
 <img
   src="/mental-models/phreshos.png"
@@ -32,19 +45,21 @@ and whether they begin linked.
   className="mental-model"
 />
 
-## One runtime language
-
 A Program is the stable software identity. Each live execution is a Process.
 The Process owns one Server Endpoint and one Client Endpoint. A Service gives a
 stable address to an Endpoint that chooses to be reachable.
 
-Official applications and user-created applications enter this same model.
-Client, Server, and Node SDKs preserve the same domain contracts; only their
-environment, transport, and authority differ.
+The Server Endpoint lets a Program continue working on the host independently
+of a browser. The Client Endpoint presents its interface through the Desktop.
+Services allow Programs to reach one another without taking ownership of each
+other's execution.
 
-This gives Programs a shared way to launch and discover execution, exchange
-values, persist state, and use System capabilities without rebuilding those
-facilities independently.
+Together, these parts give every Program the same environment for execution,
+communication, persistence, and remote access. People interact with that
+environment through the Desktop, while agents and other software interact with
+it through shared APIs.
+
+## Where to continue
 
 <Cards>
   <Card title="Runtime" description="Understand the four components and their ownership." href="/runtime" />
@@ -52,8 +67,3 @@ facilities independently.
   <Card title="Desktop" description="Understand Windows and their local representation." href="/system/desktop" />
   <Card title="First Program" description="See how one project enters this model." href="/first-program" />
 </Cards>
-
-<Callout title="Runs on a host operating system">
-  PhreshOS runs as a per-user service on macOS, Linux, or Windows. It does not
-  replace the host kernel.
-</Callout>
