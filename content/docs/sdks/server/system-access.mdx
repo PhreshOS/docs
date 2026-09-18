@@ -19,6 +19,11 @@ Service addresses; Storage and uploads; Appearance; Network; and shell
 execution. Each operation has the same name, input, result, and lifecycle as in
 the Client and Node implementations. See [System](/system) for those contracts.
 
+`system.execute()` presents selected operations through Core's JSON operation
+catalog. It invokes these same Server SDK handles and therefore crosses their
+existing permission boundary rather than introducing another route. See
+[Execute](/sdks/core/execute).
+
 ## One boundary in every environment
 
 System operations do not execute directly through the Server runtime's local

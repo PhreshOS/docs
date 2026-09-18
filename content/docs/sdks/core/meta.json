@@ -4,6 +4,7 @@
   "icon": "Boxes",
   "pages": [
     "index",
+    "execute",
     "program-configuration",
     "domain-contracts",
     "validation-and-utilities"

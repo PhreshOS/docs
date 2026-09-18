@@ -43,15 +43,19 @@ phresh --help
 
 ## Human and structured use
 
-Terminal output is designed for people by default. Collections use responsive
-tables, narrow terminals preserve all data, and mutations report the fields
-needed to understand their outcome. Inspection and observation commands accept
+Terminal output is designed for people by default. Collections use direct,
+readable field blocks, and mutations report the fields needed to understand
+their outcome. Inspection and observation commands accept
 `--json` when another tool needs the complete structured result.
 
 ```sh
 phresh program list --installed-only
 phresh program list --installed-only --json
 ```
+
+`phresh execute` accepts one raw Execute request and always returns JSON. The
+ordinary Program, Process, Endpoint, and Window commands present the same
+operations through human-oriented arguments and output.
 
 Searchable collections accept `--search`, `--limit`, and `--offset`. Their JSON
 shape is `{ data, total, truncated }`, so bounded results remain explicit.

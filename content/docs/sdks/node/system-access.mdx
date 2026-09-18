@@ -21,6 +21,10 @@ console.log(program?.name, process?.identity)
 The operation contracts remain those documented under [System](/system). Node
 does not rename them or provide parallel Node-only domain objects.
 
+`system.execute()` exposes selected operations through Core's JSON operation
+catalog. It composes the same Node handles and owner authority described here;
+it is not a separate gateway protocol. See [Execute](/sdks/core/execute).
+
 ## Local work under connection ownership
 
 When crossing the gateway would not change meaning, Node performs work with

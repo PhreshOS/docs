@@ -40,3 +40,23 @@ phresh describe endpoint ask --json
 Discovery itself needs no running System. The returned contract tells tooling
 whether the selected command does. A Program's `agent.md` remains responsible
 only for that Program's own tool language; it does not redefine the CLI.
+
+## Execute discovery
+
+`phresh describe` continues to describe the complete CLI, including project and
+System-management workflows owned by the CLI. Runtime operations also expose
+their JSON contracts through Execute:
+
+```sh
+phresh execute '{"$domain":"operation","$operation":"list"}'
+phresh execute '{"$domain":"operation","$operation":"describe","domain":"endpoint","operation":"ask"}'
+```
+
+Human-facing runtime commands reuse the corresponding Execute operation
+descriptions while retaining CLI-specific options such as search and paging.
+The same operation catalog is also available as commands:
+
+```sh
+phresh operation list
+phresh operation describe --domain endpoint --operation ask --json
+```

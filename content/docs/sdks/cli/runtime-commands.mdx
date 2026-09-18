@@ -7,16 +7,25 @@ Runtime commands follow the same ownership model as the SDKs. Each command
 connects to the running System, resolves the requested handles, performs one
 operation, and closes its Node connection.
 
+Program, Process, Endpoint, and Window commands are human-facing forms of Core
+Execute operations, including commands that wait for the next lifecycle or
+application event.
+
 ## Programs
 
 `program list` searches and pages visible Programs. `program inspect` reads one
 Program's declaration and installation state. `program agent` prints the
-Program's own agent document. `program wait` observes either the System Program
-registry or one Program's Process, uninstall, and forget lifecycle.
+Program's own agent document. `program get-launch` and `program set-launch`
+read and replace the Process launch saved for its icon. `program logs` runs a
+read-only SQL statement against the Program's captured Endpoint output.
+`program wait` observes either the System Program registry or one Program's
+Process, uninstall, and forget lifecycle.
 
 ```sh
 phresh program list --installed-only
 phresh program inspect --program terminal --json
+phresh program logs --program terminal \
+  --statement 'select createdAt, process, source, kind, content from logs order by createdAt desc limit 100'
 phresh program wait --event uninstall --program terminal
 ```
 

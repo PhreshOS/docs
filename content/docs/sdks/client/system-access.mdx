@@ -19,6 +19,10 @@ Service addressing; Storage and uploads; Appearance; Network; and shell
 execution. Their contracts are documented under [System](/system). Only the
 Client authority boundary differs.
 
+`system.execute()` provides the same capabilities through Core's JSON operation
+catalog. It is a local adapter over these handles, so Client visibility and
+permissions remain unchanged. See [Execute](/sdks/core/execute).
+
 ## Visibility before mutation
 
 Without additional permission, a Client sees its own Program, its Processes,

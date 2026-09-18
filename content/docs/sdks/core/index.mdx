@@ -8,8 +8,10 @@ Program, Process, Endpoint, Service, Window, or System capability one meaning
 that Client, Server, Node, and React can all use without translating the domain
 into environment-specific shapes.
 
-Core does not connect to a System or perform the work described by those
-contracts. Environment SDKs provide concrete implementations.
+Core does not connect to a System or own the capabilities described by those
+contracts. Environment SDKs provide concrete implementations. Shared adapters
+may compose those public implementations without creating another System
+boundary.
 
 ## Install
 
@@ -67,6 +69,7 @@ changing what its domain objects mean.
 
 <Cards>
   <Card title="Program configuration" description="Describe one Program project and its Endpoint declarations." href="/sdks/core/program-configuration" />
+  <Card title="Execute" description="Represent ordinary SDK operations through one JSON request interface." href="/sdks/core/execute" />
   <Card title="Domain contracts" description="Use the shared entities and reusable behavior contracts." href="/sdks/core/domain-contracts" />
   <Card title="Validation and utilities" description="Read untyped boundary values into canonical contracts." href="/sdks/core/validation-and-utilities" />
 </Cards>
