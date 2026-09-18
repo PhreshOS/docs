@@ -69,15 +69,19 @@ chooses exactly one. Development remains separate and always uses its declared
 location.
 
 A Client location contains its production `index.html`. Its declaration can
-also choose the initial Window title, size, position, layer, minimized state,
-and maximized state:
+also choose the initial Window title, header state, size, position, layer,
+minimized state, and maximized state:
 
 ```ts
 client: {
   location: "dist/client",
+  header: false,
   size: { width: 800, height: 600 },
 }
 ```
+
+`header` affects standard windows only. Other layers use their own fixed
+presentation and ignore it.
 
 `development.url` selects an existing HTTP or HTTPS server. When a development
 `startCommand` is supplied without a URL, Node Project selects an available

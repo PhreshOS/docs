@@ -42,9 +42,9 @@ const serverState = useEndpointState(process.server)
 
 ## Window state
 
-`useWindowState(window)` returns title, position, size, minimized, maximized,
-front, and layer values. It follows move, resize, atomic geometry, visibility,
-title, and front-state events.
+`useWindowState(window)` returns title, header, position, size, minimized,
+maximized, front, and layer values. It follows move, resize, atomic geometry,
+visibility, title, header, and front-state events.
 
 ```tsx
 function WindowSize({ window }: { window: Window }) {

@@ -35,10 +35,10 @@ It requires `desktopConnection` or the broader `connections` permission.
 
 ## Authoritative Window state
 
-Every Client Endpoint has one permanent `window` handle. Its title, geometry,
-minimized state, maximized state, front state, and layer belong to the System.
-Reads return those authoritative values; mutations change them and publish the
-matching Window event.
+Every Client Endpoint has one permanent `window` handle. Its title, header,
+geometry, minimized state, maximized state, front state, and layer belong to
+the System. Reads return those authoritative values; mutations change them and
+publish the matching Window event.
 
 ```ts
 await context.window.setGeometry({
@@ -47,6 +47,7 @@ await context.window.setGeometry({
 })
 
 await context.window.maximize()
+await context.window.changeHeader(false)
 ```
 
 `move()` and `resize()` change one part of the geometry. `setGeometry()` commits
@@ -60,7 +61,11 @@ stored geometry is shown. Neither state destroys the geometry underneath it,
 so restoring a Window needs no separate saved rectangle.
 
 Calling `minimize()` or `maximize()` without an argument sets that state to
-`true`. `raise()` makes the Window frontmost within its own layer.
+`true`. `changeHeader()` controls whether a standard Window presents the
+Desktop-owned top region containing its title, drag area, and controls. Hiding
+it gives Client content the complete inner Window area without changing the
+Window's layer, Surface, resize boundary, taskbar presence, or Desktop
+authority. `raise()` makes the Window frontmost within its own layer.
 
 ## Layers
 
@@ -100,8 +105,8 @@ await context.localWindow
 
 `transaction()` binds geometry, minimize, maximize, Surface, and following
 operations to one visual timing. `wait: true` makes the operation resolve after
-the visual transition rather than after the Desktop accepts it. `raise()` and
-`changeTitle()` do not have transaction forms.
+the visual transition rather than after the Desktop accepts it. `raise()`,
+`changeTitle()`, and `changeHeader()` do not have transaction forms.
 
 Local capability follows the role of the receiving layer:
 
@@ -109,6 +114,7 @@ Local capability follows the role of the receiving layer:
 | --- | --- | --- | --- |
 | Geometry, minimize, maximize, raise | Allowed | Allowed | Rejected |
 | `changeTitle()` | Allowed | Rejected | Rejected |
+| `changeHeader()` | Allowed | Rejected | Rejected |
 | `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
 | `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
@@ -121,4 +127,5 @@ preserving the current local state.
 
 Local overrides do not implicitly break following. Later authoritative events
 update only the property they carry. Under and over layers do not follow a
-target's title, and no follower copies the target's layer or Surface.
+target's title or header state, and no follower copies the target's layer or
+Surface.

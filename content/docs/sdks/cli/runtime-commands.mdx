@@ -64,8 +64,8 @@ communication supports richer binary boundary values.
 ## Windows
 
 Window commands read and change authoritative Window state: move, resize,
-atomic geometry, minimize, maximize, title, layer-local raising, and future
-events.
+atomic geometry, minimize, maximize, title, header visibility, layer-local
+raising, and future events.
 
 ```sh
 phresh window set-geometry \
@@ -75,6 +75,8 @@ phresh window set-geometry \
   --y 0 \
   --width 100% \
   --height 100%
+
+phresh window change-header --program terminal --process main --hide
 ```
 
 Geometry accepts the same pixel and workspace-relative values as Core.
