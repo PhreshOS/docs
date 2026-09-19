@@ -65,7 +65,7 @@ reason. Content depth belongs inside this stable structure.
 | Core | `Process`, `Exit`, `ProcessEvents` | Runtime / Processes |
 | Core | `Service`, `ServerService`, `ClientService`, `ServiceKey`, `isServiceKey` | Runtime / Services |
 | Core | `Context`, `EndpointContext`, `ClientContext`, `ServerContext`, `ContextMessage`, `ContextEvents`, `ContextCapture`, `Answerer` | Runtime / Context |
-| Core | `Window`, `LocalWindow`, their operations, state, events, geometry, layers, launch values, and transactions | System / Desktop |
+| Core | `Window`, `WindowPresentation`, their operations, state, events, geometry, layers, launch values, frames, and transactions | System / Desktop |
 | Core | `Desktop`, surface snapshots and events, preferences, themes, and writable preference contracts | System / Desktop and Appearance |
 | Core | `Appearance` and all appearance value, source, event, limit, default, and parser exports | System / Appearance |
 | Core | `Storage`, `StorageFile`, file/stat/read/write/transfer/list/space/watch/change/scope types and scope parsers | System / Storage |

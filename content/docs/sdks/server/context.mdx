@@ -5,7 +5,7 @@ description: Use the current Server execution, paired Client, and answers.
 
 Server `context` is the executing Server Endpoint's
 [Context](/runtime/context). Import it from `@phreshos/server`. It exists
-only while this incarnation is running.
+only while this execution context is running.
 
 ```ts
 import { context } from "@phreshos/server"
@@ -25,5 +25,5 @@ const cleanup = context.answer("status.read", () => ({ ready: true }))
 await context.client.waitReady()
 ```
 
-`stop()` ends this Server incarnation. Communication is documented under
+`stop()` ends this Server execution context. Communication is documented under
 [Communication](/runtime/communication).

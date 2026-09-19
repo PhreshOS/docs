@@ -40,13 +40,13 @@ import {
 export function ButtonShowcase() {
   const [color, setColor] = useState<ControlColor>('primary:base');
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
   const [disabled, setDisabled] = useState(false);
   const [pending, setPending] = useState(false);
   const attributes = [
     color === 'default:base' ? '' : ` color="${color}"`,
     size === 'medium' ? '' : ` size="${size}"`,
-    material === 'opaque' ? '' : ` material="${material}"`,
+    material === 'basic' ? '' : ` material="${material}"`,
     disabled ? ' disabled' : '',
     pending ? ' pending' : '',
   ].join('');
@@ -82,7 +82,7 @@ export function ButtonShowcase() {
 export function TextFieldShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
   const [color, setColor] = useState<ControlColor>('default:base');
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
   const [radius, setRadius] = useState<Radius>('medium');
   const [disabled, setDisabled] = useState(false);
   const [invalid, setInvalid] = useState(false);
@@ -140,7 +140,7 @@ export function TextFieldShowcase() {
 export function SelectionShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
   const [color, setColor] = useState<ControlColor>('default:base');
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
   const [disabled, setDisabled] = useState(false);
   const [notify, setNotify] = useState(true);
   const [updates, setUpdates] = useState(false);
@@ -225,10 +225,10 @@ export function SliderShowcase() {
 export function SurfaceShowcase() {
   const [color, setColor] = useState('background:base');
   const [radius, setRadius] = useState<Radius>('medium');
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
   const [shadow, setShadow] = useState(true);
   const surfaceColor = color as ControlColor;
-  const materialAttribute = material === 'opaque' ? '' : ` material="${material}"`;
+  const materialAttribute = material === 'basic' ? '' : ` material="${material}"`;
 
   return (
     <Showcase
@@ -276,8 +276,8 @@ export function SurfaceShowcase() {
 
 export function PanelShowcase() {
   const [color, setColor] = useState<ControlColor>('background:base');
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
-  const [contentMaterial, setContentMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
+  const [contentMaterial, setContentMaterial] = useState<MaterialMode>('basic');
 
   return (
     <Showcase
@@ -310,7 +310,7 @@ export function PanelShowcase() {
 export function WindowShowcase() {
   const [active, setActive] = useState(true);
   const [maximized, setMaximized] = useState(false);
-  const [material, setMaterial] = useState<MaterialMode>('opaque');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
 
   return (
     <Showcase

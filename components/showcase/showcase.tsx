@@ -125,7 +125,7 @@ export const radiusOptions = [
 
 export const materialOptions = [
   { value: 'none', label: 'None' },
-  { value: 'opaque', label: 'Opaque' },
-  { value: 'translucent', label: 'Translucent' },
+  { value: 'basic', label: 'Basic' },
+  { value: 'extended', label: 'Extended' },
   { value: 'full', label: 'Full' },
 ] as const;

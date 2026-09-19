@@ -4,12 +4,12 @@ description: The capabilities belonging to the Endpoint currently executing.
 icon: Focus
 ---
 
-A Context is the runtime's first-person view. It belongs to one live Endpoint
-incarnation and answers: Which Process am I part of? What launched me? Who
+A Context is the runtime's first-person view. It belongs to one running
+Endpoint execution context and answers: Which Process am I part of? What launched me? Who
 created that Process? Which messages are addressed to me?
 
 This is different from retaining an Endpoint handle. The handle is a
-permanent address. The Context exists only while the current incarnation is
+permanent handle. The Context exists only while the current execution context is
 executing.
 
 Client code imports `context` from `@phreshos/client`. Server code imports
@@ -31,7 +31,7 @@ console.log(program.identity, process.identity, parent?.identity, options)
 
 `name()` returns the current Process name or `null`. `parent()` returns the
 visible parent Process or `null`. `isService()` reports the role of this
-exact Endpoint incarnation. `stop()` ends the incarnation and releases the
+exact Endpoint execution context. `stop()` ends the execution context and releases the
 boundary operations and registrations it owns.
 
 The Context receives messages addressed to its Endpoint and can publish
@@ -44,8 +44,8 @@ A Client Context adds the capabilities that exist because it is running
 inside a Desktop:
 
 - `server` is the paired Server Endpoint in the same Process
-- `window` is the Client Endpoint's System-owned authoritative Window
-- `localWindow` is this Desktop's representation of that Window
+- `window` is the Client Endpoint's authoritative Window
+- `presentation` is this Desktop's applied representation of that Window
 - `permissions` reads the executing Program's authority and can request an
   owner's decision
 

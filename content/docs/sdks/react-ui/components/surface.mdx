@@ -22,15 +22,16 @@ React UI offers three browser rendering modes for the same Appearance Material:
 
 ```tsx
 <Surface material="none">Solid color only</Surface>
-<Surface material="opaque">Opaque material rendering</Surface>
-<Surface material="translucent">Material with opacity</Surface>
+<Surface material="basic">Basic material rendering</Surface>
+<Surface material="extended">Material with opacity</Surface>
 <Surface material="full">Complete backdrop material</Surface>
 ```
 
 - `none` ignores Material and uses the resolved color directly.
-- `opaque` is the default. It adds Material paint, grain, and the edge while
-  remaining fully solid.
-- `translucent` adds Material opacity without enabling backdrop processing.
+- `basic` is the default. It adds Material paint, grain, and the edge while
+  remaining fully solid. Material opacity affects only the grain.
+- `extended` applies Material opacity to the complete Material instead, without
+  enabling backdrop processing.
 - `full` adds backdrop, distortion, and saturation to complete Material
   rendering.
 - A Material options object selects full rendering and overrides individual
@@ -59,7 +60,7 @@ ref.
 | Prop | Default | Use |
 | --- | --- | --- |
 | `color` | `background:base` | Select the Surface paint from Appearance. |
-| `material` | `opaque` | Choose `none`, `opaque`, `translucent`, `full`, or provide local Material overrides. |
+| `material` | `basic` | Choose `none`, `basic`, `extended`, `full`, or provide local Material overrides. |
 | `radius` | `medium` | Select an Appearance-derived radius, including `full`. |
 | `shadow` | Appearance shadow | Disable it with `false`, use defaults with `true`, or provide overrides. |
 | `as` | `div` | Change the semantic host without changing Surface behavior. |

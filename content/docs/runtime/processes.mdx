@@ -9,7 +9,7 @@ Endpoints that belong to the same run and preserves the intent that created
 them.
 
 Its `identity`, optional Program-local `name`, `startedAt` time, launch
-options, and parent never change. Its Endpoint incarnations may start and
+options, and parent never change. Its Endpoint execution contexts may start and
 stop independently. The Process remains addressable until it exits. The
 final live Endpoint cannot be stopped as an independent operation.
 
@@ -56,11 +56,11 @@ occupied by a different Launch.
 
 Every Process exposes `server` and `client`, regardless of which Endpoint
 kinds the Program declared or which ones are currently running. These are
-permanent addresses whose `exists()` state changes as incarnations start and
-stop.
+permanent handles whose `running()` state changes as execution contexts start
+and stop.
 
 ```ts
-if (await process.server.exists()) {
+if (await process.server.running()) {
   await process.server.ask("status")
 }
 ```

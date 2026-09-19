@@ -52,12 +52,12 @@ const result = await notes.ask("document.open", { path: "welcome.txt" })
 
 The handle has no `start()`, `stop()`, `enable()`, or `disable()` operation.
 Those belong to the Endpoint and Process owners. The Service addresses
-whatever valid incarnation currently occupies its coordinates.
+whatever valid execution context currently occupies its coordinates.
 
 ## Becoming a Service
 
 An Endpoint declaration sets the default Service role. A Launch may override
-that role for one incarnation:
+that role for one execution context:
 
 ```ts
 const process = await program.createProcess({

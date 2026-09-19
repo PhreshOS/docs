@@ -4,20 +4,20 @@ description: The permanent Server and Client execution addresses inside a Proces
 icon: Unplug
 ---
 
-An Endpoint is one execution side of a Process. Every Process owns a
-permanent Server Endpoint handle and a permanent Client Endpoint handle. A
-handle remains the same while its live incarnation starts, stops, and starts
-again.
+An Endpoint is one permanent execution role inside a Process. Every Process
+exposes a Server Endpoint handle and a Client Endpoint handle. A declared
+Endpoint remains the same while its execution context starts, stops, and
+starts again.
 
-Identity belongs to the Process structure. `exists()` describes whether code
-is currently running at that address. `endpoint.lifecycle` publishes `start`
-and `stop` whenever that incarnation changes.
+`running()` reports whether the Endpoint currently has an execution context.
+`endpoint.lifecycle` publishes `start` and `stop` whenever that context
+changes.
 
 ## Shared behavior
 
 Both Endpoint kinds can publish application events, observe messages, inspect
 their outgoing traffic, find their owning Process, and report whether their
-current incarnation is a Service.
+current execution context is a Service.
 
 ```ts
 const client = process.client
@@ -28,23 +28,23 @@ await client.start()
 await client.waitReady()
 ```
 
-`waitReady()` waits for an incarnation that can be used. A Client is ready
-when it exists. A Server must also announce readiness. The default deadline
+`waitReady()` waits for an execution context that can be used. A Client is
+ready when it is running. A Server must also announce readiness. The default deadline
 is ten seconds. Temporary absence remains waitable while the owning Process
 exists.
 
-`start()` ensures that an incarnation is live. If one already exists, the
+`start()` ensures that an execution context is running. If one already exists, the
 call resolves without replacing it or publishing another lifecycle event;
-launch values configure an incarnation only when one must be created.
-`stop()` resolves when the incarnation is already absent. Both operations
-reject when the Process handle is no longer valid. Starting rejects when that
-Endpoint kind was not declared. Stopping rejects if it would remove the
+launch values configure a context only when one must be created.
+`stop()` resolves when the execution context is already absent. Every
+Promise-based operation through the Endpoint handle rejects when the Process
+has ended or the Program never declared that Endpoint kind. Stopping rejects if it would remove the
 Process's final live Endpoint. Stopping never exits the Process.
 
 ## Server Endpoint
 
 The Server Endpoint runs host-side code and answers questions.
-`ask(event, payload?)` sends a question to the current Server incarnation.
+`ask(event, payload?)` sends a question to the current Server execution context.
 `timeout(milliseconds)` selects another deadline.
 
 ```ts
@@ -58,12 +58,13 @@ same Server SDK and Endpoint contract. They differ in the host authority
 available outside the System API. See [Security](/system/security).
 
 `server.start({ service: true })` may override the Service role for that new
-incarnation.
+execution context.
 
 ## Client Endpoint
 
-The Client Endpoint runs in a Desktop iframe and owns a permanent `window`
-handle. Its launch can choose the Service role and the initial title, header
+The Client Endpoint owns a permanent authoritative `window` value. Each
+running execution context presents through a Desktop iframe. Its launch can
+choose the Service role and the initial title, header
 state, size, position, layer, minimized state, and maximized state.
 
 ```ts
