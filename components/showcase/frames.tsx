@@ -1,17 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useAppearance, useThemedValue } from '@phreshos/react-ui';
-import {
-  Surface,
-  WindowHeader,
-  WindowHeaderActions,
-  WindowHeaderCenter,
-  WindowHeaderClose,
-  WindowHeaderIdentity,
-  WindowHeaderMaximize,
-  WindowHeaderMinimize,
-} from '../react-ui';
+import { useAppearance } from '@phreshos/react-ui';
+import { Panel, Window } from '../react-ui';
 
 export function WindowScene({
   title,
@@ -24,26 +15,27 @@ export function WindowScene({
   const spacing = appearance.spacing;
 
   return (
-    <Surface style={{ width: 'min(100%, 26rem)', overflow: 'hidden' }}>
-      <WindowHeader>
-        <WindowHeaderIdentity title={title} />
-        <WindowHeaderCenter />
-        <WindowHeaderActions>
-          <WindowHeaderMinimize />
-          <WindowHeaderMaximize />
-          <WindowHeaderClose />
-        </WindowHeaderActions>
-      </WindowHeader>
-      <div
+    <Window style={{ width: 'min(100%, 26rem)' }}>
+      <Window.Header>
+        <Window.Header.Identity title={title} />
+        <Window.Header.Center />
+        <Window.Header.Actions>
+          <Window.Header.Minimize />
+          <Window.Header.Maximize />
+          <Window.Header.Close />
+        </Window.Header.Actions>
+      </Window.Header>
+      <Window.Content
         style={{
           display: 'grid',
+          alignContent: 'start',
           gap: spacing,
           padding: spacing * 1.5,
         }}
       >
         {children}
-      </div>
-    </Surface>
+      </Window.Content>
+    </Window>
   );
 }
 
@@ -55,12 +47,11 @@ export function PanelScene({
   children: ReactNode;
 }) {
   const appearance = useAppearance();
-  const colors = useThemedValue(appearance.colors);
   const spacing = appearance.spacing;
 
   return (
-    <Surface style={{ width: 'min(100%, 26rem)', overflow: 'hidden' }}>
-      <div
+    <Panel style={{ width: 'min(100%, 26rem)' }}>
+      <Panel.Header
         style={{
           paddingInline: spacing * 1.5,
           paddingBlock: spacing,
@@ -69,20 +60,17 @@ export function PanelScene({
         }}
       >
         {title}
-      </div>
-      <Surface
+      </Panel.Header>
+      <Panel.Content
         color="background:soft"
         style={{
-          margin: spacing,
-          marginTop: 0,
           padding: spacing * 1.5,
           display: 'grid',
           gap: spacing,
-          color: colors.foreground,
         }}
       >
         {children}
-      </Surface>
-    </Surface>
+      </Panel.Content>
+    </Panel>
   );
 }

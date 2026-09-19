@@ -1,44 +1,120 @@
 ---
 title: Overlays
-description: Compose anchored content, menus, dialogs, and descriptions.
+description: Anchored content, menus, dialogs, and short descriptions.
 ---
-
-React UI overlays keep each public role as an explicit component. The root owns
-open state and lifecycle, the trigger owns the interaction that opens it, and
-the content owns its positioned Surface. Semantic content remains separate
-from positioning.
 
 <OverlayShowcase />
 
+React UI provides several overlay compositions. Choose one according to the
+interaction rather than according to appearance:
+
+| Component | Use it for |
+| --- | --- |
+| `Popover` | Non-modal content anchored to a Button. |
+| `DropdownMenu` | A menu opened from a Button. |
+| `ContextMenu` | A menu opened by the platform context-menu gesture. |
+| `Dialog` | Modal content that can allow dismissal. |
+| `AlertDialog` | A modal decision that requires an explicit response. |
+| `Tooltip` | A short description of a Button. |
+
 ## Popover
 
-A `Popover` presents non-modal content relative to a trigger.
-`Popover.Content` owns placement and material. `Popover.Dialog` supplies the
-accessible content boundary inside it.
+Use a Popover for supporting information or compact controls that remain
+connected to a trigger.
 
-The content follows Appearance material, shadow, radius, and transaction
-defaults. Its `color`, `material`, `shadow`, and `radius` properties are the
-same Surface contracts used elsewhere.
+```tsx
+<Popover>
+  <Popover.Trigger>Connection details</Popover.Trigger>
+  <Popover.Content placement="bottom start">
+    <Popover.Dialog aria-label="Connection details">
+      <Popover.Title>Connected</Popover.Title>
+      <p>Local System on port 4300.</p>
+      <Popover.Close>Done</Popover.Close>
+    </Popover.Dialog>
+  </Popover.Content>
+</Popover>
+```
 
-## Menus
+`Popover.Content` owns placement and Surface rendering. `Popover.Dialog` owns
+the accessible content boundary inside it.
 
-`Menu` owns a keyboard-navigable collection of commands or selectable options.
-It does not decide how that collection opens. A `DropdownMenu` opens it from a
-button. A `ContextMenu` opens the same contract from a context request.
+## Dropdown and context menus
 
-`Menu` accepts `color` and `size`. `Menu.Item`, `Menu.Section`,
-`Menu.Header`, and `Menu.Separator` compose the collection.
+Both compositions present the same `Menu`; they differ only in what opens it.
 
-## Dialog
+```tsx
+<DropdownMenu>
+  <DropdownMenu.Trigger>Actions</DropdownMenu.Trigger>
+  <DropdownMenu.Content>
+    <Menu aria-label="Process actions" onAction={handleAction}>
+      <Menu.Item id="show">Show</Menu.Item>
+      <Menu.Item id="maximize">Maximize</Menu.Item>
+      <Menu.Separator />
+      <Menu.Item id="close" color="danger:base">Close</Menu.Item>
+    </Menu>
+  </DropdownMenu.Content>
+</DropdownMenu>
+```
 
-A `Dialog` presents modal content. `Dialog.Backdrop` owns dismissal and
-overlay paint. `Dialog.Content` owns the Surface. Header, title, description,
-body, footer, and close are explicit parts.
+```tsx
+<ContextMenu>
+  <ContextMenu.Trigger>
+    <ProcessItem />
+  </ContextMenu.Trigger>
+  <ContextMenu.Content>
+    <Menu aria-label="Process actions">
+      <Menu.Item>Show</Menu.Item>
+      <Menu.Item>Close</Menu.Item>
+    </Menu>
+  </ContextMenu.Content>
+</ContextMenu>
+```
 
-`AlertDialog` uses the same parts. Its backdrop defaults to
-`isDismissable={false}` and `isKeyboardDismissDisabled={true}`.
+Compose longer menus with `Menu.Section`, `Menu.Header`, and
+`Menu.Separator`. Use `Menu.Item` for the actions themselves.
+
+## Dialog and AlertDialog
+
+Use `Dialog` for modal work such as editing settings. Use `AlertDialog` when the
+person must explicitly confirm or cancel a consequential action.
+
+```tsx
+<Dialog>
+  <Dialog.Trigger>Edit profile</Dialog.Trigger>
+  <Dialog.Backdrop isDismissable>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Profile</Dialog.Title>
+        <Dialog.Description>Update the visible details.</Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Body>
+        <Input label="Name" />
+      </Dialog.Body>
+      <Dialog.Footer>
+        <Dialog.Close>Cancel</Dialog.Close>
+        <Button color="primary:base" onPress={save}>Save</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Backdrop>
+</Dialog>
+```
+
+`AlertDialog.Backdrop` defaults to non-dismissable and disables keyboard
+dismissal. Its actions should make every available outcome explicit.
 
 ## Tooltip
 
-A `Tooltip` describes its trigger. `Tooltip.Trigger` is a Button.
-`Tooltip.Content` is a Surface with placement.
+Use a Tooltip for a brief description, especially when a Button's visible icon
+does not explain the action on its own.
+
+```tsx
+<Tooltip>
+  <Tooltip.Trigger aria-label="Information">
+    <InfoIcon />
+  </Tooltip.Trigger>
+  <Tooltip.Content>Visible to this Program</Tooltip.Content>
+</Tooltip>
+```
+
+Do not place required instructions or interactive content in a Tooltip. Use a
+Popover when the content needs structure or interaction.

@@ -25,12 +25,6 @@ export {
   Textarea,
   Tooltip,
   UIProvider,
-  WindowHeader,
-  WindowHeaderActions,
-  WindowHeaderCenter,
-  WindowHeaderClose,
-  WindowHeaderIdentity,
-  WindowHeaderMaximize,
-  WindowHeaderMinimize,
+  Window,
   useBrowserPreferences,
 } from '@phreshos/react-ui';

@@ -103,25 +103,19 @@ A semantic color combines an Appearance color with a level, such as
 `"primary:soft"`. A direct CSS color can be supplied when the caller already
 owns the concrete value.
 
-<ComponentPreview>
-  <Preview style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}>
-    <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
-    <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
-    <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
-    <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
-    <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx
-    <Surface color="primary:subtle">subtle</Surface>
-    <Surface color="primary:soft">soft</Surface>
-    <Surface color="primary:base">base</Surface>
-    <Surface color="primary:strong">strong</Surface>
-    <Surface color="primary:intense">intense</Surface>
-    ```
-
-  </PreviewCode>
+<ComponentPreview
+  previewStyle={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}
+  code={`<Surface color="primary:subtle">subtle</Surface>
+<Surface color="primary:soft">soft</Surface>
+<Surface color="primary:base">base</Surface>
+<Surface color="primary:strong">strong</Surface>
+<Surface color="primary:intense">intense</Surface>`}
+>
+  <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
+  <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
+  <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
+  <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
+  <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
 </ComponentPreview>
 
 The named sources are `background`, `foreground`, `default`, `primary`,

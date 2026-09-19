@@ -6,15 +6,20 @@ import {
   TabsList,
   TabsTrigger,
 } from 'fumadocs-ui/components/ui/tabs';
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { useTheme as useDocsTheme } from 'fumadocs-ui/provider/base';
 import type { Preferences } from '@phreshos/react-ui';
 import { useAppearance, useThemedValue } from '@phreshos/react-ui';
 import { Code2, Eye } from 'lucide-react';
-import { useSyncExternalStore, type ComponentProps, type CSSProperties, type HTMLAttributes, type ReactNode } from 'react';
+import { useSyncExternalStore, type ComponentProps, type CSSProperties, type ReactNode } from 'react';
 import { UIProvider, useBrowserPreferences } from './react-ui';
 
-type ComponentPreviewProps = Omit<ComponentProps<typeof Tabs>, 'className' | 'defaultValue'> & {
+type ComponentPreviewProps = Omit<ComponentProps<typeof Tabs>, 'children' | 'className' | 'defaultValue'> & {
   className?: string;
+  code: string;
+  language?: string;
+  previewStyle?: CSSProperties;
+  children: ReactNode;
 };
 
 const previewWallpapers = {
@@ -22,7 +27,14 @@ const previewWallpapers = {
   dark: '/component-preview/dark.png',
 } as const;
 
-export function ComponentPreview({ children, className, ...properties }: ComponentPreviewProps) {
+export function ComponentPreview({
+  children,
+  className,
+  code,
+  language = 'tsx',
+  previewStyle,
+  ...properties
+}: ComponentPreviewProps) {
   const { resolvedTheme } = useDocsTheme();
   const browserPreferences = useBrowserPreferences();
   const hydrated = useSyncExternalStore(subscribeToHydration, clientHydration, serverHydration);
@@ -52,7 +64,19 @@ export function ComponentPreview({ children, className, ...properties }: Compone
           Code
         </TabsTrigger>
       </TabsList>
-      {children}
+      <TabsContent value="preview" className="component-preview-result">
+        <Stage style={previewStyle}>{children}</Stage>
+      </TabsContent>
+      <TabsContent value="code" className="component-preview-code">
+        <DynamicCodeBlock
+          lang={language}
+          code={code}
+          codeblock={{
+            className: 'docs-code-block',
+            viewportProps: { className: 'docs-code-block-viewport' },
+          }}
+        />
+      </TabsContent>
     </Tabs>
   </UIProvider>;
 }
@@ -67,16 +91,6 @@ function clientHydration() {
 
 function serverHydration() {
   return false;
-}
-
-export function Preview({ className, style, children, ...properties }: HTMLAttributes<HTMLDivElement>) {
-  return <TabsContent
-    {...properties}
-    value="preview"
-    className={['component-preview-result', className].filter(Boolean).join(' ')}
-  >
-    <Stage style={style}>{children}</Stage>
-  </TabsContent>;
 }
 
 function Stage({ children, style }: { children: ReactNode; style?: CSSProperties }) {
@@ -102,12 +116,4 @@ function Stage({ children, style }: { children: ReactNode; style?: CSSProperties
       </div>
     </div>
   );
-}
-
-export function PreviewCode({ className, ...properties }: HTMLAttributes<HTMLDivElement>) {
-  return <TabsContent
-    {...properties}
-    value="code"
-    className={['component-preview-code', className].filter(Boolean).join(' ')}
-  />;
 }

@@ -6,7 +6,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 import * as TabsComponents from 'fumadocs-ui/components/tabs';
 import type { MDXComponents } from 'mdx/types';
 import type { ComponentProps } from 'react';
-import { ComponentPreview, Preview, PreviewCode } from './component-preview';
+import { ComponentPreview } from './component-preview';
 import { DocsCodeBlock } from './docs-code-block';
 import {
   ButtonShowcase,
@@ -18,7 +18,7 @@ import {
   SliderShowcase,
   SurfaceShowcase,
   TextFieldShowcase,
-  WindowHeaderShowcase,
+  WindowShowcase,
 } from './showcase/examples';
 import {
   UIProvider,
@@ -38,13 +38,7 @@ import {
   Surface,
   Switch,
   Textarea,
-  WindowHeader,
-  WindowHeaderActions,
-  WindowHeaderCenter,
-  WindowHeaderClose,
-  WindowHeaderIdentity,
-  WindowHeaderMaximize,
-  WindowHeaderMinimize,
+  Window,
 } from './react-ui';
 
 export function getMDXComponents(components?: MDXComponents) {
@@ -68,8 +62,6 @@ export function getMDXComponents(components?: MDXComponents) {
     PanelContent,
     PanelHeader,
     PanelShowcase,
-    Preview,
-    PreviewCode,
     Radio,
     RadioGroup,
     ScrollArea,
@@ -85,14 +77,8 @@ export function getMDXComponents(components?: MDXComponents) {
     Switch,
     Textarea,
     TextFieldShowcase,
-    WindowHeader,
-    WindowHeaderShowcase,
-    WindowHeaderActions,
-    WindowHeaderCenter,
-    WindowHeaderClose,
-    WindowHeaderIdentity,
-    WindowHeaderMaximize,
-    WindowHeaderMinimize,
+    Window,
+    WindowShowcase,
     pre: DocsCodeBlock,
     img: (props) => (
       <ImageZoom {...(props as ComponentProps<typeof ImageZoom>)} />

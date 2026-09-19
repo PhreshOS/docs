@@ -1,26 +1,64 @@
 ---
 title: Layout
-description: Arrange children with Flexbox or Grid without adding visual paint.
+description: Arrange content with Appearance-aware Flexbox and Grid containers.
 ---
-
-`Flex` and `Grid` are layout containers. They render a `div`, forward its ref,
-and add no material, color, border, padding, or shadow. Use them when the
-parent-child relationship itself owns the layout.
-
-Both accept `align`, `justify`, `gap`, and `inline`. Alignment uses `start`,
-`center`, `end`, `stretch`, or `baseline`. Justification uses `start`,
-`center`, `end`, `between`, `around`, or `evenly`. `gap` accepts an
-Appearance-derived scale level, a pixel number, or an explicit CSS value.
 
 <LayoutShowcase />
 
-## Flex
+`Flex` and `Grid` express layout without adding material, color, padding, a
+border, or a shadow. Use them when the parent-child relationship owns the
+layout and the children own their own presentation.
 
-Flex adds `direction` and `wrap`. Direction is `row`, `row-reverse`,
-`column`, or `column-reverse`. `wrap` is `true`, `false`, or `"reverse"`.
-`inline` uses `inline-flex`.
+## Flex layouts
 
-## Grid
+Use `Flex` for content arranged primarily along one axis.
 
-Grid adds `columns`, `rows`, and `flow`. `columns` and `rows` accept an equal
-track count or a native CSS track expression. `inline` uses `inline-grid`.
+```tsx
+<Flex align="center" justify="between" gap="medium">
+  <span>Connection</span>
+  <Button size="small">Reconnect</Button>
+</Flex>
+```
+
+Columns and wrapping use the same component:
+
+```tsx
+<Flex direction="column" gap="small">
+  <Input label="Name" />
+  <Input label="Email" />
+</Flex>
+
+<Flex wrap gap="small">
+  {tags.map(tag => <Button key={tag}>{tag}</Button>)}
+</Flex>
+```
+
+## Grid layouts
+
+Use a number for equal columns, or provide a native CSS track expression when
+the tracks have different roles.
+
+```tsx
+<Grid columns={3} gap="medium">
+  {items.map(item => <Surface key={item.id}>{item.name}</Surface>)}
+</Grid>
+
+<Grid columns="minmax(12rem, 1fr) 2fr" gap="large">
+  <Navigation />
+  <MainContent />
+</Grid>
+```
+
+## Selected props
+
+| Prop | Components | Use |
+| --- | --- | --- |
+| `gap` | Both | Use an Appearance scale such as `small`, a pixel number, or a CSS value. |
+| `align` | Both | Set cross-axis alignment. |
+| `justify` | Both | Distribute children along the main axis. |
+| `inline` | Both | Render `inline-flex` or `inline-grid`. |
+| `direction`, `wrap` | `Flex` | Control the primary axis and line wrapping. |
+| `columns`, `rows`, `flow` | `Grid` | Define tracks and automatic placement. |
+
+Prefer the semantic `start` and `end` values over physical left and right
+alignment so the layout remains direction-neutral.

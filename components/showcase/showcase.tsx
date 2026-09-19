@@ -3,8 +3,7 @@
 import type { ReactNode } from 'react';
 import { useAppearance } from '@phreshos/react-ui';
 import { Select, Surface, Switch } from '../react-ui';
-import { ComponentPreview, Preview, PreviewCode } from '../component-preview';
-import { DocsCodeBlock } from '../docs-code-block';
+import { ComponentPreview } from '../component-preview';
 
 export function Showcase({
   children,
@@ -16,13 +15,8 @@ export function Showcase({
   code: string;
 }) {
   return (
-    <ComponentPreview>
-      <Preview>
-        <ShowcaseLayout controls={controls}>{children}</ShowcaseLayout>
-      </Preview>
-      <PreviewCode>
-        <DocsCodeBlock>{code}</DocsCodeBlock>
-      </PreviewCode>
+    <ComponentPreview code={code}>
+      <ShowcaseLayout controls={controls}>{children}</ShowcaseLayout>
     </ComponentPreview>
   );
 }
@@ -52,6 +46,7 @@ function SurfaceControls({ children }: { children: ReactNode }) {
 
   return (
     <Surface
+      aria-label="Properties"
       className="component-showcase-controls"
       style={{
         display: 'grid',
@@ -61,7 +56,10 @@ function SurfaceControls({ children }: { children: ReactNode }) {
         padding: appearance.spacing,
       }}
     >
-      {children}
+      <span className="component-showcase-controls-title">Properties</span>
+      <div className="component-showcase-controls-fields" style={{ gap: appearance.spacing }}>
+        {children}
+      </div>
     </Surface>
   );
 }
@@ -118,4 +116,16 @@ export const sizeOptions = [
   { value: 'medium', label: 'Medium' },
   { value: 'large', label: 'Large' },
   { value: 'xlarge', label: 'Extra large' },
+] as const;
+
+export const radiusOptions = [
+  ...sizeOptions,
+  { value: 'full', label: 'Full' },
+] as const;
+
+export const materialOptions = [
+  { value: 'none', label: 'None' },
+  { value: 'opaque', label: 'Opaque' },
+  { value: 'translucent', label: 'Translucent' },
+  { value: 'full', label: 'Full' },
 ] as const;

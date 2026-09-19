@@ -1,15 +1,71 @@
 ---
 title: Text fields
-description: Labeled single-line and multi-line text controls.
+description: Accessible single-line and multi-line text entry.
 ---
-
-`Input` is a labeled single-line text control. `Textarea` is the multi-line
-form. `onChange` receives the string value. Both share label, description,
-error message, disabled, read-only, required, invalid, size, color, radius,
-material, and shadow.
 
 <TextFieldShowcase />
 
-The field owns its label and feedback. The inner Surface owns paint. Focus,
-invalid, and hover states change the Surface paint through the shared control
-theme.
+Use `Input` for one line of text and `Textarea` for content that can span
+multiple lines. Both own their label, description, validation feedback, and
+Surface states.
+
+```tsx
+const [name, setName] = useState("")
+
+<Input label="Name" value={name} onChange={setName} />
+```
+
+## Multi-line input
+
+`Textarea` uses the same field props and reports its complete string through
+`onChange`. Native textarea properties such as `rows` remain available.
+
+```tsx
+<Textarea
+  label="Notes"
+  description="Visible only to this Program."
+  rows={5}
+  value={notes}
+  onChange={setNotes}
+/>
+```
+
+## Validation feedback
+
+Set `invalid` when the current value fails application validation and provide
+`errorMessage` for the explanation. `required` establishes the corresponding
+accessible field state; it does not decide the application's validation rules.
+
+```tsx
+<Input
+  label="Username"
+  value={username}
+  onChange={setUsername}
+  required
+  invalid={username.length > 0 && username.length < 3}
+  errorMessage="Use at least three characters."
+/>
+```
+
+## Labels and placeholders
+
+A visible `label` is preferred for ordinary forms. When the surrounding layout
+already provides the meaning, omit it and provide an accessible name explicitly.
+
+```tsx
+<Input aria-label="Search Programs" placeholder="Search Programs…" />
+```
+
+Do not use a placeholder as the only accessible name.
+
+## Selected props
+
+| Prop | Use |
+| --- | --- |
+| `value`, `defaultValue` | Choose controlled or uncontrolled state. |
+| `onChange` | Receive the current string directly. |
+| `label`, `description`, `errorMessage` | Build the visible and accessible field relationship. |
+| `required`, `invalid` | Describe validation state. |
+| `readOnly` | Keep the value focusable and readable without allowing edits. |
+| `disabled` | Prevent interaction and focus. |
+| `size`, `color`, `radius`, `material`, `shadow` | Adjust the shared React UI control presentation. |

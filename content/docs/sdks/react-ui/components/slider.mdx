@@ -1,16 +1,61 @@
 ---
 title: Slider
-description: One numeric value with pointer, touch, keyboard, and form support.
+description: Choose one numeric value with pointer, touch, keyboard, and form support.
 ---
-
-`Slider` represents one numeric value. It supports pointer, touch, keyboard,
-and form participation.
 
 <SliderShowcase />
 
-`value` and `defaultValue` are numbers. `minValue` defaults to `0`.
-`maxValue` defaults to `100`. `step` defaults to `1`. `orientation` is
-`horizontal` or `vertical`. `onChange` fires while the value moves;
-`onChangeEnd` fires when the interaction finishes. `label` and `description`
-follow the shared field contract. `size` and `color` follow the shared
-control contract.
+Use `Slider` when a person chooses a value from a bounded numeric range and the
+exact value can be understood in context, such as volume, scale, or intensity.
+
+```tsx
+const [volume, setVolume] = useState(40)
+
+<Slider label="Volume" value={volume} onChange={setVolume} />
+```
+
+## Commit expensive changes at the end
+
+`onChange` runs continuously while the thumb moves. `onChangeEnd` runs when the
+interaction is committed. Keep immediate visual feedback in `onChange`, and put
+expensive persistence or network work in `onChangeEnd`.
+
+```tsx
+<Slider
+  label="Desktop scale"
+  minValue={0.5}
+  maxValue={2}
+  step={0.1}
+  value={scale}
+  onChange={setScale}
+  onChangeEnd={saveScale}
+/>
+```
+
+## Vertical sliders and formatted values
+
+```tsx
+<Slider
+  aria-label="Output level"
+  orientation="vertical"
+  minValue={0}
+  maxValue={1}
+  step={0.01}
+  formatOptions={{ style: "percent" }}
+  style={{ height: 180 }}
+/>
+```
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `minValue` | `0` | Set the lower bound. |
+| `maxValue` | `100` | Set the upper bound. |
+| `step` | `1` | Set the valid increment. |
+| `orientation` | `horizontal` | Choose horizontal or vertical interaction. |
+| `formatOptions` | — | Format the displayed value with `Intl.NumberFormat`. |
+| `name`, `form` | — | Include the value in native form submission. |
+
+Use either `value` with `onChange` or `defaultValue` for uncontrolled state.
+When no visible `label` is present, provide `aria-label` or `aria-labelledby`.

@@ -1,13 +1,60 @@
 ---
 title: Scroll Area
-description: A native scrolling viewport with React UI scrollbars.
+description: Native scrolling with overlay scrollbars that reserve no layout space.
 ---
-
-`ScrollArea` is a native scrolling viewport with locally owned React UI
-scrollbars. `axis` is `vertical` by default, or `horizontal` or `both`.
-`onScroll` and `viewportRef` address the scrolling viewport.
 
 <ScrollAreaShowcase />
 
-Scrollbar thickness and inset come from Appearance spacing. Direction follows
-`useDirection()` or an explicit `dir`.
+`ScrollArea` keeps browser scrolling behavior while drawing React UI scrollbars
+over the viewport. The scrollbars appear while scrolling or interacting and do
+not consume horizontal or vertical layout space.
+
+Give the component a constrained width or height so overflow can occur:
+
+```tsx
+<ScrollArea style={{ height: 240 }}>
+  <ProcessList />
+</ScrollArea>
+```
+
+## Choose the scrolling axes
+
+Vertical scrolling is the default. Use `horizontal` for a single row that may
+overflow, or `both` when the content can exceed the viewport in either
+direction.
+
+```tsx
+<ScrollArea axis="horizontal" style={{ width: 480 }}>
+  <Timeline style={{ width: 1200 }} />
+</ScrollArea>
+
+<ScrollArea axis="both" style={{ width: 480, height: 320 }}>
+  <Canvas style={{ width: 1200, height: 900 }} />
+</ScrollArea>
+```
+
+## Access the viewport
+
+The forwarded ref points to the ScrollArea root. Use `viewportRef` when code
+needs the actual scrolling element, and use `onScroll` to observe its native
+scroll events.
+
+```tsx
+const viewport = useRef<HTMLDivElement>(null)
+
+<ScrollArea
+  viewportRef={viewport}
+  onScroll={event => setTop(event.currentTarget.scrollTop)}
+>
+  <LogEntries />
+</ScrollArea>
+```
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `axis` | `vertical` | Enable vertical, horizontal, or both axes. |
+| `viewportRef` | — | Address the native scrolling viewport. |
+| `onScroll` | — | Receive scroll events from that viewport. |
+| `dir` | Resolved UI direction | Override direction for this ScrollArea. |

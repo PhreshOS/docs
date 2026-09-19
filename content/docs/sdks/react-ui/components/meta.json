@@ -4,7 +4,7 @@
   "pages": [
     "surface",
     "panel",
-    "window-header",
+    "window",
     "overlays",
     "layout",
     "scroll-area",

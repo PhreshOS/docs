@@ -1,22 +1,50 @@
 ---
 title: Button
-description: Represent one accessible action with normalized interaction and Surface paint.
+description: An accessible action with React UI interaction and material states.
 ---
-
-`Button` represents one action. Pointer activation, Enter, and Space all reach
-the same `onPress` callback. React UI supplies the material, color states,
-size, radius, and focus presentation.
 
 <ButtonShowcase />
 
-The default color is `"default:base"`. `size` defaults to `medium` and derives
-height, spacing, gap, and font size from Appearance. `radius` and `material`
-follow the same contracts as other Surface-based controls.
+Use `Button` when pressing a control performs an action, such as saving a form,
+opening a view, or confirming a choice. Pointer, Enter, and Space activation all
+reach the same `onPress` callback.
 
-Button chooses text contrast from its resting base color. Hover and pressed
-states change the fill shade without recalculating that text color or changing
-geometry.
+```tsx
+<Button color="primary:base" onPress={save}>
+  Save changes
+</Button>
+```
 
-`disabled` prevents both focus and activation. `pending` blocks activation but
-keeps the Button focusable. Both default to `false`. The host is a native
-`HTMLButtonElement` and defaults `type` to `button`.
+## Pending and disabled actions
+
+`pending` prevents a second activation while leaving the Button focusable. Use
+it while an action is in progress. `disabled` removes the Button from keyboard
+focus and prevents activation entirely.
+
+```tsx
+<Button color="primary:base" pending={saving} onPress={save}>
+  {saving ? "Saving…" : "Save"}
+</Button>
+
+<Button disabled>Unavailable</Button>
+```
+
+## Selected props
+
+| Prop | Use |
+| --- | --- |
+| `onPress` | Handle normalized pointer and keyboard activation. |
+| `color` | Select an Appearance color such as `primary:base` or `danger:base`. The default is `default:base`. |
+| `size` | Change the complete control scale. The default is `medium`. |
+| `pending` | Block activation without removing keyboard focus. |
+| `disabled` | Prevent focus and activation. |
+| `material`, `shadow`, `radius` | Change the Button's Surface rendering when the normal defaults are not appropriate. |
+
+## Guidance
+
+Use `onPress` rather than implementing separate mouse and keyboard handlers.
+The rendered element is a native button and defaults to `type="button"`, so set
+`type="submit"` explicitly when it submits a form.
+
+Text buttons provide their own accessible name. An icon-only Button must provide
+one with `aria-label`.

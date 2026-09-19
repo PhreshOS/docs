@@ -1,0 +1,81 @@
+---
+title: Window
+description: A Surface with a ready header-and-content layout.
+---
+
+<WindowShowcase />
+
+`Window` provides the visual and structural composition of a window: a fixed
+header followed by a content area that fills the remaining space. It does not
+create or control a PhreshOS Window handle. The consumer connects its buttons
+to whichever state owner it uses.
+
+```tsx
+<Window style={{ width: 640, height: 420 }}>
+  <Window.Header>
+    <Window.Header.Identity icon="/icon.png" title="Notes" />
+    <Window.Header.Center />
+    <Window.Header.Actions>
+      <Window.Header.Minimize onPress={minimize} />
+      <Window.Header.Maximize
+        maximized={maximized}
+        onPress={toggleMaximize}
+      />
+      <Window.Header.Close onPress={close} />
+    </Window.Header.Actions>
+  </Window.Header>
+
+  <Window.Content>
+    <Editor />
+  </Window.Content>
+</Window>
+```
+
+## Add application actions
+
+Use `Window.Header.Action` for an additional compact action that should match
+the standard controls.
+
+```tsx
+<Window.Header.Actions>
+  <Window.Header.Action aria-label="Pin" onPress={pin}>
+    <PinIcon />
+  </Window.Header.Action>
+  <Window.Header.Minimize onPress={minimize} />
+  <Window.Header.Close onPress={close} />
+</Window.Header.Actions>
+```
+
+## Use the header independently
+
+The header is available as `Window.Header` and can be placed in another
+Surface without rendering the `Window` root.
+
+```tsx
+<Surface>
+  <Window.Header>
+    <Window.Header.Identity title="Inspector" />
+    <Window.Header.Center>{/* application content */}</Window.Header.Center>
+    <Window.Header.Actions>
+      <Window.Header.Close onPress={close} />
+    </Window.Header.Actions>
+  </Window.Header>
+</Surface>
+```
+
+Header parts must remain inside `Window.Header`, because the Header provides
+their shared spacing, active state, and control treatment.
+
+## State and behavior
+
+- `active={false}` attenuates the identity without disabling the controls.
+- `Window.Header.Maximize` uses `maximized` to change its icon and accessible
+  label between Maximize and Restore.
+- Header pointer handlers can connect a drag region. Center and Actions stop
+  those interactions from leaking into their own controls.
+- `Window.Content` grows and can shrink correctly, but it does not choose
+  clipping or scrolling. Set overflow yourself or place a `ScrollArea` inside.
+
+The Window root accepts Surface props such as `color`, `material`, `shadow`,
+and `radius`.
+

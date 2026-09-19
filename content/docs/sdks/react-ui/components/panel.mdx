@@ -1,21 +1,56 @@
 ---
 title: Panel
-description: Compose an outer Surface, optional header, and inset content Surface.
+description: A composed outer Surface with an optional header and inset content.
 ---
-
-`Panel` owns one Surface composition: an outer material, an optional header,
-and an inset content material.
-
-```text
-Surface
-├── header
-└── Surface
-    └── content
-```
 
 <PanelShowcase />
 
-The outer Surface receives the ordinary Panel and Surface props.
-`Panel.Header` owns the optional leading region. `Panel.Content` is the
-constrained inner Surface and receives its own native and Surface properties.
-The two Surfaces remain independently configurable.
+Use `Panel` for a visually grouped region whose content should sit inside a
+second Surface. The root owns the outer material, while `Panel.Content` can use
+its own color and material settings.
+
+```tsx
+<Panel>
+  <Panel.Header>Connection</Panel.Header>
+  <Panel.Content>
+    Connected to the local System.
+  </Panel.Content>
+</Panel>
+```
+
+## Configure the two surfaces independently
+
+The outer Panel and its content do not have to use the same rendering mode.
+This is useful when the shell should show full backdrop material but the content
+should remain inexpensive to render.
+
+```tsx
+<Panel material="full" color="background:base">
+  <Panel.Header>Processes</Panel.Header>
+  <Panel.Content material="opaque" color="background:soft">
+    <ProcessList />
+  </Panel.Content>
+</Panel>
+```
+
+## Headerless panels
+
+Omit `Panel.Header` when the content does not need a named leading region. The
+Panel then gives the inset content equal spacing on every side.
+
+```tsx
+<Panel>
+  <Panel.Content>
+    <SettingsForm />
+  </Panel.Content>
+</Panel>
+```
+
+## Selected props
+
+`Panel` and `Panel.Content` accept the ordinary Surface props: `color`,
+`material`, `shadow`, and `radius`. `Panel.Header` is a plain layout region and
+accepts native `div` properties.
+
+Use `Panel` when the two-surface composition is meaningful. For a single
+material boundary, use `Surface` directly.

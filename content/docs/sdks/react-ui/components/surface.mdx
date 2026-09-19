@@ -1,15 +1,68 @@
 ---
 title: Surface
-description: Put React UI material on one compatible host element.
+description: Apply React UI color, material, edge, radius, and shadow to one host.
 ---
-
-`Surface` is the material-owning primitive of React UI. It combines a host
-element, material paint, an edge, a color, and one shared geometry. It renders a
-`div` by default. `as` selects another element or component that can receive
-`style` and `children` on the same host.
 
 <SurfaceShowcase />
 
-`color` selects paint. `material` selects substance. `shadow` and `radius`
-follow the shared Appearance contracts. Omission of `material` uses Appearance
-defaults. `material={false}` uses the resolved color as a normal background.
+`Surface` creates one visual material boundary. Use it for application-owned
+regions that need Appearance-derived paint without adopting the structure of a
+more specific component such as `Panel` or `Window`.
+
+```tsx
+<Surface color="background:base" style={{ padding: 24 }}>
+  <h2>Storage</h2>
+  <p>4.2 GB available</p>
+</Surface>
+```
+
+## Choose a material rendering mode
+
+React UI offers three browser rendering modes for the same Appearance Material:
+
+```tsx
+<Surface material="none">Solid color only</Surface>
+<Surface material="opaque">Opaque material rendering</Surface>
+<Surface material="translucent">Material with opacity</Surface>
+<Surface material="full">Complete backdrop material</Surface>
+```
+
+- `none` ignores Material and uses the resolved color directly.
+- `opaque` is the default. It adds Material paint, grain, and the edge while
+  remaining fully solid.
+- `translucent` adds Material opacity without enabling backdrop processing.
+- `full` adds backdrop, distortion, and saturation to complete Material
+  rendering.
+- A Material options object selects full rendering and overrides individual
+  values for this Surface.
+
+```tsx
+<Surface material={{ opacity: 0.72, backdrop: 18 }}>
+  Full material with local overrides
+</Surface>
+```
+
+## Use another host element
+
+`as` changes the host without adding a wrapper. The selected element or
+component must render `style` and `children` on the same host and forward its
+ref.
+
+```tsx
+<Surface as="section" aria-labelledby="summary-title">
+  <h2 id="summary-title">Summary</h2>
+</Surface>
+```
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `color` | `background:base` | Select the Surface paint from Appearance. |
+| `material` | `opaque` | Choose `none`, `opaque`, `translucent`, `full`, or provide local Material overrides. |
+| `radius` | `medium` | Select an Appearance-derived radius, including `full`. |
+| `shadow` | Appearance shadow | Disable it with `false`, use defaults with `true`, or provide overrides. |
+| `as` | `div` | Change the semantic host without changing Surface behavior. |
+
+Surface does not choose padding, layout, or overflow. Those remain owned by the
+consumer or by a higher-level React UI composition.

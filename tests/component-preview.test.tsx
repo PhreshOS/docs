@@ -4,7 +4,7 @@ import { hydrateRoot } from "react-dom/client"
 import { renderToString } from "react-dom/server"
 import { afterEach, expect, test, vi } from "vitest"
 import { usePreferences } from "@phreshos/react-ui"
-import { ComponentPreview, Preview, PreviewCode } from "../components/component-preview"
+import { ComponentPreview } from "../components/component-preview"
 
 const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" }))
 vi.mock("fumadocs-ui/provider/base", () => ({ useTheme: () => docsTheme }))
@@ -16,9 +16,8 @@ function ThemeProbe() {
 }
 
 function Example() {
-  return <ComponentPreview>
-    <Preview><ThemeProbe /></Preview>
-    <PreviewCode>Example source</PreviewCode>
+  return <ComponentPreview code="Example source" language="text">
+    <ThemeProbe />
   </ComponentPreview>
 }
 
