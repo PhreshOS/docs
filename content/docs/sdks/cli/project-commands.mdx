@@ -1,73 +1,39 @@
 ---
 title: Project commands
-description: Create, run, install, and package a Program project.
+description: Create, run, install, and package a local Program project.
 ---
 
-Project commands operate on source code and `phresh.config.ts`. When an
-operation needs the running System, the CLI creates a temporary Node SDK
-connection and owns it for the command lifetime.
-
-## Creating a project
+These commands operate on a Program project directory. Run and install go
+through the Node [Project](/sdks/node/project) API and a connected System.
+The meaning of a Program is documented under [Programs](/runtime/programs).
 
 ```sh
-phresh create example-program --package-manager bun
-cd example-program
+phresh create
+phresh create notes --package-manager bun
+phresh init --server --client
 ```
 
-`create [directory]` generates the maintained full Program template. In an
-interactive terminal it asks for missing choices. `--no-install` creates the
-project without installing its dependencies.
-
-`phresh init` adds a typed `phresh.config.ts` to an existing project. It derives
-identity, version, and description from `package.json`; Server and Client flags
-select the Endpoint shape. `--force` replaces an existing configuration.
-
-## Running attached code
+`create` writes a complete Server and Client project from the maintained
+starter. `init` writes `phresh.config.ts` for an existing package.
 
 ```sh
 phresh dev
 phresh start
-```
-
-Both commands create an attached Process whose lifetime belongs to the terminal
-command. `dev` resolves development Endpoint declarations. `start` runs the
-optional production build and uses production declarations. Endpoint output is
-written to the terminal, and ending the command ends the Process.
-
-Launch options use open names so a Program can define its own values:
-
-```sh
-phresh dev --run-option-document=example.txt
-```
-
-## Installing and uninstalling
-
-Without a name, `phresh install` builds and installs the current project. A
-name selects a verified official release.
-
-```sh
-phresh install
-phresh install terminal --run
-```
-
-`--run` asks the System to create a Process from the installed Program before
-configured startup runs. `--purge` removes previous installed Program storage
-as part of replacement; it does not delete source-project storage.
-
-```sh
-phresh uninstall terminal
-phresh uninstall terminal --purge
-```
-
-Ordinary uninstallation removes the installed form while preserving retained
-runtime state and storage. `--purge` removes all Program-owned installed state.
-
-## Packaging
-
-```sh
 phresh pack
+phresh install
+phresh install --run
+phresh uninstall
 ```
 
-`pack` runs `buildCommand`, validates declared files, and creates the resolved
-`program.json`, versioned release archive, and SHA-256 checksum. This is the
-same Project packaging contract exposed by [Node Project](/sdks/node/project).
+`dev` and `start` attach a Process to the terminal. Ending the command exits
+that Process. `pack` builds production files and writes the release archive.
+`install` without a name installs this project. A name installs a verified
+official release. `--run` creates a Process before startup. `--purge` deletes
+existing installed storage on install, or Processes, data, and runtime state
+on uninstall.
+
+Pass Process options as `--run-option-<name>=<value>`:
+
+```sh
+phresh dev --run-option-document=welcome.txt
+```

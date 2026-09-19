@@ -5,9 +5,8 @@ description: Use PhreshOS projects, runtime domains, and System lifecycle from a
 
 The `phresh` CLI translates terminal commands into the same Project and System
 contracts used by the SDKs. It has three jobs: work with a local Program
-project, operate the running domain model, and manage the native System service.
-
-## Install
+project, operate the running domain model, and manage the native System
+service.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -32,37 +31,28 @@ project, operate the running domain model, and manage the native System service.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  CLI has no peer dependencies; its global installation includes its runtime dependencies.
-</Callout>
+Node.js `20.10` or newer is required for the CLI. The current System release
+requires Node.js `24.15.0` or newer. See [Installation](/installation).
 
 ```sh
-phresh --version
-phresh --help
+phresh create
+phresh dev
+phresh install
+phresh system status
+phresh program list
+phresh execute '{"$domain":"operation","$operation":"list"}'
 ```
 
-## Human and structured use
+Runtime commands render lists or labeled fields for people by default. Add
+`--json` to receive the complete result as one JSON value. `phresh execute`
+accepts and returns JSON directly.
 
-Terminal output is designed for people by default. Collections use direct,
-readable field blocks, and mutations report the fields needed to understand
-their outcome. Inspection and observation commands accept
-`--json` when another tool needs the complete structured result.
-
-```sh
-phresh program list --installed-only
-phresh program list --installed-only --json
-```
-
-`phresh execute` accepts one raw Execute request and always returns JSON. The
-ordinary Program, Process, Endpoint, and Window commands present the same
-operations through human-oriented arguments and output.
-
-Searchable collections accept `--search`, `--limit`, and `--offset`. Their JSON
-shape is `{ data, total, truncated }`, so bounded results remain explicit.
+`phresh describe` inspects a command. `phresh describe --all --json` returns
+the complete machine-discoverable command contract.
 
 <Cards>
-  <Card title="Project commands" description="Create, run, install, and package Program projects." href="/sdks/cli/project-commands" />
-  <Card title="Runtime commands" description="Navigate and operate Programs, Processes, Endpoints, and Windows." href="/sdks/cli/runtime-commands" />
+  <Card title="Project commands" description="Create, run, install, and package a Program project." href="/sdks/cli/project-commands" />
+  <Card title="Runtime commands" description="Programs, Processes, Endpoints, Windows, and Execute." href="/sdks/cli/runtime-commands" />
   <Card title="System commands" description="Install and control the native System service." href="/sdks/cli/system-commands" />
-  <Card title="Contract discovery" description="Inspect exact commands, options, examples, and output schemas." href="/sdks/cli/contract-discovery" />
+  <Card title="Contract discovery" description="Read the CLI command contract as data." href="/sdks/cli/contract-discovery" />
 </Cards>

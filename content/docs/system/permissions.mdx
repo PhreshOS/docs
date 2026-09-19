@@ -1,12 +1,12 @@
 ---
 title: Permissions
-description: Understand Program-owned System authority and its visible scope.
+description: Program-owned System authority and its visible scope.
 icon: Shield
 ---
 
-Permissions describe which System capabilities a Program may access. The same
-permission state applies through both its Client SDK and Server SDK, independent
-of the Server execution environment.
+Permissions describe which System capabilities a Program may access. A Program
+declares them, the System stores and enforces them as Program state, and that
+state applies to every Client and Server Endpoint the Program owns.
 
 Permissions constrain the System API. They do not remove capabilities granted
 directly by an execution environment: Client code retains browser APIs, while
@@ -14,43 +14,28 @@ directly by an execution environment: Client code retains browser APIs, while
 Server has no ambient host access, so its only outside capabilities are the
 permission-constrained System operations.
 
-A permission is more than a guard in front of an operation. It also defines
-which domain handles exist within an Endpoint's visible scope. This keeps hidden
-Programs, Services, Connections, and Sessions opaque rather than revealing
-their identities through failed lookups or events.
-
-## Visible scope
-
-An Endpoint always sees its own Program, its Processes, its Services, read-only
-Appearance, and the capabilities of its Context. A Client also receives its
-Desktop viewport and preferences. Permissions extend that scope.
-
-Collection `list()` operations return only visible handles. `find()` returns
-`null` when an identity is absent or inaccessible. Relationships and events
-apply the same filter. An operation through an inaccessible or invented handle
-reports that the handle does not exist.
-
-Direct capabilities are different because the caller is not searching. For
-example, `desktop.connection()` reports permission denial when the current
-Connection is outside the Client's scope.
+A permission also defines which domain handles exist within the Program's
+visible scope. Hidden Programs, Services, Connections, and Sessions stay
+opaque. Collection `list()` operations return only visible handles. `find()`
+returns `null` when an identity is absent or inaccessible. Relationships and
+events apply the same filter.
 
 ## The permission value
 
 Each permission stores one of three states:
 
-- an array is a granted canonical value;
-- `false` is an explicit denial;
-- `null` or absence provides no exact decision.
+- an array is a granted canonical value
+- `false` is an explicit denial
+- `null` or absence provides no exact decision
 
-For a valued permission, an empty array grants its complete domain. A non-empty
-array grants only the selected values. For a value-less permission, the empty
-array is simply its canonical granted value. `true` is shorthand for the
+For a valued permission, an empty array grants its complete domain. A
+non-empty array grants only the selected values. For a value-less permission,
+the empty array is its canonical granted value. `true` is shorthand for the
 permission's default grant when declaring, setting, or requesting it.
 
-An exact permission assignment takes priority over `all`. This allows the
-owner to grant broad authority while explicitly restricting one capability.
+An exact permission assignment takes priority over `all`.
 
-## Permission catalog
+## Catalog
 
 | Permission | What it grants |
 | --- | --- |
@@ -67,109 +52,41 @@ owner to grant broad authority while explicitly restricting one capability.
 | `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted System capabilities |
 
 `programs` contributes access to the corresponding Services. `services` does
-not reveal the Program or its other resources. Similarly, `connections`
-includes `desktopConnection`, while `desktopConnection` does not reveal other
-Connections.
+not reveal the Program or its other resources. `connections` includes
+`desktopConnection`.
 
-Program creation, force-creation, permission administration, and shell
-execution require `all`. Effective `all` also permits same-origin access for
-the Program's Client iframe.
+Program creation, force-creation, `program.permissions` administration, and
+`system.shell()` require `all`. Effective `all` also permits same-origin
+access for the Program's Client iframe.
 
-## Declaring and storing permissions
+## Declaring, inspecting, and requesting
 
-A Program declares initial values at the Program level:
-
-```ts title="phresh.config.ts"
-permissions: {
-  services: ["web-browser"],
-  appearance: true,
-},
-client: {
-  location: "dist/client",
-}
-```
-
-During Program creation and installation, each declared entry replaces that
-permission in `storage/permissions.json`. Undeclared entries remain unchanged.
-An empty declaration does not create or modify the file. From then on, the
-stored file is the authoritative permission state reconstructed at System boot.
-
-`program.permissions` reads and manages that state. `get(name)` returns one
-exact assignment, `all()` returns every stored assignment, and `allows()` tests
-effective authority. `set()` accepts `true`, a value list, or `false`;
-`delete()` removes the exact assignment. An Endpoint needs `all` to administer
-a Program's permissions.
-
-## Asking the owner
-
-The executing Endpoint uses `context.permissions` to inspect its Program's
-authority or ask the owner for a replacement decision:
-
-```ts
-if (!await context.permissions.allows("network", ["https://api.example.com"])) {
-  const granted = await context.permissions.request("network", [
-    "https://api.example.com",
-  ])
-
-  if (!granted) return
-}
-```
-
-`get()` reads the exact stored assignment. `allows()` applies fallback and
-coverage rules without prompting. Every `request()` asks the owner, even when
-the requested value is narrower than current authority. Approval replaces the
-exact stored permission; denial returns `false`, and dismissal or timeout
-returns `null`. The default deadline is two minutes, and
-`timeout(milliseconds)` selects another.
-
-## Restricted Window layers
-
-The ordinary `window` layer needs no permission. Explicitly selecting `under`,
-`over`, `wallpaper`, or `start-menu` through an Endpoint requires `layers`
-coverage.
-
-This check applies when an Endpoint creates or runs a Process, stores startup
-or icon-launch configuration, or starts a Client Endpoint. Owner-initiated
-launches and execution of already stored startup configuration use owner
-authority. Omitting the layer follows the existing declaration or launch
-default.
-
-## Network scopes
-
-A network scope names a protocol, host, optional port, and optional path:
+A Program declares initial values in `phresh.config.ts`. Those declarations
+are written into authoritative storage at creation and installation.
 
 ```ts
 permissions: {
-  network: [
-    "https://api.example.com",
-    "https://*.example.com/v1/**",
-    "http://localhost:*",
-    "wss://events.example.com/**",
-  ],
+  network: ["https://api.example.com"],
+  uploads: true,
 }
 ```
 
-Schemes are explicit. `*.` replaces complete leading hostname labels, `:*`
-selects every port, and a final `/**` includes a path subtree. A scope without
-a path covers its origin. Query strings and fragments do not change authority.
+`program.permissions` is the administration API: `get`, `all`, `allows`,
+`set`, and `delete`. Those operations require `all`.
 
-## Storage scopes
-
-A Storage scope combines `read`, `write`, and `delete` with a native path:
+The Client Context exposes the executing Program's stored assignment and lets
+it ask the owner to grant more:
 
 ```ts
-permissions: {
-  storage: [
-    "Documents/report.json",
-    "read:Documents/**",
-    "read,write:Downloads/**",
-    "delete:/var/shared/temporary/**",
-  ],
+const allowed = await context.permissions.allows("network", ["https://api.example.com"])
+
+if (!allowed) {
+  await context.permissions.request("network", ["https://api.example.com"])
 }
 ```
 
-A bare path grants all three operations. A final `/**` includes the named path
-and its descendants. Relative paths begin at `system.storage.path()`; absolute
-paths keep their native meaning. Selecting a handle with `navigate()` or
-`file()` performs no access, while reading, writing, metadata, watching, and
-deletion each require their corresponding operation.
+`get` returns the stored assignment without applying fallback authority.
+`allows` reports whether the stored permission permits the requested
+capability. `request` prompts the owner, replaces the stored permission, and
+returns that canonical value. `timeout(milliseconds)` selects another
+deadline for the prompt.

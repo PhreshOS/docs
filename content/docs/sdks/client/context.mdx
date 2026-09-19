@@ -1,75 +1,32 @@
 ---
 title: Context
-description: Use the identity and capabilities of the current Client Endpoint incarnation.
+description: Use the current Client execution, paired Server, and Window.
 ---
 
-The Client `context` is the first-person view of the code currently running.
-It identifies the Program and Process that own this Client, receives messages
-addressed to it, and exposes capabilities that exist only because this is the
-current Client Endpoint.
+Client `context` is the executing Client Endpoint's
+[Context](/runtime/context). Import it from `@phreshos/client`. It exists
+only while this incarnation is running.
 
 ```ts
 import { context } from "@phreshos/client"
 
 const program = await context.program()
 const process = await context.process()
-const options = await context.options()
-
-console.log(program.identity, process.identity, options)
 ```
 
-`name()` returns the Process name or `null`. `parent()` returns the visible
-Process that created this Process, or `null`. `isService()` reports whether the
-current Client incarnation is serving a Service address. `stop()` ends this
-incarnation and its Context-owned work.
+The Client position adds:
 
-## The paired Server
-
-`context.server` is the permanent Server Endpoint in the same Process. Its
-handle remains stable even while the Server incarnation is absent.
+- `context.server` — the paired Server Endpoint of the same Process
+- `context.window` — the authoritative Window
+- `context.localWindow` — this Desktop's representation of that Window
+- `context.permissions` — the executing Program's stored assignment, and
+  owner requests
 
 ```ts
-await context.server.waitReady()
+await context.window.changeTitle("Notes")
 const status = await context.server.ask("status.read")
 ```
 
-The handle also supports publication, traffic observation, lifecycle, start,
-stop, and Service state through the shared Endpoint contract.
-
-## Messages addressed to this Client
-
-Context subscriptions receive `{ from, payload }`. The sender is `null` when
-its handle is outside Client visibility.
-
-```ts
-const cleanup = context.subscribe("document.changed", message => {
-  console.log(message.from, message.payload)
-})
-
-context.publish("client.ready")
-```
-
-`context.publish()` produces output from this Client without selecting a
-destination. See [Communication](/runtime/communication) for the common
-observation and boundary-value contract.
-
-## Authoritative and local Window access
-
-`context.window` is the general-purpose handle for the Client Endpoint's
-System-owned authoritative Window state. It reads, changes, and observes the
-shared Window. `context.localWindow` controls only the representation owned by
-the current Desktop.
-
-```ts
-await context.window.changeTitle("Editor")
-await context.window.changeHeader(false)
-await context.localWindow.raise()
-```
-
-The operations available on the local representation depend on its Window
-layer. See [Desktop](/system/desktop) for geometry, following, transactions,
-and Surface behavior.
-
-`context.permissions` reads the current Program's authority and can ask the
-owner to replace one permission decision. The paired Server receives the same
-Program-owned permission state through its own Context.
+`stop()` ends this Client incarnation. Communication on `context` is
+documented under [Communication](/runtime/communication). Window operations
+are documented under [Desktop](/system/desktop).

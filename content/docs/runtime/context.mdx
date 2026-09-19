@@ -1,15 +1,20 @@
 ---
 title: Context
-description: Understand the capabilities belonging to the Endpoint currently executing.
+description: The capabilities belonging to the Endpoint currently executing.
 icon: Focus
 ---
 
 A Context is the runtime's first-person view. It belongs to one live Endpoint
-incarnation and answers questions such as: Which Process am I part of? What
-launched me? Who created that Process? Which messages are addressed to me?
+incarnation and answers: Which Process am I part of? What launched me? Who
+created that Process? Which messages are addressed to me?
 
-This is different from retaining an Endpoint handle. The handle is a permanent
-address; the Context exists only while the current incarnation is executing.
+This is different from retaining an Endpoint handle. The handle is a
+permanent address. The Context exists only while the current incarnation is
+executing.
+
+Client code imports `context` from `@phreshos/client`. Server code imports
+`context` from `@phreshos/server`. Node and the CLI are not an executing
+Endpoint, so they have `system` without a Context.
 
 ## Execution identity
 
@@ -25,46 +30,51 @@ console.log(program.identity, process.identity, parent?.identity, options)
 ```
 
 `name()` returns the current Process name or `null`. `parent()` returns the
-visible parent Process or `null`. `isService()` reports the role of this exact
-Endpoint incarnation. `stop()` ends the incarnation and releases the boundary
-operations and registrations it owns.
+visible parent Process or `null`. `isService()` reports the role of this
+exact Endpoint incarnation. `stop()` ends the incarnation and releases the
+boundary operations and registrations it owns.
 
-The Context also receives messages addressed to its Endpoint and can publish
-destinationless output. Inbound messages contain `{ from, payload }`; `from`
+The Context receives messages addressed to its Endpoint and can publish
+destinationless output. Inbound messages contain `{ from, payload }`. `from`
 is `null` when the sender lies outside the Context's visible scope.
-
-`permissions` reads the executing Program's current authority and can request
-an owner's decision. Client and Server Contexts share this contract because
-permissions belong to the Program rather than to either Endpoint.
 
 ## Client Context
 
-A Client Context adds the capabilities that exist because it is running inside
-a Desktop:
+A Client Context adds the capabilities that exist because it is running
+inside a Desktop:
 
-- `server` is the paired Server Endpoint in the same Process.
-- `window` is the Client Endpoint's System-owned authoritative Window.
-- `localWindow` is the representation of that Window owned by this Desktop.
+- `server` is the paired Server Endpoint in the same Process
+- `window` is the Client Endpoint's System-owned authoritative Window
+- `localWindow` is this Desktop's representation of that Window
+- `permissions` reads the executing Program's authority and can request an
+  owner's decision
 
 ```ts
+import { context, desktop } from "@phreshos/client"
+
 await context.window.changeTitle("Notes")
-await context.window.changeHeader(false)
-await context.localWindow.raise()
+const { size } = await desktop.viewport.snapshot()
 ```
 
-Authoritative and local Window operations are deliberately separate. See
-[Desktop](/system/desktop) for their ownership and layer rules.
+`desktop` is a separate root, documented under [Desktop](/system/desktop).
+Permissions belong to the Program; see [Permissions](/system/permissions).
 
 ## Server Context
 
-A Server Context adds the paired `client` Endpoint and the ability to answer
-questions addressed to the Server:
+A Server Context adds the paired Client Endpoint and the ability to answer
+questions:
 
 ```ts
-const cleanup = context.answer("document.read", ({ payload }) => {
-  return loadDocument(payload)
-})
+import { context } from "@phreshos/server"
+
+const cleanup = context.answer("status.read", () => ({ ready: true }))
+
+await context.client.waitReady()
 ```
 
-`answer()` returns the cleanup for that registration. Only a Server Context can
-answer because questions are always addressed to Server Endpoints.
+`answer(event, answerer)` registers a handler for questions addressed to this
+Server. It returns a cleanup that removes that handler.
+
+The Server sees the same Program, Process, options, and
+[communication](/runtime/communication) language as the Client. What differs
+is the first-person position: the Server answers, the Client presents.

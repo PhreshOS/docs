@@ -1,47 +1,13 @@
 ---
-title: Scroll area
-description: Keep scrolling and its visible controls local to one container.
+title: Scroll Area
+description: A native scrolling viewport with React UI scrollbars.
 ---
 
-`ScrollArea` provides a native scrolling viewport with React UI scrollbars
-owned by that component. It avoids changing document-wide scrollbar behavior
-when only one region needs a consistent control.
+`ScrollArea` is a native scrolling viewport with locally owned React UI
+scrollbars. `axis` is `vertical` by default, or `horizontal` or `both`.
+`onScroll` and `viewportRef` address the scrolling viewport.
 
-```tsx
-import { ScrollArea } from "@phreshos/react-ui"
+<ScrollAreaShowcase />
 
-export default function Example() {
-  return <ScrollArea style={{ width: 320, height: 180 }}>
-    <div style={{ minHeight: 480 }}>Scrollable content</div>
-  </ScrollArea>
-}
-```
-
-`axis` selects `"vertical"`, `"horizontal"`, or `"both"` and defaults to
-vertical. The viewport remains the native scrolling element, so ordinary
-scroll position, wheel, touch, keyboard, and `onScroll` behavior continue to
-work.
-
-```tsx
-import { useRef } from "react"
-import { ScrollArea } from "@phreshos/react-ui"
-
-export default function BothAxes() {
-  const viewport = useRef<HTMLDivElement>(null)
-
-  return <ScrollArea
-    style={{ width: 320, height: 180 }}
-    axis="both"
-    viewportRef={viewport}
-    onScroll={event => console.log(event.currentTarget.scrollTop)}
-  >
-    <div style={{ width: 800, height: 600 }}>Large content</div>
-  </ScrollArea>
-}
-```
-
-The forwarded component ref targets the ScrollArea root. `viewportRef` targets
-the element that actually scrolls. Scrollbars appear only when their axis
-overflows and while the region is being scrolled or hovered. They overlay the
-viewport instead of consuming its layout width and use the current Appearance
-foreground, radius, and transaction.
+Scrollbar thickness and inset come from Appearance spacing. Direction follows
+`useDirection()` or an explicit `dir`.

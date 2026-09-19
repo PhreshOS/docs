@@ -3,12 +3,10 @@ title: Overview
 description: Build interfaces from the same Appearance and component language as PhreshOS.
 ---
 
-`@phreshos/react-ui` provides the material, layout, and accessible control
-primitives used by PhreshOS interfaces. Its visual contracts are compatible
-with the corresponding System values without requiring a running System, and
-it knows nothing about Programs, Processes, Endpoints, or Desktops.
-
-## Install
+`@phreshos/react-ui` provides the material, layout, and accessible controls
+used by PhreshOS interfaces. Its visual contracts accept the corresponding
+System values directly. The package does not depend on a Client or Server
+runtime and does not own application state.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -33,89 +31,33 @@ it knows nothing about Programs, Processes, Endpoints, or Desktops.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  React UI requires `react` and `react-dom` version 19.2 or later within the
-  current major version.
-</Callout>
-
-## Quick start
-
-Components work without a provider. They use React UI's `defaultAppearance` and
-follow the browser's color-scheme and reduced-motion preferences.
-
-<ComponentPreview>
-  <Preview>
-    <Surface style={{ padding: 16 }}>
-      Welcome to PhreshOS.
-    </Surface>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx title="welcome.tsx"
-    import { Surface } from "@phreshos/react-ui"
-
-    export default function Welcome() {
-      return <Surface style={{ padding: 16 }}>
-        Welcome to PhreshOS.
-      </Surface>
-    }
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-`Surface` supplies material and edge paint. Its dimensions, padding, layout,
-and semantic content remain ordinary React and CSS concerns.
-
-## Text direction
-
-React UI supports left-to-right and right-to-left interfaces through the same
-component contracts. When `direction` is supplied, `UIProvider` creates a
-direction boundary that ordinary HTML descendants inherit through the DOM.
-Without that property, it leaves the existing DOM direction unchanged.
-Direction-sensitive JavaScript behavior and portalled content use the nearest
-explicit provider direction, falling back to the document.
+React and React DOM are peer dependencies because the application and React
+UI must share one React runtime.
 
 ```tsx
-import { UIProvider, Select } from "@phreshos/react-ui"
+import { Button, Surface } from "@phreshos/react-ui"
 
-export default function RightToLeftInterface() {
-  return <UIProvider direction="rtl">
-    <Select
-      label="Choice"
-      options={[{ value: "one", label: "One" }]}
-    />
-  </UIProvider>
-}
+<Surface>
+  <Button>Continue</Button>
+</Surface>
 ```
 
-An omitted direction inherits through any higher `UIProvider`; it does not
-establish another boundary. `useDocumentDirection()` reacts only to changes of
-`<html dir>`, while `useDirection()` returns the nearest explicitly established
-provider direction and falls back to the document when there is none. Direction
-set directly on other HTML elements remains ordinary browser behavior; using
-`UIProvider` also covers behavior that requires JavaScript knowledge of
-direction.
+Without a provider, components use `defaultAppearance` and follow the
+browser's visual preferences. `UIProvider` supplies Appearance, Preferences,
+and direction for a subtree. A complete System Appearance can be passed
+directly; React UI uses the visual fields it owns.
 
-## The component model
+Color and material are independent. `color` accepts an Appearance color and
+resting level such as `background:base` or `primary:soft`, or a direct CSS
+color. `size` accepts `xsmall`, `small`, `medium`, `large`, or `xlarge`.
+`disabled` prevents activation and focus; `pending` prevents activation while
+retaining focus.
 
-Appearance is one source value. Components derive the scales and interaction
-states they need rather than requiring a separate theme object for every
-control. Surface-based components expose `color` independently from grouped
-`material` customization, while layout components add no visual paint.
+Controls use the shared contracts that fit their role. Most accept `size` and
+`color`; Surface-based controls also accept material options. Individual
+component pages state the exact capabilities they expose.
 
 <Cards>
-  <Card title="Appearance" description="Supply the visual source and complete environment preferences." href="/sdks/react-ui/appearance" />
-  <Card title="Surface" description="Host material on a compatible element or component." href="/sdks/react-ui/components/surface" />
-  <Card title="Panel" description="Compose an outer Surface and an inset content Surface." href="/sdks/react-ui/components/panel" />
-  <Card title="Layout" description="Arrange children with Appearance-aware Flex and Grid gaps." href="/sdks/react-ui/components/layout" />
-  <Card title="Scroll area" description="Keep scroll ownership local to one component." href="/sdks/react-ui/components/scroll-area" />
-  <Card title="Button" description="Run one accessible action through normalized interaction." href="/sdks/react-ui/components/button" />
-  <Card title="Text fields" description="Edit single-line and multiline text." href="/sdks/react-ui/components/text-fields" />
-  <Card title="Selection" description="Represent boolean, exclusive, and listed choices." href="/sdks/react-ui/components/selection" />
-  <Card title="Slider" description="Select one numeric value through a range." href="/sdks/react-ui/components/slider" />
+  <Card title="Appearance" description="Supply and resolve the visual source." href="/sdks/react-ui/appearance" />
+  <Card title="Components" description="Surface, layout, controls, and overlays." href="/sdks/react-ui/components/surface" />
 </Cards>
-
-React UI and the [React SDK](/sdks/react) are independent. React UI renders the
-visual language; React adapts live PhreshOS domain state. Applications may use
-either package alone or compose them.

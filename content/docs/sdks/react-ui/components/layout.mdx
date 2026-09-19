@@ -8,68 +8,19 @@ and add no material, color, border, padding, or shadow. Use them when the
 parent-child relationship itself owns the layout.
 
 Both accept `align`, `justify`, `gap`, and `inline`. Alignment uses `start`,
-`center`, `end`, `stretch`, or `baseline`. Justification uses `start`, `center`,
-`end`, `between`, `around`, or `evenly`.
+`center`, `end`, `stretch`, or `baseline`. Justification uses `start`,
+`center`, `end`, `between`, `around`, or `evenly`. `gap` accepts an
+Appearance-derived scale level, a pixel number, or an explicit CSS value.
 
-`gap` accepts an Appearance-derived scale level, a pixel number, or an explicit
-CSS value.
+<LayoutShowcase />
 
 ## Flex
 
-Flex adds `direction` and `wrap` to the shared layout values.
-
-<ComponentPreview>
-  <Preview>
-    <Flex align="center" justify="between" gap="medium" style={{ width: 320 }}>
-      <Surface style={{ padding: 12 }}>First</Surface>
-      <Surface style={{ padding: 12 }}>Second</Surface>
-      <Surface style={{ padding: 12 }}>Third</Surface>
-    </Flex>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx
-    <Flex align="center" justify="between" gap="medium">
-      <Surface>First</Surface>
-      <Surface>Second</Surface>
-      <Surface>Third</Surface>
-    </Flex>
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-`direction` accepts the four CSS flex directions. `wrap` accepts a boolean or
-`"reverse"`.
+Flex adds `direction` and `wrap`. Direction is `row`, `row-reverse`,
+`column`, or `column-reverse`. `wrap` is `true`, `false`, or `"reverse"`.
+`inline` uses `inline-flex`.
 
 ## Grid
 
-Grid adds `columns`, `rows`, and automatic `flow`.
-
-<ComponentPreview>
-  <Preview>
-    <Grid columns={3} gap="medium" style={{ width: 320 }}>
-      <Surface style={{ padding: 12 }}>One</Surface>
-      <Surface style={{ padding: 12 }}>Two</Surface>
-      <Surface style={{ padding: 12 }}>Three</Surface>
-    </Grid>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx
-    <Grid columns={3} gap="medium">
-      <Surface>One</Surface>
-      <Surface>Two</Surface>
-      <Surface>Three</Surface>
-    </Grid>
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-A numeric track count becomes equal `minmax(0, 1fr)` tracks. A string remains
-an ordinary CSS track expression. Named props own their corresponding layout
-behavior; unrelated native `div` props and styles pass through.
-
-If an existing element can express the same relationship itself, another
-layout container is unnecessary.
+Grid adds `columns`, `rows`, and `flow`. `columns` and `rows` accept an equal
+track count or a native CSS track expression. `inline` uses `inline-grid`.

@@ -1,17 +1,17 @@
 ---
 title: Endpoints
-description: Understand the permanent Server and Client execution addresses inside a Process.
+description: The permanent Server and Client execution addresses inside a Process.
 icon: Unplug
 ---
 
-An Endpoint is one execution side of a Process. Every Process owns a permanent
-Server Endpoint handle and a permanent Client Endpoint handle. A handle remains
-the same while its live incarnation starts, stops, and starts again.
+An Endpoint is one execution side of a Process. Every Process owns a
+permanent Server Endpoint handle and a permanent Client Endpoint handle. A
+handle remains the same while its live incarnation starts, stops, and starts
+again.
 
-The permanent handle is important: identity belongs to the Process structure,
-while `exists()` describes whether code is currently running at that address.
-`endpoint.lifecycle` publishes `start` and `stop` whenever that incarnation
-changes.
+Identity belongs to the Process structure. `exists()` describes whether code
+is currently running at that address. `endpoint.lifecycle` publishes `start`
+and `stop` whenever that incarnation changes.
 
 ## Shared behavior
 
@@ -23,30 +23,29 @@ current incarnation is a Service.
 const client = process.client
 
 client.lifecycle.subscribe("start", () => console.log("Client started"))
-client.lifecycle.subscribe("stop", () => console.log("Client stopped"))
 
 await client.start()
 await client.waitReady()
 ```
 
-`waitReady()` waits for an incarnation that can be used. A Client is ready when
-it exists. A Server must also announce readiness. The default deadline is ten
-seconds, and temporary absence remains waitable while the owning Process can
-still provide another incarnation.
+`waitReady()` waits for an incarnation that can be used. A Client is ready
+when it exists. A Server must also announce readiness. The default deadline
+is ten seconds. Temporary absence remains waitable while the owning Process
+exists.
 
-`start()` ensures that an incarnation is live. If one already exists, the call
-resolves without replacing it or publishing another lifecycle event; launch
-values configure an incarnation only when one must be created. `stop()`
-similarly resolves when the incarnation is already absent. Both operations
-still reject when the Process handle is no longer valid. Starting also rejects
-when that Endpoint kind was not declared, while stopping rejects if it would
-remove the Process's final live Endpoint.
+`start()` ensures that an incarnation is live. If one already exists, the
+call resolves without replacing it or publishing another lifecycle event;
+launch values configure an incarnation only when one must be created.
+`stop()` resolves when the incarnation is already absent. Both operations
+reject when the Process handle is no longer valid. Starting rejects when that
+Endpoint kind was not declared. Stopping rejects if it would remove the
+Process's final live Endpoint. Stopping never exits the Process.
 
 ## Server Endpoint
 
-The Server Endpoint runs host-side code and answers questions. Its
-`ask(event, payload?)` operation sends a question to the current Server
-incarnation, while `timeout(milliseconds)` selects another deadline.
+The Server Endpoint runs host-side code and answers questions.
+`ask(event, payload?)` sends a question to the current Server incarnation.
+`timeout(milliseconds)` selects another deadline.
 
 ```ts
 const health = await process.server.ask("health.read")
@@ -55,8 +54,8 @@ const health = await process.server.ask("health.read")
 A Server declaration chooses one execution mechanism: a supervised operating
 system command, an ECMAScript module loaded in a Node.js Worker, or a bundled
 module loaded in a capability-contained Sandbox. These mechanisms have the
-same Server SDK and Endpoint contract; they differ only in the host authority
-available outside the System API.
+same Server SDK and Endpoint contract. They differ in the host authority
+available outside the System API. See [Security](/system/security).
 
 `server.start({ service: true })` may override the Service role for that new
 incarnation.
@@ -64,8 +63,8 @@ incarnation.
 ## Client Endpoint
 
 The Client Endpoint runs in a Desktop iframe and owns a permanent `window`
-handle. Its launch can choose the Service role and initial title, header state,
-size, position, layer, minimized state, and maximized state.
+handle. Its launch can choose the Service role and the initial title, header
+state, size, position, layer, minimized state, and maximized state.
 
 ```ts
 await process.client.start({
@@ -80,6 +79,12 @@ serves installed Client files. During development, the System proxies the
 declared Client development server through the same address, including its
 WebSocket traffic.
 
-The Client receives the same Program-owned System permissions as its paired
-Server. Its browser environment remains structurally isolated from the host;
-see [Permissions](/system/permissions).
+See [Desktop](/system/desktop) for Windows.
+
+## Traffic
+
+`endpoint.traffic` observes communication originating from that Endpoint.
+Publications appear as `{ to, payload }`. Questions appear through
+`subscribeAsks()` and `asks()`. A Server's traffic can additionally observe
+answers through `subscribeAnswers()` and `answers()`. An identity outside the
+observer's authority is `null`.

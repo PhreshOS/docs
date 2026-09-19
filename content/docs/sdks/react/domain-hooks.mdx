@@ -1,87 +1,28 @@
 ---
 title: Domain hooks
-description: Turn one domain handle's current state and future events into React state.
+description: Follow live Program, Process, Endpoint, Window, and related state.
 ---
 
-A domain state hook begins with an existing Core handle. It reads the handle's
-current state, follows the events that can change that state, and returns one
-coherent render value. The hook is an observer; the domain handle remains the
-authority.
-
-The first render returns `undefined` while the initial state is being read.
-
-```tsx
-function ProcessStatus({ process }: { process: Process }) {
-  const state = useProcessState(process)
-
-  if (!state) return <p>Reading Process…</p>
-  return <p>{state.exited ? "Exited" : "Running"}</p>
-}
-```
-
-## Runtime state
-
-The runtime hooks mirror the boundaries of their domains:
-
-| Hook | State |
-| --- | --- |
-| `useProgramState(program)` | `{ installed, processes }` |
-| `useProcessState(process)` | `{ exited }` |
-| `useEndpointState(endpoint)` | `{ exists }` |
-| `useServiceState(service)` | `{ exists }` |
-
-Program state follows installation and the Program's Process membership.
-Endpoint and Service state follow their `start` and `stop` lifecycles. Endpoint
-existence does not belong to Process state, because one permanent Process can
-contain independently changing Endpoint incarnations.
+Domain hooks take an existing Core handle and follow it while the component
+is mounted. Until the first read completes, they return `undefined`. They do
+not create Programs or Processes.
 
 ```tsx
 const programState = useProgramState(program)
-const serverState = useEndpointState(process.server)
+const processState = useProcessState(process)
+const endpointState = useEndpointState(process.server)
+const windowState = useWindowState(process.client.window)
 ```
 
-## Window state
+| Hook | Follows |
+| --- | --- |
+| `useProgramState` | `installed` and live `processes` |
+| `useProcessState` | `exited` |
+| `useEndpointState` | `exists` |
+| `useServiceState` | `exists` for a Service handle |
+| `useWindowState` | the complete authoritative `WindowState` |
+| `useConnectionState` | Connection `connected` and `session` |
+| `useSessionState` | Session `valid` and `connections` |
 
-`useWindowState(window)` returns title, header, position, size, minimized,
-maximized, front, and layer values. It follows move, resize, atomic geometry,
-visibility, title, header, and front-state events.
-
-```tsx
-function WindowSize({ window }: { window: Window }) {
-  const state = useWindowState(window)
-  if (!state) return null
-
-  return <p>{state.size.width} × {state.size.height}</p>
-}
-```
-
-Layer is read with the initial snapshot and remains stable for that Window.
-
-## Authentication state
-
-`useConnectionState(connection)` returns `{ connected, session }` and follows
-`sessionChange` and `disconnect`. A disconnected Connection becomes false and
-has no Session.
-
-`useSessionState(session)` returns `{ valid, connections }` and follows
-Connection attachment, detachment, and the terminal Session event.
-
-```tsx
-const connectionState = useConnectionState(connection)
-const sessionState = useSessionState(session)
-```
-
-The two hooks stay separate because a Connection may remain live while its
-Session changes, and a Session may be shared by several Connections.
-
-## Consistent reads under change
-
-Every state hook subscribes before starting its initial read. Events that
-arrive during the read are applied afterward, so an older snapshot cannot
-replace newer state. Changing the supplied handle starts a new lifetime and
-ignores later results from the old one.
-
-Unmounting removes observation but does not alter the domain object. A failed
-initial read or registration throws the original error to React rather than
-manufacturing a state value. State hooks need no provider when their handle is
-supplied directly.
+These snapshots are derived from the same reads and events documented under
+[Runtime](/runtime) and [System](/system).

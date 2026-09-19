@@ -1,23 +1,24 @@
 ---
 title: Domain contracts
-description: Understand the shared entities and capabilities implemented by PhreshOS SDKs.
+description: Shared entities and capabilities implemented by PhreshOS SDKs.
 ---
 
-Core is the common vocabulary of the PhreshOS ecosystem. When two environments
-need the same entity or capability, they use the same Core contract rather than
-maintaining equivalent local definitions.
+When two environments need the same entity or capability, they use the same
+Core contract. The meaning of those contracts is documented under
+[Runtime](/runtime) and [System](/system). This page names what Core exports.
 
 ## Domain objects
 
-The four runtime components are `Program`, `Process`, `Endpoint`, and `Service`.
-`ServerEndpoint` and `ClientEndpoint` specialize the shared Endpoint role.
-`Connection` and `Session` model browser authentication. These are exported as
-classes because their identities matter at runtime as well as in TypeScript.
+The four runtime components are `Program`, `Process`, `Endpoint`, and
+`Service`. `ServerEndpoint` and `ClientEndpoint` specialize the shared
+Endpoint role. `Connection` and `Session` model browser authentication.
+These are classes because their identities matter at runtime as well as in
+TypeScript.
 
 ```ts
-import { Process, Program, Session } from "@phreshos/core"
+import { Process, Program } from "@phreshos/core"
 
-const program = await system.program.find("terminal")
+const program = await system.program.find("notes")
 const process = program && await program.firstProcess()
 
 console.log(program instanceof Program)
@@ -25,19 +26,15 @@ console.log(process instanceof Process)
 ```
 
 Within one SDK context, repeated navigation to the same live identity returns
-the same handle. This makes reference equality useful without turning the
-JavaScript object itself into the authoritative state.
-
-Runtime meaning is documented under [Runtime](/runtime). Connections and
-Sessions are documented under [Authentication](/system/authentication).
+the same handle.
 
 ## Capability contracts
 
-Some contracts describe a capability rather than a new entity. `System` is the
-root of global capabilities. `Context` is the execution-local view of an
-Endpoint. `Desktop`, `Window`, `LocalWindow`, `Storage`, `Network`, Appearance,
-and permissions describe the behavior their implementing environment must
-provide.
+Some contracts describe a capability rather than a new entity. `System` is
+the root of global capabilities. `Context` is the execution-local view of an
+Endpoint. `Desktop`, `Window`, `LocalWindow`, `Storage`, `Network`,
+Appearance, and permissions describe the behavior their implementing
+environment must provide.
 
 These interfaces can have local and remote implementations. What stays fixed
 is the observable result: accepted input, returned values, events, authority,
@@ -46,7 +43,7 @@ and lifecycle.
 ## Reusable communication behavior
 
 `Publishable`, `Subscribable`, `Askable`, and `Timeoutable` express behavior
-shared by several domains without inventing artificial entities.
+shared by several domains. See [Communication](/runtime/communication).
 
 ```ts
 const cleanup = endpoint.subscribe("changed", value => {
@@ -56,7 +53,5 @@ const cleanup = endpoint.subscribe("changed", value => {
 cleanup()
 ```
 
-Core preserves the event map through higher-order adapters, so an SDK or React
-hook can infer the event name and message from the supplied handle. See
-[Communication](/runtime/communication) for publication, observation,
-questions, traffic, and boundary values.
+Core preserves the event map through higher-order adapters, so an SDK or
+React hook can infer the event name and message from the supplied handle.

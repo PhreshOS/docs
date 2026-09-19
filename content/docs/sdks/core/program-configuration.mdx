@@ -11,42 +11,48 @@ value unchanged. It does not create, build, or install anything by itself.
 import { defineConfig } from "@phreshos/core"
 
 export default defineConfig({
-  identity: "example-program",
-  name: "Example Program",
+  identity: "notes",
+  name: "Notes",
   version: "1.0.0",
   permissions: {
     network: ["https://api.example.com"],
   },
   server: {
     location: "dist/server",
-    sandbox: "main.js",
+    worker: "main.js",
   },
   client: {
     location: "dist/client",
-    title: "Example",
+    title: "Notes",
   },
 })
 ```
 
-## Program identity and resources
+Node Project reads this file and derives a development or production
+[Program](/runtime/programs) definition. See [Node Project](/sdks/node/project).
+
+## Identity and resources
 
 `identity` is the required stable kebab-case name used by the System. `name`,
 `version`, and `description` describe the Program to people. `icon`, `agent`,
 `categories`, `keywords`, and `website` describe its public resources and
 catalog presence.
 
-An icon is a Program-relative PNG between 128 and 2,048 pixels per side and no
-larger than 5 MiB. `agent` names a Program-relative Markdown document explaining
-the Program's own identity and tool contract to agents.
+An icon is a Program-relative PNG between 128 and 2,048 pixels per side and
+no larger than 5 MiB. `agent` names a Program-relative Markdown document
+explaining the Program's own identity and tool contract to agents.
 
 `buildCommand` runs before a production start, installation, or package is
 created.
 
+`permissions` writes initial assignments into the Program's authoritative
+permission state. See [Permissions](/system/permissions).
+
 ## Endpoint declarations
 
-A Program must declare a Server, a Client, or both. Each declaration names its
-production location and the defaults used when a Launch does not make another
-choice. `start` defaults to `true`; `service` defaults to `false`.
+A Program must declare a Server, a Client, or both. Each declaration names
+its production location and the defaults used when a Launch does not make
+another choice. `start` defaults to `true`; `service` defaults to `false`.
 
 A Server chooses exactly one execution mechanism:
 
@@ -54,19 +60,16 @@ A Server chooses exactly one execution mechanism:
 server: {
   location: "dist/server",
   worker: "main.js",
-  development: {
-    command: "vite-node server/main.ts",
-  },
+  devCommand: "vite-node server/main.ts",
 }
 ```
 
 `command` starts a supervised operating-system process, `worker` loads an
-ECMAScript module in a Node.js Worker, and `sandbox` loads a bundled ECMAScript
-module in a capability-contained JavaScript runtime. A production Server
-chooses exactly one. Development remains separate and always uses its declared
-`development.command` with the project's development tooling. Optional
-`installCommand` and `uninstallCommand` prepare and clean the production Server
-location.
+ECMAScript module in a Node.js Worker, and `sandbox` loads a bundled
+ECMAScript module in a capability-contained JavaScript runtime. A production
+Server chooses exactly one. Development remains separate and uses
+`devCommand` when declared. Optional `installCommand` and
+`uninstallCommand` prepare and clean the production Server location.
 
 A Client location contains its production `index.html`. Its declaration can
 also choose the initial Window title, header state, size, position, layer,
@@ -81,42 +84,26 @@ client: {
 ```
 
 `header` affects standard windows only. Other layers use their own fixed
-presentation and ignore it.
+presentation.
 
-`development.url` selects an existing HTTP or HTTPS server. When a development
-`startCommand` is supplied without a URL, Node Project selects an available
-port and provides `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`.
+`devUrl` selects an existing HTTP or HTTPS server. When a Client
+`devCommand` is supplied without `devUrl`, Node Project selects an
+available port and provides `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`.
 
 ## Stored launch decisions
 
 Top-level `launch` describes how opening the Program icon creates a Process.
-`startup` describes the Process created after installation and when the System
-boots.
+`startup` describes the Process created after installation and when the
+System boots.
 
 ```ts
 export default defineConfig({
-  identity: "example-program",
+  identity: "notes",
   launch: { name: "main", client: true },
   startup: { name: "background", server: true },
   client: { location: "dist/client" },
 })
 ```
 
-Each accepts `true` for an empty Launch or a complete Launch object. Omission
-makes no decision about a value already stored. Creation and installation
-apply supplied values. Top-level Program permission declarations follow the
-same stages, replacing only the permissions they explicitly contain.
-
-See [Programs](/runtime/programs#saved-launches) for the resulting behavior and
-[Permissions](/system/permissions#declaring-and-storing-permissions) for
-Program authority.
-
-## From authoring to runtime
-
-`Config` is the project authoring contract. Node Project resolves its relative
-paths, development commands, and build concerns into a `ProgramDefinition`.
-That runtime definition contains absolute storage and Endpoint locations and is
-accepted by `system.program.create()` and `forceCreate()`.
-
-The System consumes the resolved definition. It never imports
-`phresh.config.ts` or interprets project-relative authoring paths.
+`true` stores an empty Launch. Omission leaves a stored value unchanged.
+See [Programs](/runtime/programs) for how those stored values are used.

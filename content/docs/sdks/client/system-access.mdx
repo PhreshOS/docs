@@ -1,57 +1,24 @@
 ---
 title: System access
-description: Use the shared System contract through one Client Program's authority.
+description: Use shared System capabilities from a Client Endpoint.
 ---
 
-Client `system` has the complete Core System shape. Permissions do not create a
-smaller TypeScript interface; they determine which entities are visible and
-which operations may execute for this Program.
+Client `system` is the same [System](/system) contract as Server and Node.
+Visible Programs, Processes, Services, Connections, and Sessions are those
+the executing Program is allowed to see. Operations the Program is not
+allowed to perform reject. Lookups for inaccessible identities return
+`null`.
 
 ```ts
 import { system } from "@phreshos/client"
 
-const ownPrograms = await system.program.list()
+const programs = await system.program.list()
 const appearance = await system.appearance.snapshot()
 ```
 
-The root includes Program, Process, Connection, and Session collections;
-Service addressing; Storage and uploads; Appearance; Network; and shell
-execution. Their contracts are documented under [System](/system). Only the
-Client authority boundary differs.
+`system.execute()` is available here with the same JSON catalog.
+`system.shell()` requires `all`. Native storage requires a covering
+`storage` scope.
 
-`system.execute()` provides the same capabilities through Core's JSON operation
-catalog. It is a local adapter over these handles, so Client visibility and
-permissions remain unchanged. See [Execute](/sdks/core/execute).
-
-## Visibility before mutation
-
-Without additional permission, a Client sees its own Program, its Processes,
-Services, and resources. It can read Appearance, the Desktop viewport and
-preferences, and known public uploads.
-
-Permissions can expose selected foreign Programs or Services, the current
-Desktop Connection, or all Connections and Sessions. Lists include only
-visible handles. Searches return `null` for hidden identities. Relationships
-and events preserve the same scope.
-
-An explicit capability that is available but unauthorized rejects instead of
-pretending it was a failed search. Native Storage, System networking, upload
-creation, Appearance changes, Desktop preference changes, restricted Window
-layers, shell execution, and permission administration each follow their
-documented permission.
-
-```ts
-const scope = ["https://api.example.com"] as const
-
-if (await context.permissions.allows("network", scope)) {
-  const response = await system.network.fetch(`${scope[0]}/status`)
-  console.log(await response.json())
-}
-```
-
-Fetch returns a standard `Response`; WebSocket returns a standard `WebSocket`.
-A later permission change governs later System operations and does not revoke a
-platform value already returned to the Client.
-
-See [Permissions](/system/permissions) for the complete visible-scope and value
-model.
+See [Runtime](/runtime) for Program and Process operations, and
+[Permissions](/system/permissions) for how visibility is decided.

@@ -9,7 +9,7 @@ generator that owns it. The generator exposes ordered lifecycle and output
 without writing directly to the caller's terminal.
 
 ```ts
-for await (const event of system.shell("npm install", {
+for await (const event of system.shell("ls", {
   cwd: "/path/to/project",
   env: { LOG_LEVEL: "info" },
 })) {
@@ -19,24 +19,23 @@ for await (const event of system.shell("npm install", {
 }
 ```
 
-The first event reports the operating-system process ID. Output events preserve
-exact `stdout` or `stderr` chunks. The final event reports whether the command
-exited or was signaled, together with its code and signal when available. A
-non-zero code remains an ordinary `exited` event; inability to perform the
-command rejects iteration.
+The first event reports the operating-system process ID. Output events
+preserve exact `stdout` or `stderr` chunks. The final event reports whether
+the command exited or was signaled, together with its code and signal when
+available. A non-zero code is an ordinary `exited` event. Inability to
+perform the command rejects iteration.
 
 The working directory defaults to the operating-system user's home. Supplied
 environment values extend the System process environment.
 
 The generator owns the complete command process tree. Aborting its signal,
-ending iteration early, or losing the owning System connection terminates that
-tree. Server and Node may execute locally, while Client execution crosses the
-System boundary; the lifetime remains the same in each environment.
+ending iteration early, or losing the owning System connection terminates
+that tree.
 
-<Callout title="Shell execution is not a PhreshOS Process">
-  Use a Program's Process operations when work must participate in Program
-  ownership, Endpoints, Services, startup, and runtime lifecycle.
-</Callout>
+A Program needs the `all` permission to use `system.shell()` from any of its
+Endpoints. An owner-local Node connection runs the command in the Node
+process.
 
-A Client needs `all` to execute a shell command. Server and Node have trusted
-System authority.
+This is not a PhreshOS Process. Use a Program's Process operations when work
+must participate in Program ownership, Endpoints, Services, startup, and
+runtime lifecycle.

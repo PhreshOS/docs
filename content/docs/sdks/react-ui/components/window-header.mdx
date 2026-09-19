@@ -1,0 +1,33 @@
+---
+title: Window Header
+description: Compose the top region of a window without owning its Surface.
+---
+
+`WindowHeader` is the composable top region of a window. Its enclosing
+Surface owns the material. The header owns identity, optional center content,
+and end-aligned actions.
+
+```text
+Surface
+└── WindowHeader
+    ├── Identity
+    ├── Center
+    └── Actions
+        ├── Action
+        ├── Minimize
+        ├── Maximize
+        └── Close
+```
+
+<WindowHeaderShowcase />
+
+`WindowHeader` is `WindowHeader.Root`. `active` defaults to `true`; when it
+is `false`, identity opacity is attenuated. Height and inline padding come
+from Appearance spacing. Identity may include an `icon` URL and a truncating
+`title`. `Center` is optional flexible application content. `Actions` holds
+end-aligned controls.
+
+`Action` is a compact `xsmall` Button using the header foreground.
+`Minimize`, `Maximize`, and `Close` are those actions with standard labels
+and icons. `Maximize` takes `maximized` to switch its restore icon and label.
+`Close` uses `danger:base`. Parts other than Root require `WindowHeader.Root`.

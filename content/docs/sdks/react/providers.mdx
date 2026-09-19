@@ -4,13 +4,13 @@ description: Supply Context, System, and Desktop contracts to a React subtree.
 ---
 
 A provider makes one existing PhreshOS root available to descendants. It may
-resolve initial values and subscribe to changes needed by its hooks, but it
-never owns or replaces the supplied root.
+resolve initial values and subscribe to changes needed by its hooks. It does
+not own or replace the supplied root.
 
 Every provider accepts `children`, its corresponding contract, and an optional
 `fallback`. The fallback defaults to `null` and remains visible until that
-provider's initial values resolve. A failed read reaches the nearest React error
-boundary.
+provider's initial values resolve. A failed read reaches the nearest React
+error boundary.
 
 ## ContextProvider
 
@@ -26,82 +26,25 @@ Client Context before rendering its children.
 `useContext()` returns the complete Client Context. `useProgram()`,
 `useProcess()`, and `useParent()` return the resolved execution identities.
 
-```tsx
-function ExecutionIdentity() {
-  const program = useProgram()
-  const process = useProcess()
-  const parent = useParent()
-
-  return <p>
-    {program.identity} · {process.name ?? process.identity}
-    {parent ? ` · created by ${parent.identity}` : ""}
-  </p>
-}
-```
-
-These values are fixed facts of that Context, not independent global state.
-
 ## SystemProvider
 
-`SystemProvider` supplies the complete System and follows its Appearance.
+`SystemProvider` supplies the System handle. `useSystem()` returns it.
+`useSystemAppearance()` follows `system.appearance`.
 
 ```tsx
-<SystemProvider system={system} fallback={<Loading />}>
-  <Application />
+<SystemProvider system={system}>
+  <Themed />
 </SystemProvider>
 ```
 
-`useSystem()` returns the supplied contract for commands and explicit reads.
-`useSystemAppearance()` returns the current Appearance and updates after
-`change` events.
-
-```tsx
-function AppearanceSummary() {
-  const appearance = useSystemAppearance()
-  return <p>Spacing: {appearance.spacing}</p>
-}
-```
-
-The provider subscribes before reading the initial snapshot, so an event that
-arrives during that read cannot be overwritten by older state.
+The System may come from Client or from Node. `ContextProvider` and
+`DesktopProvider` require Client Context and Desktop values.
 
 ## DesktopProvider
 
-`DesktopProvider` supplies one Desktop and resolves its current viewport and
-effective preferences.
+`DesktopProvider` supplies the Desktop handle. `useDesktop()` returns it.
+`useDesktopViewport()`, `useDesktopPreferences()`, and
+`useDesktopConnection()` follow those Desktop sources.
 
-```tsx
-<DesktopProvider desktop={desktop} fallback={<Loading />}>
-  <Application />
-</DesktopProvider>
-```
-
-`useDesktop()` returns the supplied Desktop. `useDesktopViewport()` and
-`useDesktopPreferences()` follow their respective snapshots. The Connection is
-resolved separately through `useDesktopConnection()` only when a component
-asks for it, so trees that only need viewport state do not require the
-`desktopConnection` permission.
-
-```tsx
-function DesktopSummary() {
-  const { size } = useDesktopViewport()
-  const preferences = useDesktopPreferences()
-  const connection = useDesktopConnection()
-
-  return <p>
-    {size.width} × {size.height} · {preferences.theme} · {preferences.scale * 100}%
-    {connection ? ` · ${connection.identity}` : ""}
-  </p>
-}
-```
-
-## Provider lifetime
-
-Changing the supplied contract ends the previous provider lifetime, removes
-its subscriptions, resolves the new value, and then renders children again.
-Unmounting performs the same cleanup without stopping a Context, disconnecting
-a System, or ending any domain entity.
-
-Calling a provider hook outside its matching provider throws immediately.
-Context hooks require `ContextProvider`, System hooks require `SystemProvider`,
-and Desktop hooks require `DesktopProvider`.
+The three providers are independent. Supply only the roots the subtree
+actually uses.

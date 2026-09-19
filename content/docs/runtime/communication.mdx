@@ -1,19 +1,19 @@
 ---
 title: Communication
-description: Understand publications, questions, observation, and values crossing Endpoint boundaries.
+description: Publications, questions, observation, and values crossing Endpoint boundaries.
 icon: MessagesSquare
 ---
 
 PhreshOS communication lets Endpoints exchange application values without
 making transport details part of the application contract. Context, Endpoint,
-and Service expose the same communication language from different positions:
-the current receiver, an exact Endpoint, or a stable Service address.
+and Service expose the same language from different positions: the current
+receiver, an exact Endpoint, or a stable Service address.
 
 ## Publishing a value
 
 `publish(event, payload?)` is synchronous and fire-and-forget. It reports no
-delivery result. If its destination is unavailable, the publication is simply
-not delivered.
+delivery result. If its destination is unavailable, the publication is not
+delivered.
 
 ```ts
 context.subscribe("document.changed", message => {
@@ -25,16 +25,17 @@ context.publish("client.ready")
 
 Context receives messages as `{ from, payload }`. Traffic originating from an
 Endpoint is observed as `{ to, payload }`. An identity outside the observer's
-authority is represented by `null`, so communication never leaks a partial or
-invented handle.
+authority is `null`.
 
 `context.publish()` produces output from the executing Endpoint without a
 destination. `endpoint.publish()` targets that exact Endpoint.
-`service.publish()` targets the Endpoint currently occupying a Service address.
+`service.publish()` targets the Endpoint currently occupying a Service
+address.
 
 ## Observing future events
 
-Every `Subscribable` offers three ways to observe the same future event stream:
+Every `Subscribable` offers three ways to observe the same future event
+stream:
 
 ```ts
 const cleanup = target.subscribe("changed", value => console.log(value))
@@ -74,21 +75,16 @@ const cleanup = context.answer("status.read", () => ({ ready: true }))
 ```
 
 An ask rejects when its destination is unavailable or disappears before
-answering. Once delivered, an unanswered question waits until its deadline;
-the transport cannot infer whether application code intends to answer later.
+answering. Once delivered, an unanswered question waits until its deadline.
 
-Endpoint traffic can observe outgoing questions through `subscribeAsks()` and
-`asks()`. Server traffic can additionally observe answers through
-`subscribeAnswers()` and `answers()`. Captures retain the event,
-`questionId`, destination, payload, and answer outcome.
+The default deadline is ten seconds and is shared with any readiness wait for
+that target.
 
 ## Values across the boundary
 
-Payloads are not restricted to JSON. PhreshOS preserves `undefined`, `bigint`,
-`Date`, `Map`, `Set`, `RegExp`, `URL`, `Error`, and binary data alongside
-JSON-compatible values. An `ArrayBuffer` or typed-array view arrives as a
-`Uint8Array`; binary content is not converted to text or Base64. Functions and
-symbols are not transferable values and arrive as `null`.
+Payloads are not restricted to JSON. Communication preserves `undefined`,
+`bigint`, `Date`, `Map`, `Set`, `RegExp`, `URL`, `Error`, and binary data
+alongside JSON-compatible values. An `ArrayBuffer` or typed-array view
+arrives as a `Uint8Array`. Functions and symbols arrive as `null`.
 
-This value contract is the same across Client, Server, and Node even though the
-underlying transport differs.
+This value contract is the same across Client, Server, and Node.

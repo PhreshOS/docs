@@ -1,13 +1,13 @@
 ---
 title: Network
-description: Use standard Fetch and WebSocket values through System authority.
+description: Fetch and WebSocket through System authority.
 icon: Globe
 ---
 
 `system.network` gives every SDK the same two outbound network capabilities.
-It preserves the web platform contracts: Fetch returns a standard `Response`,
-and WebSocket returns a standard `WebSocket`. PhreshOS controls authority and
-lifetime without inventing another request or socket model.
+Fetch returns a standard `Response`. WebSocket returns a standard
+`WebSocket`. PhreshOS controls authority and lifetime without inventing
+another request or socket model.
 
 ## Fetch
 
@@ -21,8 +21,6 @@ const items = await response.json()
 
 The operation accepts `RequestInfo | URL` and an optional `RequestInit`.
 Supplying a `Request` preserves its method, headers, body, and abort signal.
-Client and Server SDKs cross their System boundaries. A trusted Node connection
-may execute the request locally when that preserves the same observable result.
 
 ## WebSocket
 
@@ -34,22 +32,24 @@ socket.addEventListener("message", event => {
 })
 ```
 
-The returned socket uses the standard browser-compatible lifecycle, methods,
-properties, and events. The acquisition is asynchronous because a Client may
-need to cross the System boundary before receiving that socket.
+The returned socket uses the standard lifecycle, methods, properties, and
+events. Acquisition is asynchronous because a Client may need to cross the
+System boundary before receiving that socket.
 
 Server and Node sockets close when their owning execution Context or System
-connection ends. A Client-owned socket follows the browser frame that received
-it.
+connection ends. A Client-owned socket follows the browser frame that
+received it.
 
-## Program authority
+## Authority
 
-A Client or Server Endpoint needs a `network` scope covering the requested URL
-or the applicable `all` fallback. HTTP and WebSocket schemes are distinct.
-Permission failure rejects the operation before the value is returned.
+A Program needs a `network` scope covering the requested URL, or `all`. HTTP
+and WebSocket schemes are distinct. Permission failure rejects the operation
+before the value is returned.
 
-The permission governs `system.network.fetch()` and
-`system.network.websocket()`, not network capabilities supplied directly by
-the browser or Server execution environment. Once a `Response` or WebSocket
-has been returned, changing the permission does not retroactively revoke that
-value. See [Permissions](/system/permissions) for the scope grammar.
+A network scope is a URL without credentials. The hostname may be `*` or a
+single leading `*.label`. A path ending in `/**` is a prefix; an omitted path
+covers every path. Port `*` covers every port.
+
+This permission governs `system.network.fetch()` and
+`system.network.websocket()`. Once a `Response` or WebSocket has been
+returned, changing the permission does not revoke that value.

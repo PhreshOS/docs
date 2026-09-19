@@ -1,13 +1,12 @@
 ---
 title: Overview
-description: Connect external Node.js code to the System and operate Program projects.
+description: Connect external Node.js code to a System and operate local Program projects.
 ---
 
-`@phreshos/node` connects trusted external Node.js code to a running System and
-turns a local Program project into runtime or release definitions. These are
-two Node-specific entry points built on the same Core contracts.
-
-## Install
+`@phreshos/node` exposes the same complete System contract available inside
+Server Endpoints. It adds the lifecycle of an externally owned connection and
+the `Project` authoring API for building, running, installing, and packaging
+local Program projects.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -32,21 +31,25 @@ two Node-specific entry points built on the same Core contracts.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  Node requires `@phreshos/core`.
-</Callout>
+`@phreshos/core` is a peer dependency.
 
 ```ts
 import { Project, System } from "@phreshos/node"
-import { Program, Process } from "@phreshos/core"
+
+const system = await System.connect()
+const project = await Project.open()
+
+for await (const event of await project.start(system)) {
+  console.log(event)
+}
+
+await system.disconnect()
 ```
 
-`System` creates an owner-local external connection. `Project` owns authoring,
-build, development, installation, and packaging around one
-`phresh.config.ts`. Shared domain handles and types remain Core values.
+There is no Context. Node is not an executing Endpoint.
 
 <Cards>
-  <Card title="Connection" description="Select a System home and own one external connection lifetime." href="/sdks/node/connection" />
-  <Card title="System access" description="Use complete System capabilities through that connection." href="/sdks/node/system-access" />
-  <Card title="Project" description="Load, run, install, and package a Program project." href="/sdks/node/project" />
+  <Card title="Connection" description="Connect to a running System and disconnect." href="/sdks/node/connection" />
+  <Card title="System access" description="The complete System contract from an owner connection." href="/sdks/node/system-access" />
+  <Card title="Project" description="Build, run, install, and package a local Program project." href="/sdks/node/project" />
 </Cards>

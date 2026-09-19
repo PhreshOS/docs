@@ -1,51 +1,27 @@
 ---
 title: Permissions
-description: Inspect Client authority and ask the owner to replace one decision.
+description: Inspect authority and request an owner's decision from a Client.
 ---
 
-The Client SDK exposes permission state from two positions.
-`context.permissions` belongs to the Client currently executing and can request
-an owner's decision. `program.permissions` is the authoritative state owned by
-a Program and requires `all` when used from a Client.
-
-## Current Context authority
+Permissions belong to the Program. The Client Context is how the executing
+Client reads that state and asks the owner to change it. The catalog and
+visibility rules are documented under [Permissions](/system/permissions).
 
 ```ts
 import { context } from "@phreshos/client"
 
-const scope = ["https://api.example.com"] as const
+const allowed = await context.permissions.allows("uploads")
 
-if (!await context.permissions.allows("network", scope)) {
-  const result = await context.permissions.request("network", scope)
-  console.log(result)
+if (!allowed) {
+  await context.permissions.request("uploads")
 }
 ```
 
-`get(name)` reads the exact stored assignment without applying fallback
-authority. `allows(name, value?)` answers whether the complete stored state
-covers the requested capability. Neither prompts the owner or changes storage.
+`get` returns the stored assignment without applying fallback authority.
+`allows` reports whether the stored permission permits the requested
+capability. `request` prompts the owner, replaces the stored permission, and
+returns that canonical value. `timeout(milliseconds)` selects another
+deadline for the prompt.
 
-`request()` always asks the owner. Approval replaces that exact permission and
-returns its canonical array. Denial returns `false`; dismissal or timeout
-returns `null`. The default deadline is two minutes, and
-`timeout(milliseconds)` creates the same request capability with another
-deadline.
-
-## Program permission state
-
-```ts
-const program = await context.program()
-
-await program.permissions.set("network", ["https://api.example.com"])
-console.log(await program.permissions.all())
-await program.permissions.delete("network")
-```
-
-`get()` reads one exact assignment, `all()` returns the stored record, and
-`allows()` applies the same effective coverage rules used by Client operations.
-`set()` accepts `true`, a valid value list, or `false`. `delete()` removes the
-exact assignment so broader fallback may apply again.
-
-Core owns permission names and value domains. See
-[Permissions](/system/permissions) for declaration persistence, the catalog,
-scope grammar, fallback priority, and visible-domain behavior.
+`program.permissions` is the administration API: `get`, `all`, `allows`,
+`set`, and `delete`. Those operations require `all`.

@@ -1,43 +1,20 @@
 ---
 title: Desktop
-description: Use the browser environment containing the current Client.
+description: Read the containing viewport, preferences, and Connection.
 ---
 
-The Client `desktop` represents the graphical environment containing this
-Endpoint. It exposes the current viewport, effective preferences, and—when
-permitted—the browser Connection carrying the Desktop.
+Client `desktop` is the [Desktop](/system/desktop) that contains this Client
+Endpoint. Import it from `@phreshos/client`. It is a separate root from
+`context` and `system` because viewport, preferences, and the browser
+Connection belong to this representation, not to the Program.
 
 ```ts
 import { desktop } from "@phreshos/client"
 
 const { size } = await desktop.viewport.snapshot()
 const preferences = await desktop.preferences.snapshot()
-
-console.log(size, preferences)
+const connection = await desktop.connection()
 ```
 
-`desktop.viewport` publishes `resize` with a complete `{ size }` snapshot in
-CSS pixels. `desktop.preferences` publishes `change` with complete effective
-`{ theme, animations, scale }` values. Scale is a multiplier from `0.5` through
-`2` with a default of `1`; it is preference state and does not itself change
-viewport geometry. Subscriptions observe later changes; call
-`snapshot()` when the current value is needed.
-
-Updating preferences accepts direct values or `"default"` and requires
-`desktopPreferences`. The default theme and animation choices follow the native
-environment; the default scale is `1`.
-
-```ts
-await desktop.preferences.update({
-  theme: "default",
-  animations: true,
-  scale: 1.25,
-})
-```
-
-`desktop.connection()` returns the canonical Connection carrying this Desktop.
-It requires `desktopConnection` or `connections` and is the same handle that a
-visible `system.connection.find()` returns for that identity.
-
-The current Client's Window is not a Desktop-global registry. Its authoritative
-and local handles remain under [Context](/sdks/client/context).
+The executing Program needs `desktopConnection` or `connections` for
+`connection()`, and `desktopPreferences` for preference updates.

@@ -3,8 +3,8 @@ title: Panel
 description: Compose an outer Surface, optional header, and inset content Surface.
 ---
 
-`Panel` owns one specific Surface composition: an outer material, an optional
-header, and an inset content material.
+`Panel` owns one Surface composition: an outer material, an optional header,
+and an inset content material.
 
 ```text
 Surface
@@ -13,50 +13,9 @@ Surface
     └── content
 ```
 
-<ComponentPreview>
-  <Preview>
-    <Panel style={{ width: 320, height: 160 }}>
-      <PanelHeader><strong style={{ padding: 12 }}>Connection</strong></PanelHeader>
-      <PanelContent style={{ padding: 16 }}>Ready</PanelContent>
-    </Panel>
-  </Preview>
-  <PreviewCode>
+<PanelShowcase />
 
-    ```tsx
-    import { Panel } from "@phreshos/react-ui"
-
-    export default function ConnectionPanel() {
-      return <Panel>
-        <Panel.Header><strong>Connection</strong></Panel.Header>
-        <Panel.Content style={{ padding: 16 }}>Ready</Panel.Content>
-      </Panel>
-    }
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-The outer Surface receives the ordinary Panel and Surface props. `Panel.Header`
-owns the optional leading region. `Panel.Content` is the constrained inner
-Surface and receives its own native and Surface properties.
-
-The two Surfaces remain independently configurable:
-
-```tsx
-<Panel
-  color="background:base"
-  material={{ opacity: 0.4 }}
->
-  <Panel.Content color="background:soft" material={{ opacity: 0.1 }}>
-    Content
-  </Panel.Content>
-</Panel>
-```
-
-The inset is the `small` spacing level—half the current Appearance spacing.
-When a header exists, the inner Surface has no top inset because the header
-already occupies that side. Its overflow is clipped so content follows the
-same radius and edge geometry.
-
-Panel owns this shell layout only. Window position, dragging, resizing,
-lifecycle, and elevation belong to their own components.
+The outer Surface receives the ordinary Panel and Surface props.
+`Panel.Header` owns the optional leading region. `Panel.Content` is the
+constrained inner Surface and receives its own native and Surface properties.
+The two Surfaces remain independently configurable.

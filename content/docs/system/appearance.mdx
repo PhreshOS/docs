@@ -1,129 +1,51 @@
 ---
 title: Appearance
-description: Understand the complete visual source and how each Desktop resolves it.
+description: The complete visual source owned by the System.
 icon: Palette
 ---
 
-Appearance is one complete visual value owned by the System. It defines the
-colors, geometry, material, motion, shadows, and wallpapers from which the
-Desktop and React UI derive their presentation.
+Appearance is the System's complete unresolved visual state. It is one
+document: colors, spacing, radius, shadow, material, transaction, and wallpapers,
+each with both a light and a dark branch where the value is themed.
 
-The value remains unresolved in the System. Light and dark branches stay
-together until a particular Desktop applies its own effective preferences.
-This lets several Desktops represent the same System with different themes
-without creating several Appearance values.
-
-## Reading and replacing Appearance
+Programs and the Desktop derive presentation from this source.
+[React UI](/sdks/react-ui) interprets the visual fields it owns; wallpapers
+remain System-only.
 
 ```ts
 const appearance = await system.appearance.snapshot()
 
 system.appearance.subscribe("change", next => {
-  console.log(next.colors)
+  console.log(next.colors.dark.background)
 })
 ```
 
 `snapshot()` returns the complete immutable value. A `change` event carries
 the complete replacement rather than a partial patch. `update(appearance)`
-validates and atomically replaces the whole value; Clients need the
-`appearance` permission to call it.
+validates and atomically replaces the whole value. The executing Program
+needs the `appearance` permission.
 
-Core exports `defaultAppearance`, `appearanceLimits`, and
-`createAppearanceSnapshot()` so independent consumers can begin from the same
-valid source without depending on a running System.
+## What the document contains
 
-## Theme-dependent values
+Colors are a closed set: `background`, `foreground`, `default`, `primary`,
+`secondary`, `success`, `warning`, `danger`, and `info`. Each theme supplies
+every name.
 
-`ThemedValue<Value>` is exactly `{ light: Value, dark: Value }`. Appearance uses
-it only where the value genuinely differs by theme: colors, material, shadow,
-and wallpapers. Spacing, radius, and transaction remain direct values because
-their meaning does not change when a Desktop selects another theme.
+`spacing` and `radius` are numbers in the range 6–18. Shadow geometry is
+`x`, `y`, `blur`, `spread`, and `opacity`. Material is `grain`,
+`grainAmount`, `backdrop`, `opacity`, `distortion`, and `saturation`.
+`transaction` is `{ duration, easing }` for visual change.
 
-```ts
-const background = appearance.colors[preferences.theme].background
-const material = appearance.material[preferences.theme]
-```
+Wallpapers are System upload keys, or `null`. They are themed independently
+for sign-in and for the Desktop.
 
-Theme names select branches. They do not promise that one branch is visually
-lighter than another, so behavior based on luminance must inspect the resolved
-colors themselves.
+Theme names on a Desktop preference do not imply which colors are lighter.
+Whenever behavior depends on which color is lighter or darker, derive it from
+the colors themselves.
 
-## Colors and geometry
+## Desktop preferences are separate
 
-The palette names colors by their role rather than by a component. `background`
-and `foreground` establish the environment; `default` is the ordinary layer
-above a Surface; `primary` and `secondary` express emphasis; `success`,
-`warning`, `danger`, and `info` communicate state.
-
-| Color | Light default | Dark default |
-| --- | --- | --- |
-| `background` | `#ffffff` | `#121a21` |
-| `foreground` | `#183447` | `#edf8fc` |
-| `default` | `#ffffff` | `#121a21` |
-| `primary` | `#4c9cff` | `#4c9cff` |
-| `secondary` | `#8b5cf6` | `#a78bfa` |
-| `success` | `#16a34a` | `#4ade80` |
-| `warning` | `#d97706` | `#fbbf24` |
-| `danger` | `#dc2626` | `#f87171` |
-| `info` | `#0891b2` | `#22d3ee` |
-
-`spacing` and `radius` are the shared geometric source values. Their defaults
-are `12` and `10`, and both accept values from `6` through `18`.
-
-## Material, shadow, and motion
-
-Material describes the visual substance painted inside a component:
-`opacity`, `backdrop`, `grain`, `grainAmount`, `distortion`, and `saturation`.
-It does not choose a color. React UI combines the resolved material with the
-component's separate color contract.
-
-The default light material uses opacity `0.2`; the dark material uses `0.35`.
-Both use backdrop `12`, saturation `1`, and no grain or distortion.
-
-Shadow is independent from Material. Each theme branch defines `x`, `y`,
-`blur`, `spread`, and `opacity`; the default is
-`{ x: 0, y: 8, blur: 24, spread: 0, opacity: 0.16 }`. A component consumes
-shadow only when elevation belongs to that component's own contract.
-
-`transaction` supplies the duration and easing shared by visual changes. Its
-default is `{ duration: 120, easing: "ease-out" }`. Easing accepts the standard
-CSS names or a four-number cubic Bézier tuple.
-
-## Desktop preferences
-
-Each Desktop resolves effective `{ theme, animations, scale }` preferences.
-`scale` is a dimensionless presentation multiplier from `0.5` through `2`, with
-an effective default of `1`. It is persisted and published as Desktop state;
-it does not itself alter viewport geometry or apply presentation scaling.
-
-`desktop.preferences.update()` accepts a direct light or dark theme, a boolean
-animation choice, or a concrete scale. `"default"` follows the browser for
-theme and animations and resets scale to `1`.
-
-```ts
-await desktop.preferences.update({
-  theme: "default",
-  animations: true,
-  scale: 1.25,
-})
-```
-
-Preferences are local to the Desktop representation. Appearance remains the
-shared System value. Updating preferences requires `desktopPreferences` from a
-Client.
-
-## Wallpapers
-
-`signInWallpaper` and `desktopWallpaper` select a System upload independently
-for each theme. The upload must exist, contain a supported image, video, or
-self-contained HTML document, and be no larger than 50 MiB. This wallpaper
-limit is separate from the upload capability itself.
-
-Images and videos fill the wallpaper area using cover sizing. Videos autoplay
-muted and loop continuously. An HTML wallpaper fills the area with its own
-document and may run scripts, but it has no System or network access. All code
-and resources must therefore be contained in the uploaded file. The document
-owns its internal layout.
-
-While a Client occupies the `wallpaper` Window layer, the Desktop uses that
-Client instead of `desktopWallpaper`. See [Desktop](/system/desktop#layers).
+[Desktop](/system/desktop) preferences choose theme, animations, and scale
+for one representation. Appearance is the shared visual source those
+preferences resolve against. Changing the Desktop theme selects which themed
+branch to use.

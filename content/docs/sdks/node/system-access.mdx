@@ -1,49 +1,25 @@
 ---
 title: System access
-description: Use complete System capabilities through a trusted Node connection.
+description: Use the complete System contract from an owner connection.
 ---
 
-A connected Node `System` exposes the complete Core System contract with owner
-authority. It can navigate every Program, Process, Connection, Session, and
-Service and use Storage, uploads, Appearance, Network, and shell without a
-Program permission boundary.
+The connected `System` object is the same [System](/system) contract as
+Client and Server. Owner-local connections are trusted: they are not filtered
+by a Program permission state.
 
 ```ts
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
-const program = await system.program.find("terminal")
-const process = await program?.firstProcess()
 
-console.log(program?.name, process?.identity)
+const program = await system.program.find("notes")
+const processes = await system.process.list()
+
+await system.disconnect()
 ```
 
-The operation contracts remain those documented under [System](/system). Node
-does not rename them or provide parallel Node-only domain objects.
+`system.shell()` and native `system.storage` run in the Node process. They
+remain the Core `shell()` and `Storage` contracts.
 
-`system.execute()` exposes selected operations through Core's JSON operation
-catalog. It composes the same Node handles and owner authority described here;
-it is not a separate gateway protocol. See [Execute](/sdks/core/execute).
-
-## Local work under connection ownership
-
-When crossing the gateway would not change meaning, Node performs work with
-its own platform facilities. Fetch and WebSocket return the standard values,
-shell supervises a native command tree, and native Storage starts from the
-operating-system user's home.
-
-```ts
-const response = await system.network.fetch("https://api.example.com/status")
-
-for await (const event of system.shell("node --version")) {
-  if (event.event === "output") console.log(event.text)
-}
-```
-
-Local execution does not move ownership away from the connected System.
-Disconnecting still ends attached sockets, streams, subscriptions, and command
-trees.
-
-Repeated navigation through one connection returns the same canonical handle.
-The same domain identity reached through another Node connection is represented
-by another JavaScript object.
+`system.execute()` is the JSON catalog documented under
+[Execute](/sdks/core/execute). The CLI's runtime commands use this connection.

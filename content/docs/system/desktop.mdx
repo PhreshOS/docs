@@ -1,44 +1,54 @@
 ---
 title: Desktop
-description: Understand authoritative Windows and their local browser representation.
+description: Authoritative Windows and their local browser representation.
 icon: PanelsTopLeft
 ---
 
 A Desktop is one graphical representation of the System. The System owns the
-authoritative state of each Client Window; the Desktop owns the measurements,
+authoritative state of each Client Window. The Desktop owns the measurements,
 pointer interaction, iframe, animation, and temporary presentation needed to
 show it on one screen.
 
-This separation allows the same Window state to be represented by more than
-one Desktop without treating browser-local details as System truth. The Client
+The same Window state can be represented by more than one Desktop. The Client
 Endpoint's `window` handle addresses the authoritative state. Its Context's
-`localWindow` handle addresses the representation owned by the current Desktop.
-The Desktop provides the mechanism that links these two representations or
-allows the local representation to remain detached.
+`localWindow` handle addresses the representation owned by the current
+Desktop.
 
-## Desktop state
+Client code reaches the containing Desktop as a separate root:
 
-`desktop.viewport` exposes the current workspace size in CSS pixels and emits a
-complete `{ size }` snapshot when it changes. `desktop.preferences` exposes the
-effective theme and animation choice for this Desktop and publishes complete
-replacements.
+```ts
+import { context, desktop } from "@phreshos/client"
+```
+
+## Viewport and preferences
+
+`desktop.viewport` exposes the current workspace size in CSS pixels and emits
+a complete `{ size }` snapshot when it changes.
+
+`desktop.preferences` exposes the effective theme, animation choice, and
+scale for this Desktop. Theme names such as `light` and `dark` do not imply
+actual color luminance; colors come from [Appearance](/system/appearance).
+Scale is a multiplier between `0.5` and `2`, defaulting to `1`. A preference
+update may set `theme` or `animations` to `"default"` to follow the native
+environment. Setting `scale` to `"default"` restores the default multiplier of
+`1`.
 
 ```ts
 const { size } = await desktop.viewport.snapshot()
 const preferences = await desktop.preferences.snapshot()
 
-console.log(size.width, size.height, preferences.theme)
+await desktop.preferences.update({ theme: "dark" })
 ```
 
 `desktop.connection()` returns the browser Connection carrying this Desktop.
-It requires `desktopConnection` or the broader `connections` permission.
+The executing Program needs `desktopConnection` or `connections`.
 
-## Authoritative Window state
+## Authoritative Window
 
-Every Client Endpoint has one permanent `window` handle. Its title, header,
+Every Client Endpoint has one permanent `window` handle. Title, header,
 geometry, minimized state, maximized state, front state, and layer belong to
-the System. Reads return those authoritative values; mutations change them and
-publish the matching Window event.
+the System. Reads return those authoritative values. Mutations change them
+and publish the matching Window event.
 
 ```ts
 await context.window.setGeometry({
@@ -50,49 +60,45 @@ await context.window.maximize()
 await context.window.changeHeader(false)
 ```
 
-`move()` and `resize()` change one part of the geometry. `setGeometry()` commits
-position and size together. Geometry accepts finite pixels and relative values
-such as `"1/2"`, `"50%"`, and `"50% + 10"`.
-
-Minimized and maximized are independent boolean facts. Presentation resolves
-them in this order: minimized, maximized, geometry. A minimized Window is
-hidden. Otherwise, a maximized Window fills the workspace. Otherwise, the
-stored geometry is shown. Neither state destroys the geometry underneath it,
-so restoring a Window needs no separate saved rectangle.
-
+Position and size accept finite pixels or relative expressions such as
+`"1/2"`. `setGeometry` changes position and size as one operation. Minimized
+and maximized are independent. Presentation resolves them in this order:
+minimized, maximized, stored geometry. Geometry underneath is retained.
 Calling `minimize()` or `maximize()` without an argument sets that state to
-`true`. `changeHeader()` controls whether a standard Window presents the
-Desktop-owned top region containing its title, drag area, and controls. Hiding
-it gives Client content the complete inner Window area without changing the
-Window's layer, Surface, resize boundary, taskbar presence, or Desktop
-authority. `raise()` makes the Window frontmost within its own layer.
+`true`. `raise()` brings the Window to the front of its own layer.
+`changeHeader()` controls whether a standard Window presents the Desktop-owned
+top region.
+
+Window events are `move`, `resize`, `geometry`, `minimize`, `maximize`,
+`changeTitle`, `changeHeader`, and `front`.
+
+```sh
+phresh window inspect --process main --program notes
+```
 
 ## Layers
 
-Windows occupy five isolated layers, ordered from back to front: `wallpaper`,
-`under`, `window`, `over`, and `start-menu`. The taskbar remains above every
-Window layer. Changing depth within one layer never crosses into another.
+Windows occupy five isolated layers: `wallpaper`, `under`, `window`, `over`,
+and `start-menu`. The default layer is `window`. A Program needs the `layers`
+permission to use the other layers. Changing depth within one layer never
+crosses into another. The taskbar remains above the window layers.
 
 The `window` layer contains standard application windows. `under` and `over`
-provide chrome-free presentation beneath and above standard windows while
-retaining their own Surface behavior.
+provide chrome-free presentation beneath and above standard windows.
 
-The `wallpaper` and `start-menu` layers are exclusive Desktop roles. Each can
-contain one Client Endpoint. Starting another occupant in the same role ends
-the existing occupant's entire Process before the replacement starts.
+`wallpaper` and `start-menu` are exclusive Desktop roles. Each can contain
+one Client Endpoint. Starting another occupant in the same role ends the
+existing occupant's entire Process before the replacement starts. A wallpaper
+Client fills the wallpaper area. A start-menu Client fills the Start Menu
+area. When either Client stops, Desktop returns that role to its fallback.
 
-Desktop gives each role its fixed presentation. A `wallpaper` Client fills the
-wallpaper area and replaces the Appearance wallpaper. A `start-menu` Client
-fills the existing Start Menu area and replaces the built-in Start Menu. When
-either Client stops, Desktop returns to that role's fallback.
-
-Authoritative Window values remain readable and observable for both Clients,
-but they do not determine either role's presentation.
+Authoritative Window values remain readable and observable for both roles.
+They do not determine either role's presentation.
 
 ## Local Window
 
-`context.localWindow` controls only the representation on the current Desktop.
-Its operations do not mutate authoritative Window state or emit Window events.
+`context.localWindow` controls the representation on the current Desktop. Its
+operations do not mutate authoritative Window state or emit Window events.
 
 ```ts
 await context.localWindow
@@ -104,11 +110,9 @@ await context.localWindow
 ```
 
 `transaction()` binds geometry, minimize, maximize, Surface, and following
-operations to one visual timing. `wait: true` makes the operation resolve after
-the visual transition rather than after the Desktop accepts it. `raise()`,
-`changeTitle()`, and `changeHeader()` do not have transaction forms.
-
-Local capability follows the role of the receiving layer:
+operations to one visual timing. `wait: true` makes the operation resolve
+after the visual transition rather than after the Desktop accepts it.
+`raise()`, `changeTitle()`, and `changeHeader()` have no transaction form.
 
 | Local operation | `window` | `under` / `over` | `wallpaper` / `start-menu` |
 | --- | --- | --- | --- |
@@ -118,14 +122,12 @@ Local capability follows the role of the receiving layer:
 | `addSurface()`, `removeSurface()` | Rejected | Allowed | Rejected |
 | `follow()`, `unfollow()` | Allowed | Allowed | Allowed |
 
-Standard windows follow their own authoritative Window by default, keeping
-System changes aligned with their ordinary Desktop representation until that
-representation is explicitly detached. Every other layer begins unfollowed.
-`follow(window)` replaces the current authoritative target and adopts only the
-properties permitted by the receiving layer. `unfollow()` detaches while
-preserving the current local state.
+A standard window follows its own authoritative Window by default. Every
+other layer begins unfollowed. `follow(window)` replaces the current
+authoritative target and adopts only the properties permitted by the
+receiving layer. `unfollow()` detaches while preserving the current local
+state.
 
-Local overrides do not implicitly break following. Later authoritative events
-update only the property they carry. Under and over layers do not follow a
-target's title or header state, and no follower copies the target's layer or
-Surface.
+Local overrides do not break following. Later authoritative events update
+only the property they carry. Under and over layers do not follow a target's
+title or header. No follower copies the target's layer or Surface.

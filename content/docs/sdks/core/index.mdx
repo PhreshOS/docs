@@ -1,19 +1,17 @@
 ---
 title: Overview
-description: Use the shared language implemented by every PhreshOS environment.
+description: The shared language implemented by every PhreshOS environment.
 ---
 
-`@phreshos/core` defines the contracts shared across PhreshOS. It gives a
-Program, Process, Endpoint, Service, Window, or System capability one meaning
-that Client, Server, Node, and React can all use without translating the domain
-into environment-specific shapes.
+`@phreshos/core` defines the contracts shared across PhreshOS. A Program,
+Process, Endpoint, Service, Window, or System capability has one meaning that
+Client, Server, Node, and React all use.
 
-Core does not connect to a System or own the capabilities described by those
-contracts. Environment SDKs provide concrete implementations. Shared adapters
-may compose those public implementations without creating another System
-boundary.
-
-## Install
+Core does not connect to a System or own the capabilities those contracts
+describe. Environment SDKs provide the implementations. The [Runtime](/runtime)
+and [System](/system) sections explain what the contracts mean and how you
+use them. This section is the Core package: configuration, Execute, and the
+boundary parsers.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -38,38 +36,26 @@ boundary.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  Core has no peer dependencies.
-</Callout>
-
-Environment SDKs use Core as a peer dependency so an application has one set
-of domain classes and contracts:
+Environment SDKs depend on Core as a peer so an application has one set of
+domain classes:
 
 ```ts
 import { Program } from "@phreshos/core"
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
-const program = await system.program.find("terminal")
+const program = await system.program.find("notes")
 
 console.log(program instanceof Program)
 ```
 
-## What Core provides
-
-Core contains three related kinds of public value:
-
-- domain contracts and classes shared by more than one environment;
-- authoring contracts used to describe a Program project;
-- immutable contract data and parsers used at untyped boundaries.
-
-It contains no transport connection, persistence engine, command runner, or UI
-implementation. That boundary keeps a change in how the System is reached from
-changing what its domain objects mean.
+Core contains domain contracts and classes, authoring contracts used to
+describe a Program project, and parsers used at untyped boundaries. It
+contains no transport, persistence engine, command runner, or UI.
 
 <Cards>
   <Card title="Program configuration" description="Describe one Program project and its Endpoint declarations." href="/sdks/core/program-configuration" />
-  <Card title="Execute" description="Represent ordinary SDK operations through one JSON request interface." href="/sdks/core/execute" />
-  <Card title="Domain contracts" description="Use the shared entities and reusable behavior contracts." href="/sdks/core/domain-contracts" />
+  <Card title="Execute" description="Selected SDK operations as one JSON interface." href="/sdks/core/execute" />
+  <Card title="Domain contracts" description="Shared entities and reusable behavior contracts." href="/sdks/core/domain-contracts" />
   <Card title="Validation and utilities" description="Read untyped boundary values into canonical contracts." href="/sdks/core/validation-and-utilities" />
 </Cards>

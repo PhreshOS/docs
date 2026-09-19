@@ -1,13 +1,12 @@
 ---
 title: Overview
-description: Use PhreshOS from the Server Endpoint currently executing.
+description: Use PhreshOS from the Server Endpoint currently executing on the host.
 ---
 
-`@phreshos/server` implements PhreshOS contracts for a Program's current Server
-Endpoint incarnation. It exposes the execution `context` and the
-permission-constrained `system` root.
-
-## Install
+`@phreshos/server` is the adapter for a Program's Server Endpoint. It exposes
+the complete Core `system` contract and the current Server `context` in the
+three execution modes: a supervised `command` process, a System-owned
+`worker`, and a capability-contained `sandbox`.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -32,36 +31,23 @@ permission-constrained `system` root.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  Server requires `@phreshos/core`.
-</Callout>
+`@phreshos/core` is a peer dependency.
 
 ```ts
 import { context, system } from "@phreshos/server"
-import { Program, Process } from "@phreshos/core"
+
+context.answer("counter.read", async () => ({ value: 1 }))
+
+const program = await context.program()
+const appearance = await system.appearance.snapshot()
 ```
 
-Server exports only the roots it owns. Shared domain classes and types remain
-Core imports, and handles returned by Server inherit those classes.
-
-## One Server contract
-
-`context` identifies the current Server, receives its messages, exposes its
-paired Client, and registers answers. `system` provides the same complete
-contract used by Client and Node. Every System operation uses the executing
-Program's permissions, regardless of how the Server itself is hosted.
-
-The execution environment is a separate choice. A command or Worker may use
-host capabilities directly, while a Sandbox can leave its JavaScript runtime
-only through the permission-constrained System contract. Application imports
-remain the same in all three environments.
-
-The Context begins and ends with one Server incarnation. A future incarnation
-receives a new Context even though the permanent Server Endpoint handle remains
-the same.
+There is no `desktop` root. A Server is not a Desktop representation. It can
+read and change the paired Client's authoritative Window through
+`context.client.window`.
 
 <Cards>
-  <Card title="Context" description="Use execution identity, paired Client communication, and answerers." href="/sdks/server/context" />
-  <Card title="System access" description="Use Program-authorized System capabilities across the Server boundary." href="/sdks/server/system-access" />
-  <Card title="Execution environments" description="Choose command, Worker, or Sandbox execution without changing the Server contract." href="/sdks/server/execution-environments" />
+  <Card title="Context" description="The current execution, paired Client, and answers." href="/sdks/server/context" />
+  <Card title="System access" description="The complete System contract from a Server Endpoint." href="/sdks/server/system-access" />
+  <Card title="Execution environments" description="Command, Worker, and Sandbox as one Server contract." href="/sdks/server/execution-environments" />
 </Cards>

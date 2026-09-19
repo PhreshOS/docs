@@ -1,21 +1,52 @@
 # Documentation Contract
 
-These rules govern every file under this repository. The documentation is a
-public representation of PhreshOS contracts, not a second source of truth and
+These rules govern every file under this repository. The documentation explains
+how PhreshOS is used, and the contracts that make that usage mean something.
+It is one explanation in several sections, not a second source of truth and
 not a collection of independently written articles.
 
-## Establish the fact first
+## Purpose
 
-Before documenting behavior, verify it against the contract that owns it:
+Write for a reader who wants to use the system. Show how to do the thing, and
+in the same movement say what the thing is. Do not split theory from practice
+into separate manuals. Do not write an API inventory whose meaning is left to
+the code, and do not write a usage recipe whose meaning is postponed.
 
-1. Core for shared domains, public types, and invariants.
-2. The owning SDK or System boundary for environment-specific capability.
-3. Tests and implementation for observable behavior, defaults, and failure
-   semantics.
+The code is the technical record. This documentation is the human-language
+account of the public contracts and of the actions those contracts make
+possible.
 
-Do not derive a general contract from one consumer, example, transport, or
-implementation. If the sources disagree, fix or report the disagreement; do
-not choose the most convenient version for the prose.
+Write the system that exists. Do not write a change to the documentation, a
+correction of earlier prose, or a comparison with a previous explanation.
+A reader who has never seen another version must still receive a complete
+account of the contract.
+
+## Establish the fact from the system
+
+The system is the only source for what to write: Core for shared domains, the
+owning SDK or System boundary for environment-specific capability, and tests
+for observable defaults and failure semantics.
+
+Do not use existing documentation to decide what a page should say, how a
+contract should be phrased, or which facts belong. Existing pages may be
+replaced; they are not a source. Do not derive a general contract from one
+consumer, example, transport, or implementation. If sources disagree, report
+the disagreement; do not choose the most convenient version for the prose.
+
+## One method
+
+Explain similar things in the same way and with the same structure, even when
+they live in different sections. Change the method only when the thing itself
+is different, and that difference must be real. Similarity is the default;
+difference is what needs a reason.
+
+A later mention of an earlier contract does not re-teach it. State only the
+context needed on this page and link to the page that owns the meaning.
+
+A name may appear before its full explanation when the surrounding idea
+requires it. Say that it is explained later, or link to that section. Prefer
+an order in which each idea can be understood from what came before, without
+treating that order as a ban on forward reference.
 
 ## Put each fact in one domain
 
@@ -23,89 +54,50 @@ Every substantive fact has one canonical home:
 
 | Area | Owns |
 | --- | --- |
-| Start | Orientation and ordered adoption workflows |
-| Runtime | Program, Process, Endpoint, Service, Context, and communication contracts |
-| System | System capabilities, authority, security, persistence, Desktop, and operation |
-| SDKs | How Client, Server, React, Node, and CLI expose or compose existing contracts |
+| Start | What PhreshOS is, how to install it, and how a first Program enters the system |
+| Runtime | Program, Process, Endpoint, Service, Context, and communication |
+| System | Authority, Desktop, Appearance, storage, network, shell, security, and permissions |
+| SDKs | How each environment reaches the same contracts, and only the differences that environment introduces |
 
-An index page defines its area's mental model and routes to its children. It
-must not duplicate their detailed contracts. When another page needs an
-existing fact, state only the context needed there and link to its canonical
-page.
+An index page defines its area and routes to its children. It must not
+duplicate their detailed contracts.
 
-Add a page only for a concept with its own stable contract or a workflow with a
-distinct outcome. Otherwise, add a section to the page that already owns the
+Add a page only for a concept with its own stable contract or a workflow with
+a distinct outcome. Otherwise, add a section to the page that already owns the
 subject. Keep every `meta.json` order explicit.
-
-## Write one kind of page
-
-Choose the page's role before writing it:
-
-- An orientation page answers what the product or area is and maps its parts.
-- A domain page defines one entity, its ownership, lifecycle, capabilities,
-  and boundaries.
-- A capability page defines one operation family, its inputs, result,
-  authority, defaults, and failure behavior.
-- An adapter page explains how one environment exposes shared contracts and
-  only the differences introduced by that environment.
-- A workflow page begins with prerequisites, gives ordered actions, and ends
-  with an observable successful result.
-
-Do not mix a tutorial, conceptual explanation, API inventory, and operational
-reference merely to make a page look complete.
 
 ## Page structure
 
-Every MDX page has accurate `title`, `description`, and `icon` frontmatter. Its
-first paragraph directly defines the subject or outcome. The remaining
-sections follow the concept's natural contract; headings exist only when they
+Every MDX page has accurate `title`, `description`, and `icon` frontmatter when
+the area uses icons. Its first paragraph directly defines the subject.
+
+The remaining sections follow the contract: what the thing is, how you use it,
+what it owns, and the boundaries that matter. Headings exist only when they
 separate meaningful concerns.
 
-Uniformity is the default. Pages at the same level use the same naming grammar,
-information order, component patterns, and level of detail. Begin with the
-established sibling pattern and diverge only when the documented domain has a
-real difference that the shared shape cannot express. Historical authorship,
-implementation location, or available prose does not justify a different
-structure.
+Pages at the same level use the same naming grammar, information order, and
+level of detail. Begin with the established sibling pattern.
 
-Use PhreshOS domain names precisely and consistently: System, Program,
-Process, Endpoint, Server Endpoint, Client Endpoint, Service, Context, Desktop,
-and Window. Name the entity that owns state or behavior. Distinguish an
-authoritative fact from a local representation and a contract from its
-transport or adapter.
+Use PhreshOS domain names precisely: System, Program, Process, Endpoint,
+Server Endpoint, Client Endpoint, Service, Context, Desktop, and Window.
 
-For an API operation, document only what a reader needs to use it correctly:
-
-- the owning object and exact public name;
-- accepted input and defaults;
-- returned value or event sequence;
-- lifecycle and side effects;
-- authority or permission boundary; and
-- meaningful rejection or absence behavior.
-
-Omit bullets that do not apply. Never invent symmetry to fill a template.
+For an operation, document what a reader needs in order to use it correctly:
+the owning object and public name, accepted input and defaults, the result,
+lifecycle, authority, and meaningful rejection or absence. Omit bullets that
+do not apply.
 
 ## Examples
 
-Examples use only current public APIs and must be minimal, realistic, and
-copyable. Preserve the real asynchronous shape: do not hide a Promise, consume
-a generator on the reader's behalf, or imply that a subscription returns
-current state.
-
-An example exists to make one contract obvious. Do not burden it with
-production hardening, defensive lifecycle bookkeeping, exhaustive error
-handling, or abstractions unrelated to that contract. Include those mechanics
-only when they are the subject being explained. An example must work under its
-stated conditions; it does not need to model an entire production application.
+Examples use only current public APIs. They are short, realistic, and copyable.
+Preserve the real asynchronous shape. An example exists to make one contract
+obvious. Do not burden it with production hardening.
 
 Use neutral identities and paths. Never use a contributor's name, machine,
-home directory, secret, private URL, or unpublished internal import. Do not add
-compatibility syntax, imaginary convenience methods, or implementation objects
-to make an example shorter.
+home directory, secret, or unpublished internal import. Do not add imaginary
+convenience methods.
 
-When several commands differ only by package manager, operating system, or one
-other mutually exclusive variant, show them as variants of one example rather
-than repeating the surrounding explanation.
+When several commands differ only by package manager, operating system, or
+one other mutually exclusive variant, show them as variants of one example.
 
 ## Fumadocs components
 
@@ -117,38 +109,32 @@ Components carry meaning and are not decoration:
 - `Callout` marks a constraint, risk, exception, or critical clarification.
 - `Files` shows a real file hierarchy that the reader will use.
 
-Use plain prose or a code block when a component does not add structure. Do not
-repeat the same information inside and outside a component.
+Use plain prose or a code block when a component does not add structure.
 
 ## Style
 
-Lead with the result or definition. Prefer short, concrete sentences over
-marketing language, narration, or historical commentary. Explain why only
-when it clarifies a contract or prevents a likely mistake. Do not describe
-work that Codex performed, future intentions as present behavior, or internal
-architecture that has no observable consequence.
+Lead with the result or definition. Prefer short, concrete sentences. Explain
+why only when it clarifies a contract or prevents a likely mistake. Do not
+describe internal architecture that has no observable consequence, and do not
+contaminate the explanation with the history of the documentation or the
+system.
+
+Do not document a fact merely because it is true. Omit what is already obvious
+from the contract just stated. A negative guarantee still belongs when it
+materially defines how the contract may be used.
 
 ## Change procedure
 
 For every documentation change:
 
 1. Identify the owning domain and canonical page.
-2. Verify the fact from source and tests.
+2. Verify the fact from the system.
 3. Update that page and only the summaries or links made inaccurate by it.
 4. Add or move navigation only when the information architecture changed.
 5. Run the documentation type check and inspect the resulting diff for
    duplication, unsupported claims, stale names, and personal data.
 
-Before a repository-wide contract audit, inventory Core's public domains,
-capabilities, operations, events, and permissions and map each item to its
-current canonical page. Freeze that coverage matrix before editing. Finish by
-rechecking the same matrix so an undocumented contract cannot remain invisible
-and a repeated contract cannot acquire two competing homes.
-
-Documentation changes with the public contract that made them necessary. A
-code change is not complete when its canonical documentation now says
-something false; unrelated pages are not rewritten merely because one fact
-changed.
+Documentation changes with the public contract that made them necessary.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

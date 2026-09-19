@@ -1,64 +1,24 @@
 ---
 title: Subscription hooks
-description: Observe future domain events, questions, and answers through React.
+description: Observe future events, questions, and answers in React.
 ---
 
-Subscription hooks bind one communication registration to a mounted component
-and retain the latest projected result. They observe future messages only; they
-do not read or replay current state.
-
-## Named and correlated events
-
-`useSubscribe(target, event)` returns the latest message for one event, or
-`undefined` before the first message arrives.
+Subscription hooks register for the same future-only streams as
+`subscribe()`, and clean up when the component unmounts. They do not replay
+current state.
 
 ```tsx
-function LatestPosition({ window }: { window: Window }) {
-  const position = useSubscribe(window, "move")
-
-  if (!position) return <p>The Window has not moved.</p>
-  return <p>{position.x}, {position.y}</p>
-}
+useSubscribe(process.server, "changed", value => {
+  setCount(value)
+})
 ```
 
-The event name and message type come from the target's Core contract. Supplying
-a projection stores its result instead:
+`useSubscribe(target, event, subscriber)` follows one named event.
+`useSubscribe(target, subscriber)` follows every event as
+`{ event, message }`.
 
-```tsx
-const titleLength = useSubscribe(
-  window,
-  "changeTitle",
-  title => title.length,
-)
-```
+`useSubscribeAsks` follows questions originating from an Endpoint.
+`useSubscribeAnswers` follows answers originating from a Server Endpoint.
 
-The projection may be asynchronous. If results overlap, only the newest event
-may update the hook. Omitting the event name observes every event as its
-correlated `{ event, message }` capture.
-
-## Questions and answers
-
-`useSubscribeAsks()` observes questions originating from Endpoint or Service
-traffic. `useSubscribeAnswers()` observes answers originating from Server
-traffic.
-
-```tsx
-const question = useSubscribeAsks(server.traffic, capture => capture)
-const answer = useSubscribeAnswers(server.traffic, capture => capture)
-```
-
-Both preserve the event, question identity, destination, and payload or answer
-outcome. Observation does not answer a question or change its deadline. A
-failed answer remains an outcome value rather than becoming a React render
-error.
-
-## Registration lifetime
-
-Changing the target or event removes the old registration and creates the new
-one. Changing only the projection keeps the registration and uses the latest
-React closure. Unmounting removes the registration and prevents pending
-asynchronous projections from committing.
-
-These hooks do not destroy their target or SDK connection. See
-[Communication](/runtime/communication) for the underlying publication,
-capture, question, and answer contracts.
+The communication contract is documented under
+[Communication](/runtime/communication).

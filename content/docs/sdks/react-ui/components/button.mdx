@@ -4,31 +4,10 @@ description: Represent one accessible action with normalized interaction and Sur
 ---
 
 `Button` represents one action. Pointer activation, Enter, and Space all reach
-the same `onPress` callback through React Aria, while React UI supplies the
-material, color states, size, radius, and focus presentation.
+the same `onPress` callback. React UI supplies the material, color states,
+size, radius, and focus presentation.
 
-<ComponentPreview>
-  <Preview>
-    <Flex align="center" gap="medium" wrap>
-      <Button>Default</Button>
-      <Button color="primary:base">Primary</Button>
-      <Button color="danger:base">Delete</Button>
-      <Button disabled>Disabled</Button>
-      <Button pending>Pending</Button>
-    </Flex>
-  </Preview>
-  <PreviewCode>
-
-    ```tsx
-    <Button>Default</Button>
-    <Button color="primary:base">Primary</Button>
-    <Button color="danger:base">Delete</Button>
-    <Button disabled>Disabled</Button>
-    <Button pending>Pending</Button>
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
+<ButtonShowcase />
 
 The default color is `"default:base"`. `size` defaults to `medium` and derives
 height, spacing, gap, and font size from Appearance. `radius` and `material`
@@ -39,20 +18,5 @@ states change the fill shade without recalculating that text color or changing
 geometry.
 
 `disabled` prevents both focus and activation. `pending` blocks activation but
-keeps the Button focusable, so starting work does not destroy keyboard
-position. Both default to `false`.
-
-```tsx
-<Button
-  color="primary:base"
-  size="large"
-  material={{ opacity: 0.8 }}
-  onPress={() => save()}
->
-  Save
-</Button>
-```
-
-The component renders a native `HTMLButtonElement`, forwards its ref, preserves
-applicable React Aria button properties, and defaults `type` to `button`. Use
-`type="submit"` when a form owns the action.
+keeps the Button focusable. Both default to `false`. The host is a native
+`HTMLButtonElement` and defaults `type` to `button`.

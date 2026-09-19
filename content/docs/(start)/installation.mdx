@@ -1,34 +1,28 @@
 ---
 title: Installation
-description: Install PhreshOS and control its native per-user service.
+description: Install the CLI and System, and control the native per-user service.
 icon: Download
 ---
 
-Installation adds the `phresh` CLI, installs an official System release, and
-registers that System with the current user's operating-system service manager.
+Installation puts the `phresh` CLI on the machine, installs an official
+System release, and registers that System with the current user's
+operating-system service manager. After that, the System is a running
+authority: the Desktop is its graphical view, and the CLI and Node SDK reach
+it through an owner-local gateway.
 
 ## Requirements
 
-- Node.js `24.15.0` or newer for the current System release.
-- macOS, Linux, or Windows under a normal user account.
-- Permission to register a native per-user service.
+- Node.js `24.15.0` or newer for the current System release
+- macOS, Linux, or Windows under a normal user account
+- Permission to register a native per-user service
 
 ```sh
 node --version
 ```
 
-<Callout title="CLI runtime">
-  The CLI itself supports Node.js `20.10` or newer. The installed System
-  currently requires Node.js `24.15.0` or newer.
-</Callout>
+The CLI itself runs on Node.js `20.10` or newer.
 
-## Install
-
-<Steps>
-
-<Step>
-
-### Install the CLI
+## Install the CLI and System
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -53,28 +47,22 @@ node --version
   </Tab>
 </Tabs>
 
-</Step>
-
-<Step>
-
-### Install the System
-
 ```sh
 phresh system install
 ```
 
 The CLI verifies the release checksum, installs production dependencies in a
 versioned directory, selects that release, registers the per-user service, and
-starts it.
+starts it. It prints the Desktop address.
 
-</Step>
-
-</Steps>
+`phresh system install --purge` deletes `PHRESHOS_HOME` before starting the
+installed System.
 
 ## Service lifecycle
 
 ```sh
 phresh system status
+phresh system version
 phresh system start
 phresh system stop
 phresh system enable
@@ -82,27 +70,32 @@ phresh system disable
 ```
 
 Start and stop affect current execution. Enable and disable control automatic
-startup. macOS uses a per-user `launchd` service, Linux uses `systemd --user`
-when a user manager is available, and Windows uses a least-privilege per-user
+startup. macOS uses a per-user `launchd` service. Linux uses `systemd --user`
+when a user manager is available. Windows uses a least-privilege per-user
 scheduled task.
+
+```sh
+phresh system uninstall
+phresh system uninstall --purge
+```
+
+Uninstall removes the System installation and service. `--purge` also deletes
+the System home.
 
 ## System home
 
-Persistent state lives under `~/.phreshos` by default. Set `PHRESHOS_HOME` to an
-absolute path before invoking the CLI when you intentionally want another
-System home.
+Persistent state lives under `~/.phreshos` by default. `PHRESHOS_HOME` selects
+another absolute path. The CLI and the running System must use the same home,
+because that location also determines the owner-local gateway.
 
 ```sh
 export PHRESHOS_HOME=/absolute/path/to/system-state
 phresh system status
 ```
 
-The CLI and running System must select the same home because that location also
-determines the owner-local gateway address.
-
 ## Desktop port
 
-Production chooses the first available port from `4300-4399`.
+Production chooses the first available port from `4300–4399`.
 `PHRESHOS_PORT` can select one port, an inclusive range, or an ordered list.
 
 ```sh
@@ -110,4 +103,14 @@ export PHRESHOS_PORT=4196,4234,5000-5100
 phresh system start
 ```
 
-Development retains Vite's port selection.
+Development uses `5300–5399` by default.
+
+The chosen Desktop origin is written under the System home. Open that address
+in a browser. The first visit creates the owner account; later visits sign in
+to a [Session](/system/authentication).
+
+<Cards>
+  <Card title="First Program" description="Create a project and run it on the installed System." href="/first-program" />
+  <Card title="CLI" description="Project, runtime, and System commands." href="/sdks/cli" />
+  <Card title="Security" description="Owner authentication and Program authority." href="/system/security" />
+</Cards>

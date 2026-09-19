@@ -1,6 +1,6 @@
 ---
 title: Services
-description: Understand stable addresses for reachable Endpoint capabilities.
+description: Stable addresses for reachable Endpoint capabilities.
 icon: Waypoints
 ---
 
@@ -11,20 +11,20 @@ without owning its Process or controlling its lifecycle.
 ## Addressing a Service
 
 A Service key identifies a Process and one of its Endpoint kinds. A
-Program-local Process name also needs the Program identity that gives the name
-its namespace:
+Program-local Process name also needs the Program identity that gives the
+name its namespace:
 
 ```ts
-const browser = system.service({
-  program: "web-browser",
+const notes = system.service({
+  program: "notes",
   process: "main",
   endpoint: "server",
 })
 ```
 
-This address follows replacement Processes created under the same name. If the
-key uses a globally unique Process identity, the Program coordinate is not
-needed and the address refers only to that exact Process:
+This address follows replacement Processes created under the same name. If
+the key uses a globally unique Process identity, the Program coordinate is
+not needed and the address refers only to that exact Process:
 
 ```ts
 const exact = system.service({
@@ -33,26 +33,26 @@ const exact = system.service({
 })
 ```
 
-`system.service(key)` creates or reuses the canonical handle synchronously. It
-does not search for a provider or start one.
+`system.service(key)` creates or reuses the canonical handle synchronously.
+It does not search for a provider or start one.
 
 ## Availability without ownership
 
 A Service follows the addressed Endpoint's `start` and `stop` lifecycle and
 reports its current availability through `exists()` and `waitReady()`. It can
 publish and observe application events. A Server Service can also ask
-questions; a Client Service does not gain that Server-only capability.
+questions.
 
 ```ts
-browser.lifecycle.subscribe("stop", () => console.log("Browser unavailable"))
+notes.lifecycle.subscribe("stop", () => console.log("unavailable"))
 
-await browser.waitReady()
-const result = await browser.ask("page.open", { url: "https://example.com" })
+await notes.waitReady()
+const result = await notes.ask("document.open", { path: "welcome.txt" })
 ```
 
-The handle intentionally has no `start()`, `stop()`, `enable()`, or `disable()`
-operation. Those belong to the Endpoint and Process owners. The Service only
-addresses whatever valid incarnation currently occupies its coordinates.
+The handle has no `start()`, `stop()`, `enable()`, or `disable()` operation.
+Those belong to the Endpoint and Process owners. The Service addresses
+whatever valid incarnation currently occupies its coordinates.
 
 ## Becoming a Service
 
@@ -68,6 +68,7 @@ const process = await program.createProcess({
 ```
 
 `endpoint.isService()` and `context.isService()` report the resolved role.
-A Client may address Services belonging to its own Program. Foreign Services
-become visible through the `services`, `programs`, or applicable `all`
-permission; see [Permissions](/system/permissions).
+
+A Program may address its own Services. Foreign Services become visible
+through its `services`, `programs`, or `all` permission. See
+[Permissions](/system/permissions).

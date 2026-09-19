@@ -1,93 +1,36 @@
 ---
 title: Runtime commands
-description: Navigate and operate the Program, Process, Endpoint, and Window domains.
+description: Operate Programs, Processes, Endpoints, and Windows through Execute.
 ---
 
-Runtime commands follow the same ownership model as the SDKs. Each command
-connects to the running System, resolves the requested handles, performs one
-operation, and closes its Node connection.
-
-Program, Process, Endpoint, and Window commands are human-facing forms of Core
-Execute operations, including commands that wait for the next lifecycle or
-application event.
-
-## Programs
-
-`program list` searches and pages visible Programs. `program inspect` reads one
-Program's declaration and installation state. `program agent` prints the
-Program's own agent document. `program get-launch` and `program set-launch`
-read and replace the Process launch saved for its icon. `program logs` runs a
-read-only SQL statement against the Program's captured Endpoint output.
-`program wait` observes either the System Program registry or one Program's
-Process, uninstall, and forget lifecycle.
+Runtime commands are the [Execute](/sdks/core/execute) catalog as human-facing
+commands. They connect through Node to a running System and invoke the same
+public handles as SDK code. The domain meaning lives under [Runtime](/runtime)
+and [Desktop](/system/desktop).
 
 ```sh
-phresh program list --installed-only
-phresh program inspect --program terminal --json
-phresh program logs --program terminal \
-  --statement 'select createdAt, process, source, kind, content from logs order by createdAt desc limit 100'
-phresh program wait --event uninstall --program terminal
+phresh program list
+phresh program inspect --program notes
+phresh process create --program notes --client
+phresh endpoint ask --program notes --process main --endpoint server --event status.read
+phresh window inspect --program notes --process main
 ```
 
-## Processes
+Add `--json` for the complete result as one JSON value.
 
-Process commands list, inspect, create, find-or-create, exit, and observe live
-Processes. A Program identity gives a local Process name its namespace.
+| Command | Execute operation |
+| --- | --- |
+| `program list \| inspect \| agent \| getLaunch \| setLaunch \| logs \| wait` | `program.*` |
+| `process list \| inspect \| create \| findOrCreate \| exit \| wait` | `process.*` |
+| `endpoint inspect \| start \| stop \| waitReady \| ask \| publish \| wait \| waitLifecycle` | `endpoint.*` |
+| `window inspect \| move \| resize \| setGeometry \| minimize \| maximize \| changeTitle \| changeHeader \| raise \| wait` | `window.*` |
+| `operation list \| describe` | `operation.*` |
+| `execute` | raw JSON request |
 
 ```sh
-phresh process create \
-  --program terminal \
-  --name main \
-  --server \
-  --client
+phresh execute '{"$domain":"program","$operation":"list"}'
+phresh operation describe --domain endpoint --operation ask
 ```
 
-Endpoint flags translate directly into Core's Launch contract.
-`--server-service` and `--client-service` select Service roles;
-`--no-server` and `--no-client` omit an Endpoint. Repeatable
-`--option name=value` entries become immutable Process options.
-
-With `--name main --replace`, creation ends the existing Program-local named
-Process before starting its replacement.
-
-## Endpoints
-
-Endpoint commands inspect, start, and stop Server or Client incarnations. They
-can wait for either kind's lifecycle, publish or await an event, and ask a
-Server Endpoint a question. `wait-ready` is available for Server Endpoints,
-whose readiness is distinct from existence.
-
-```sh
-phresh endpoint ask \
-  --program terminal \
-  --process main \
-  --endpoint server \
-  --event status.read \
-  --json
-```
-
-The Process and Endpoint kind form the address. `--program` is required when
-the Process coordinate is a local name. CLI payloads use JSON even though SDK
-communication supports richer binary boundary values.
-
-## Windows
-
-Window commands read and change authoritative Window state: move, resize,
-atomic geometry, minimize, maximize, title, header visibility, layer-local
-raising, and future events.
-
-```sh
-phresh window set-geometry \
-  --program terminal \
-  --process main \
-  --x 0 \
-  --y 0 \
-  --width 100% \
-  --height 100%
-
-phresh window change-header --program terminal --process main --hide
-```
-
-Geometry accepts the same pixel and workspace-relative values as Core.
-`--restore` supplies `false` to minimize or maximize. Camel-case commands also
-provide the kebab-case aliases shown by `phresh describe`.
+`program list` also accepts `--installed-only`, `--search`, `--limit`, and
+`--offset` as presentation filters around the Execute result.

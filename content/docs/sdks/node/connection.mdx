@@ -1,47 +1,27 @@
 ---
 title: Connection
-description: Connect Node.js code to one owner-local PhreshOS System.
+description: Connect to a running System through the owner-local gateway.
 ---
 
-`System.connect()` returns a complete System implementation whose work belongs
-to one external Node connection. The connected object implements Core's
-`System` contract and adds `disconnect()` to end that connection.
+`System.connect(home?)` opens an owner-local connection to a running System
+and returns a `System` handle. `disconnect()` closes that connection and
+aborts every attached operation it owns.
 
 ```ts
 import { System } from "@phreshos/node"
 
 const system = await System.connect()
-console.log(await system.program.list())
-
+const programs = await system.program.list()
 await system.disconnect()
 ```
 
-The Node connection is trusted owner-local transport. It is not a browser
-`Connection` and has no authentication `Session`.
+The optional `home` is a System home directory. Omission uses
+`PHRESHOS_HOME` or `~/.phreshos`, the same default as the CLI.
 
-## Selecting the System home
+On POSIX the gateway is a Unix-domain socket in that home. On Windows it is
+an owner-created named pipe. This is not a browser
+[Connection](/system/authentication) and not a Session. It is an external
+trusted transport to the same System.
 
-The optional `home` argument identifies which local System to reach:
-
-```ts
-const system = await System.connect("/absolute/system/home")
-```
-
-Selection uses the explicit argument first, then `PHRESHOS_HOME`, then
-`.phreshos` under the operating-system user's home. A custom value must be
-absolute. `resolveHome(home?)` exposes the same resolution without connecting.
-
-`gatewayAddress(home)` derives the local transport address for an already
-resolved home. POSIX uses `gateway.sock` in that home; Windows uses a named pipe
-derived from the canonical home identity. Most applications need neither
-helper directly.
-
-## Owned lifetime
-
-The connection owns every handle, pending operation, subscription, network
-value, command stream, and local capability obtained through it.
-`disconnect()` closes the gateway and releases that attached work. Later
-operations reject because the System connection is closed.
-
-Disconnecting does not stop the System service or alter Program state. It ends
-only this external path into the System.
+`gatewayAddress` and `resolveHome` are available when a tool needs those
+paths without connecting.

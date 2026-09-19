@@ -1,61 +1,15 @@
 ---
 title: Text fields
-description: Edit single-line and multiline text through one shared field model.
+description: Labeled single-line and multi-line text controls.
 ---
 
-`Input` and `Textarea` share one text-field contract. Both can be controlled or
-uncontrolled, participate in native forms, associate labels and feedback, and
-use the same Appearance-aware Surface states. They differ only where native
-single-line and multiline editing genuinely differ.
+`Input` is a labeled single-line text control. `Textarea` is the multi-line
+form. `onChange` receives the string value. Both share label, description,
+error message, disabled, read-only, required, invalid, size, color, radius,
+material, and shadow.
 
-<ComponentPreview>
-  <Preview>
-    <Grid columns="minmax(0, 1fr)" gap="large" style={{ width: 320 }}>
-      <Input
-        label="Project name"
-        description="Shown to collaborators."
-        placeholder="New project"
-      />
-      <Textarea
-        label="Description"
-        placeholder="What is this project for?"
-        rows={3}
-      />
-    </Grid>
-  </Preview>
-  <PreviewCode>
+<TextFieldShowcase />
 
-    ```tsx
-    <Input
-      label="Project name"
-      description="Shown to collaborators."
-      placeholder="New project"
-    />
-
-    <Textarea
-      label="Description"
-      placeholder="What is this project for?"
-      rows={3}
-    />
-    ```
-
-  </PreviewCode>
-</ComponentPreview>
-
-`value` and `onChange` create a controlled field. `defaultValue` supplies the
-initial uncontrolled value. `disabled` removes interaction, while `readOnly`
-preserves focus and the value but prevents edits. `required` and `invalid`
-participate in accessible validation.
-
-`label`, `description`, and `errorMessage` receive their own field association.
-When no visible label is supplied, provide `aria-label` or `aria-labelledby`.
-The forwarded ref targets the native input or textarea, not its field wrapper.
-
-The default color is `"default:base"`. `size`, `radius`, and `material` use the
-same values as other controls. Invalid state gives danger paint priority over a
-custom color.
-
-Input preserves applicable native concerns such as `name`, `type`, `pattern`,
-submission, and reset. Textarea excludes single-line `type` and `pattern`,
-defaults to four rows, remains within its available width, and permits vertical
-resizing.
+The field owns its label and feedback. The inner Surface owns paint. Focus,
+invalid, and hover states change the Surface paint through the shared control
+theme.

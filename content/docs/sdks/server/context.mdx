@@ -1,61 +1,29 @@
 ---
 title: Context
-description: Use the identity and capabilities of the current Server Endpoint incarnation.
+description: Use the current Server execution, paired Client, and answers.
 ---
 
-The Server `context` is the first-person view of the Server code currently
-executing. Its Program, Process, parent, name, launch options, Service role, and
-lifetime follow the same Context contract as a Client.
+Server `context` is the executing Server Endpoint's
+[Context](/runtime/context). Import it from `@phreshos/server`. It exists
+only while this incarnation is running.
 
 ```ts
 import { context } from "@phreshos/server"
 
 const program = await context.program()
 const process = await context.process()
-const options = await context.options()
-
-console.log(program.identity, process.identity, options)
 ```
 
-`context.stop()` ends this Server incarnation. It does not end the Process when
-the paired Client can remain alive, and it releases answerers, subscriptions,
-and pending work owned by this Context.
+The Server position adds:
 
-`context.permissions` reads the current Program's authority and can ask the
-owner to replace one permission decision. The paired Client receives the same
-Program-owned permission state through its own Context.
-
-## The paired Client
-
-`context.client` is the permanent Client Endpoint in the same Process. Its
-handle remains stable while Client incarnations start and stop.
+- `context.client` — the paired Client Endpoint of the same Process
+- `context.answer(event, answerer)` — a handler for questions
 
 ```ts
-if (await context.client.exists()) {
-  context.client.publish("document.changed", { revision: 2 })
-}
+const cleanup = context.answer("status.read", () => ({ ready: true }))
+
+await context.client.waitReady()
 ```
 
-The handle also exposes lifecycle, traffic, readiness, Service state, Window
-state, and Client start and stop operations through the shared Endpoint
-contract.
-
-## Answering questions
-
-Questions are addressed to Server Endpoints, so the Server Context owns the
-answerer registration:
-
-```ts
-const cleanup = context.answer("status.read", ({ from, payload }) => {
-  return { ready: true, requestedBy: from, payload }
-})
-```
-
-The answerer receives the same `{ from, payload }` shape as a Context
-subscription and may return directly or through a Promise. Its cleanup removes
-that exact registration.
-
-Context can also publish destinationless Server output and subscribe to
-messages addressed to the current incarnation. See
-[Communication](/runtime/communication) for traffic, questions, answers, and
-transferable values.
+`stop()` ends this Server incarnation. Communication is documented under
+[Communication](/runtime/communication).

@@ -1,84 +1,40 @@
 ---
 title: Project
-description: Turn one local Program project into development, installation, and release behavior.
+description: Build, run, install, and package a local Program project.
 ---
 
-`Project` owns the authoring boundary around one `phresh.config.ts`. It resolves
-project-relative configuration into a runtime `ProgramDefinition` before it
-asks a supplied System to create or install anything.
-
-## Opening a project
+`Project` is the authoring API for a directory that contains
+`phresh.config.ts`. It translates that configuration into a runtime Program
+definition and uses a connected System to run or install it.
 
 ```ts
-import { Project } from "@phreshos/node"
+import { Project, System } from "@phreshos/node"
 
 const project = await Project.open()
-```
+const system = await System.connect()
 
-`Project.open(source?)` accepts the current directory by default, another
-directory, or a `phresh.config.ts` path. It loads the default export, validates
-it, and records the absolute project root in `project.directory`.
-
-`Project.define(config, { directory }?)` starts from an already loaded
-configuration. Its directory defaults to the current working directory.
-
-The Project can expose the validated package manifest and resolved production
-or development Program definitions. `build()` runs the optional
-`buildCommand`.
-
-## Running from the project
-
-`start(system)` builds, force-creates the production Program, and returns its
-attached Process lifecycle. `dev(system)` does the same with the development
-Endpoint declarations.
-
-```ts
-const lifecycle = await project.dev(system, {
-  options: { document: "example.txt" },
-})
-
-for await (const event of lifecycle) {
+for await (const event of await project.dev(system)) {
   console.log(event)
 }
+
+await system.disconnect()
 ```
 
-When a Client development command has no fixed URL, Project chooses an
-available port, supplies `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`, and
-waits for that Client server before launching the Process.
+`Project.open(source?)` discovers `phresh.config.ts` from the current
+directory, a directory, or a config path. `Project.define(config, options?)`
+builds a Project from an already loaded configuration.
 
-Closing the generator, aborting its signal, or disconnecting the supplied
-System ends the attached Process.
+`productionDefinition()` and `developmentDefinition()` resolve the authoring
+configuration into Core `ProgramDefinition` values. Development Server
+execution uses `server.devCommand`. Development Client location
+becomes the development URL.
 
-## Installing
+`build()` runs the optional `buildCommand`. `start(system)` builds and runs
+the production definition as an attached Process. `dev(system)` runs the
+development definition, starting the Client development server when
+`devCommand` is declared. `install(system, options?)` builds and installs.
+`pack()` builds and writes the release zip, `program.json`, and checksum.
 
-```ts
-const installation = await project.install(system, {
-  launch: { name: "main", client: true },
-})
-
-for await (const output of installation) {
-  console.log(output.stream, output.text)
-}
-```
-
-Installation builds, force-creates the production Program, and returns the
-Program's installation generator without consuming its output. Its `launch`
-and `purge` options retain the Program installation meaning documented under
-[Programs](/runtime/programs#installation-and-runtime-form).
-
-## Packaging a release
-
-```ts
-const packed = await project.pack()
-
-console.log(packed.archivePath)
-console.log(packed.digest)
-```
-
-`pack()` builds the project and writes its resolved `program.json`, versioned
-zip archive, and SHA-256 checksum. The returned `PackedProject` gives the paths,
-archive content, and digest. A Client release must contain its `index.html` and
-all declared resources must exist.
-
-[Program configuration](/sdks/core/program-configuration) defines the
-authoring values that Project resolves.
+`phresh dev`, `phresh start`, `phresh install`, and `phresh pack` are this
+API as commands. See [Program configuration](/sdks/core/program-configuration)
+for the declaration itself.

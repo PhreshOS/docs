@@ -3,12 +3,9 @@ title: Overview
 description: Use PhreshOS from the Client Endpoint currently running in a Desktop.
 ---
 
-`@phreshos/client` implements PhreshOS contracts for the Client Endpoint
-currently executing inside a Desktop iframe. It gives that Client three roots:
-its execution `context`, its containing `desktop`, and the shared `system`
-view filtered through Client authority.
-
-## Install
+`@phreshos/client` is the adapter for a Program's Client Endpoint. It exposes
+three Core contracts: the global `system`, the current Client `context`, and
+the containing `desktop`.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -33,41 +30,29 @@ view filtered through Client authority.
   </Tab>
 </Tabs>
 
-<Callout title="Peer dependencies">
-  Client requires `@phreshos/core`.
-</Callout>
+`@phreshos/core` is a peer dependency.
 
 ```ts
 import { context, desktop, system } from "@phreshos/client"
 import { Program, Process } from "@phreshos/core"
-```
 
-Environment roots come from Client. Shared classes and types retain their Core
-import path. Handles returned by Client inherit those Core classes.
-
-## Three views of one execution
-
-`context` answers questions about the current Client incarnation and owns its
-inbound communication, paired Server, Window, Local Window, and permission
-requests. `desktop` describes the browser environment containing it. `system`
-provides the complete System contract, with visible entities and operations
-resolved through the Program's permissions.
-
-```ts
 const program = await context.program()
-const process = await context.process()
+const preferences = await desktop.preferences.snapshot()
+const appearance = await system.appearance.snapshot()
 
 console.log(program instanceof Program)
-console.log(process instanceof Process)
 ```
 
+Shared classes keep their Core import path. Handles returned by Client
+inherit those Core classes.
+
 The Client SDK is tied to this Endpoint incarnation. Context-owned operations
-and registrations end with it. Knowing another entity's identity never expands
-the Client's authority.
+and registrations end with it. Knowing another entity's identity never
+expands the executing Program's visible scope.
 
 <Cards>
-  <Card title="Context" description="Use the current execution, paired Server, and Window capabilities." href="/sdks/client/context" />
-  <Card title="Desktop" description="Read the containing viewport, preferences, and Connection." href="/sdks/client/desktop" />
-  <Card title="System access" description="Use shared System capabilities through Client authority." href="/sdks/client/system-access" />
+  <Card title="Context" description="The current execution, paired Server, and Window." href="/sdks/client/context" />
+  <Card title="Desktop" description="Viewport, preferences, and Connection of the containing Desktop." href="/sdks/client/desktop" />
+  <Card title="System access" description="Shared System capabilities from a Client Endpoint." href="/sdks/client/system-access" />
   <Card title="Permissions" description="Inspect authority and request an owner's decision." href="/sdks/client/permissions" />
 </Cards>

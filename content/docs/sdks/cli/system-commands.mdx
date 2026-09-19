@@ -1,49 +1,21 @@
 ---
 title: System commands
-description: Install and control the native per-user PhreshOS service.
+description: Install and control the native System service.
 ---
 
-`phresh system` manages the installed System and its host service. Program and
-Process operations remain top-level runtime commands because they belong to the
-domain model, not to native service management.
-
-## Installation
+`phresh system` owns the System release and the native per-user service.
+Programs and Processes are top-level runtime commands.
 
 ```sh
 phresh system install
-```
-
-The command resolves the official stable release for the current platform,
-installs and selects it, registers the per-user service, starts it, waits for
-the gateway, and reports the Desktop address.
-
-`phresh system install --purge` stops the existing service and deletes the
-selected `PHRESHOS_HOME` before activating the release. This removes Programs,
-settings, credentials, uploads, and every other persisted System value.
-
-## Service lifecycle
-
-```sh
 phresh system status
-phresh system stop
+phresh system version
 phresh system start
+phresh system stop
 phresh system enable
 phresh system disable
-```
-
-`status` distinguishes installation, service registration, current execution,
-gateway readiness, and automatic startup. Start and stop control current
-execution. Enable and disable control future operating-system startup and
-report when the host cannot provide that facility.
-
-`phresh system version` reports the selected installed release.
-
-## Removal
-
-```sh
 phresh system uninstall
 ```
 
-Uninstallation stops and unregisters the service and removes installed release
-files. Persistent System state remains for a later installation unless
-`--purge` is supplied.
+`install` and `uninstall` accept `--purge` to delete the System home. The
+full host contract is documented under [Installation](/installation).

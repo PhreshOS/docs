@@ -1,11 +1,11 @@
 ---
 title: Execute
-description: Use one discoverable JSON interface over ordinary System handles.
+description: One discoverable JSON interface over ordinary System handles.
 ---
 
 Execute represents selected SDK operations as JSON requests and JSON results.
 It gives agents, command-line tools, and other generic consumers one stable
-interface without creating another execution mechanism inside the System.
+interface.
 
 Every request names a domain and operation through reserved fields. The other
 fields belong to that operation:
@@ -14,24 +14,30 @@ fields belong to that operation:
 const result = await system.execute({
   $domain: "endpoint",
   $operation: "ask",
-  program: "tilo",
-  process: "tilo-server",
+  program: "notes",
+  process: "main",
   endpoint: "server",
-  event: "board.list",
-  input: null
+  event: "document.list",
+  input: null,
 })
 ```
 
-The adapter resolves and invokes the same public handles available to ordinary
-SDK code. Visibility, permissions, not-found behavior, and operation errors
-therefore retain their existing meaning. A failed operation rejects the
-Promise; errors are not converted into successful JSON results.
+The adapter resolves and invokes the same public handles available to
+ordinary SDK code. Visibility, permissions, not-found behavior, and operation
+errors retain their existing meaning. A failed operation rejects the Promise.
+
+`phresh execute` is the same interface from the terminal:
+
+```sh
+phresh execute '{"$domain":"operation","$operation":"list"}'
+```
 
 ## Static and untyped requests
 
 `ExecuteRequest` is inferred from the authoritative operation schemas, so a
-request authored in TypeScript is checked before it runs. Values received from
-an external tool begin as `unknown` and are read through the same schema:
+request authored in TypeScript is checked before it runs. Values received
+from an external tool begin as `unknown` and are read through the same
+schema:
 
 ```ts
 import { parseExecuteRequest } from "@phreshos/core"
@@ -41,18 +47,17 @@ const result = await system.execute(request)
 ```
 
 Environment SDKs implement `system.execute()`. Execute contracts and parsers
-remain imported from Core rather than being re-exported by each SDK.
+remain imported from Core.
 
 ## Discovery
 
-The `operation` domain describes the interface itself. Listing can be narrowed
-to one domain:
+The `operation` domain describes the interface itself:
 
 ```ts
 await system.execute({
   $domain: "operation",
   $operation: "list",
-  domain: "endpoint"
+  domain: "endpoint",
 })
 ```
 
@@ -64,28 +69,25 @@ await system.execute({
   $domain: "operation",
   $operation: "describe",
   domain: "endpoint",
-  operation: "ask"
+  operation: "ask",
 })
 ```
 
-These descriptions come from the same schemas used to validate execution, so
-discovery and behavior share one operation catalog.
+These descriptions come from the same schemas used to validate execution.
 
-Program logs are exposed as the Program handle's existing read-only SQL
-capability:
+## Catalog
 
-```ts
-await system.execute({
-  $domain: "program",
-  $operation: "logs",
-  identity: "terminal",
-  statement: "select createdAt, process, source, kind, content from logs order by createdAt desc limit ?",
-  values: [100]
-})
-```
+Execute covers Program, Process, Endpoint, and Window operations, plus
+discovery.
 
-## Boundary
+| Domain | Operations |
+| --- | --- |
+| `operation` | `list`, `describe` |
+| `program` | `list`, `find`, `agent`, `getLaunch`, `setLaunch`, `logs`, `wait` |
+| `process` | `list`, `find`, `create`, `findOrCreate`, `exit`, `wait` |
+| `endpoint` | `inspect`, `start`, `stop`, `waitReady`, `ask`, `publish`, `wait`, `waitLifecycle` |
+| `window` | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `maximize`, `changeTitle`, `changeHeader`, `raise`, `wait` |
 
-Execute is local to the SDK. The JSON request is not sent to a generic Execute
-route in the authoritative System. The adapter turns it into ordinary handle
-operations, and those operations cross their established boundaries normally.
+Program logs use the Program handle's existing read-only SQL capability.
+The `logs` table has columns `createdAt`, `process`, `source`, `kind`, and
+`content`.

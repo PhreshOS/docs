@@ -1,16 +1,15 @@
 ---
 title: Overview
-description: Understand the four components that make up a running PhreshOS Program.
+description: The four components that make up a running Program.
 icon: Cpu
 ---
 
-The PhreshOS runtime is built from four components: **Program**, **Process**,
-**Endpoint**, and **Service**. Together they describe what software exists,
-what is running, where its code executes, and how other software reaches it.
+The runtime is four components: **Program**, **Process**, **Endpoint**, and
+**Service**. Together they describe what software exists, what is running,
+where its code executes, and how other software reaches it.
 
 A Program is the stable root. It can own multiple live Processes. Every
-Process has one permanent Server Endpoint and one permanent Client Endpoint,
-even when one of those Endpoints is not currently running.
+Process has one permanent Server Endpoint and one permanent Client Endpoint.
 
 ```text
 Program
@@ -19,22 +18,32 @@ Program
     └── Client Endpoint
 ```
 
-A Service does not add another level to this tree. It is a stable address for
-an Endpoint that chose to be reachable as a Service. This distinction keeps
-ownership and discovery separate: the Process owns the Endpoint, while the
-Service lets other code communicate with it.
+A Service is a stable address for an Endpoint that chose to be reachable. The
+Process owns the Endpoint; the Service lets other code communicate with it.
+
+You meet these objects through `system` in Client, Server, Node, and the CLI.
+The environment changes how the call reaches the System. A Program's Client
+and Server Endpoints share its permission state, while Node and the CLI use an
+owner-local connection. None of this changes what the objects mean.
+
+```ts
+const program = await system.program.find("notes")
+const process = program && await program.createProcess({ client: true })
+```
+
+```sh
+phresh program inspect --program notes
+phresh process create --program notes --client
+```
+
+Within one SDK context, reaching the same entity again returns the same
+handle.
 
 <Cards>
   <Card title="Programs" description="Stable software identities and the resources they own." href="/runtime/programs" />
-  <Card title="Processes" description="Individual live executions created from a Launch." href="/runtime/processes" />
-  <Card title="Endpoints" description="The Server and Client execution sides of a Process." href="/runtime/endpoints" />
-  <Card title="Services" description="Stable addresses for reachable Endpoint capabilities." href="/runtime/services" />
-  <Card title="Context" description="The capabilities belonging to the Endpoint currently executing." href="/runtime/context" />
-  <Card title="Communication" description="Publications, questions, observation, and transferable values." href="/runtime/communication" />
+  <Card title="Processes" description="Live executions created from a Launch." href="/runtime/processes" />
+  <Card title="Endpoints" description="The Server and Client sides of a Process." href="/runtime/endpoints" />
+  <Card title="Services" description="Stable addresses for reachable Endpoints." href="/runtime/services" />
+  <Card title="Context" description="The capabilities of the Endpoint currently executing." href="/runtime/context" />
+  <Card title="Communication" description="Publications, questions, and observation." href="/runtime/communication" />
 </Cards>
-
-Client, Server, and Node expose these components through the same Core
-contracts. The environment changes how an operation reaches the System and
-which authority it has; it does not change what a Program or Process means.
-Within one SDK context, reaching the same entity again returns the same handle,
-so reference equality and Core class checks remain meaningful.

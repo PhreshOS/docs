@@ -1,22 +1,22 @@
 ---
 title: Authentication
-description: Understand browser Connections and the Sessions that authorize them.
+description: Browser Connections and the Sessions that authorize them.
 icon: KeyRound
 ---
 
 A Connection is one live browser connection to the System. A Session is a
 persistent authentication grant. Each Connection has either no Session or one
-Session, while a Session may authorize any number of Connections.
+Session. A Session may authorize any number of Connections.
 
-These are first-class domain objects with stable public identities and
-canonical handles. They describe browser authentication; the owner-local Node
-gateway is an external trusted transport and is not a value in either domain.
+These are first-class domain objects with stable public identities. They
+describe browser authentication. The owner-local Node gateway is an external
+trusted transport and is not a value in either domain.
 
 ## Connection
 
-A Connection exists for exactly as long as the underlying browser connection.
-`connected()` reports whether it remains live, and `session()` returns its
-currently attached Session or `null`.
+A Connection exists for as long as the underlying browser connection.
+`connected()` reports whether it remains live. `session()` returns its
+currently attached Session, or `null`.
 
 ```ts
 const connection = await desktop.connection()
@@ -25,19 +25,22 @@ const session = await connection.session()
 console.log(connection.identity, session?.identity)
 ```
 
-`signIn()` creates and attaches a new Session. It rejects if the Connection is
-already signed in. A `sessionChange` event carries the new Session or `null`;
-`disconnect` is the terminal Connection event.
+`signIn()` creates and attaches a new Session. It rejects if the Connection
+is already signed in, or if the Connection no longer exists. A
+`sessionChange` event carries the new Session or `null`. `disconnect` is the
+terminal Connection event.
+
+After the Connection ends, `connected()` is `false` and `session()` is
+`null`.
 
 At System scope, `system.connection.list()` and `find()` expose live visible
-Connections. The collection emits `create` and `disconnect` with the affected
-Connection handle.
+Connections. The collection emits `create` and `disconnect`.
 
 ## Session
 
 A Session survives individual Connection lifetimes. `valid()` reports whether
-it can still authorize a Connection, and `connections()` returns its currently
-attached live Connections.
+it can authorize a Connection. `connections()` returns its currently attached
+live Connections.
 
 ```ts
 const connections = await session.connections()
@@ -48,29 +51,30 @@ session.subscribe("connectionAttach", connection => {
 ```
 
 The Session emits `connectionAttach` and `connectionDetach` as its membership
-changes. `signOut()` ends the Session explicitly and detaches every Connection
-using it. The terminal `end` event contains a reason of `"signedOut"` or
-`"expired"`.
+changes. `signOut()` ends the Session and detaches every Connection using it.
+It rejects if the Session no longer exists. The terminal `end` event contains
+a reason of `"signedOut"` or `"expired"`.
 
-`system.session` lists and finds visible valid Sessions and emits `create` and
-`end`. The System-level end event contains both the Session and its reason.
+After the Session ends, `valid()` is `false` and `connections()` is empty.
 
-## Session validity
+`system.session` lists and finds visible valid Sessions and emits `create`
+and `end`. The System-level end event contains both the Session and its
+reason.
+
+## Validity
 
 The raw Session token exists only on the browser Client. The System stores a
-SHA-256 hash together with the Session's public identity and its most recent
-normal disconnection time.
+hash together with the Session's public identity.
 
 A Session remains valid indefinitely while at least one Connection is
-attached. After its final normal disconnection, it remains valid for 24 hours.
-If a later authorization attempt finds it older than that limit, the Session
-expires and is removed. Explicit sign-out removes it immediately.
+attached. After its final normal disconnection, it remains valid for 24
+hours. If a later authorization attempt finds it older than that limit, the
+Session expires and is removed. Explicit sign-out removes it immediately.
 
-Signing out changes attached Connections from authorized to unauthorized; it
+Signing out changes attached Connections from authorized to unauthorized. It
 does not close their WebSockets. Connection transport and Connection
 authorization are separate lifecycles.
 
-After disconnection, `connection.connected()` is `false` and
-`connection.session()` is `null`. After a Session ends, `session.valid()` is
-`false` and `session.connections()` is empty. Operations that require the live
-entity reject once its terminal lifecycle has completed.
+A Program needs the `connections` permission to list Connections and
+Sessions. `desktopConnection` gives its Client access to the containing
+Desktop Connection.

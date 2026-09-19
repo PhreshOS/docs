@@ -1,11 +1,13 @@
 ---
 title: Quick start
-description: Install PhreshOS and create a Program connected to it.
+description: Install PhreshOS, start the System, and create a Program.
 icon: Rocket
 ---
 
-This guide installs the PhreshOS System as a per-user service and creates a
-Program project that runs inside it.
+PhreshOS is a server-authoritative operating system for web Programs. You
+install a System on a machine you control, open its Desktop in a browser, and
+run software as Programs. Each Program can have a Server Endpoint and a
+Client Endpoint. This documentation explains those contracts by using them.
 
 You need Node.js `24.15.0` or newer on macOS, Linux, or Windows.
 
@@ -48,8 +50,9 @@ You need Node.js `24.15.0` or newer on macOS, Linux, or Windows.
 phresh system install
 ```
 
-The command installs the official release, registers and starts its native
-service, then reports the Desktop address.
+This installs the official release, registers a per-user native service, and
+starts it. It prints the Desktop address. The first visit to that address
+creates the owner account.
 
 </Step>
 
@@ -61,18 +64,23 @@ service, then reports the Desktop address.
 phresh create
 ```
 
-Follow the prompts. When creation completes, the terminal displays the
-remaining instructions for the options you selected.
+The command writes a project with a Server, a Client, and a
+`phresh.config.ts`. From the project directory:
+
+```sh
+phresh dev
+```
+
+That attaches a live Program to the running System for as long as the command
+runs. [First Program](/first-program) explains the generated files.
 
 </Step>
 
 </Steps>
 
-## Continue
-
 <Cards>
-  <Card title="What is PhreshOS?" description="Understand the System, Desktop, and runtime model." href="/what-is-phreshos" />
-  <Card title="First Program" description="Understand the generated project and its execution path." href="/first-program" />
-  <Card title="Runtime" description="Learn Programs, Processes, Endpoints, Services, and communication." href="/runtime" />
-  <Card title="SDKs" description="Choose the interface for each execution environment." href="/sdks" />
+  <Card title="What is PhreshOS?" description="The System, the Desktop, and the four runtime components." href="/what-is-phreshos" />
+  <Card title="Runtime" description="Programs, Processes, Endpoints, Services, and communication." href="/runtime" />
+  <Card title="System" description="Authority, Desktop, Appearance, storage, and permissions." href="/system" />
+  <Card title="SDKs" description="Client, Server, Node, CLI, and React." href="/sdks" />
 </Cards>

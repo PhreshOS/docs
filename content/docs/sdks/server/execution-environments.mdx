@@ -1,27 +1,17 @@
 ---
 title: Execution environments
-description: Choose command, Worker, or Sandbox execution without changing the Server contract.
+description: Command, Worker, and Sandbox as one Server Endpoint contract.
 ---
 
-A production Server declares exactly one execution environment. The choice
-defines the runtime authority available to application code, but it does not
-change the Server Context, the permission-constrained System contract, or the
-application imports.
+A Server declaration chooses exactly one production execution mechanism. The
+Server SDK and Endpoint contract are the same in each. What differs is the
+host authority available outside the System API.
 
-## Supervised process
-
-```ts
-server: {
-  location: "dist/server",
-  command: "node main.js",
-}
-```
-
-`command` starts an operating-system child process supervised by the System.
-The process has the host capabilities provided by its executable and operating
-system environment.
-
-## System-owned Worker
+| Declaration | What runs |
+| --- | --- |
+| `command` | A supervised operating-system process |
+| `worker` | An ECMAScript module in a Node.js Worker |
+| `sandbox` | A bundled module in a capability-contained JavaScript runtime |
 
 ```ts
 server: {
@@ -30,54 +20,11 @@ server: {
 }
 ```
 
-`worker` loads an ECMAScript module in a Node.js Worker owned by the System. It
-has Node.js host capabilities, isolated in its own thread.
+Development always uses `server.devCommand` with the project's
+development tooling.
 
-## Sandbox
-
-```ts
-server: {
-  location: "dist/server",
-  sandbox: "main.js",
-}
-```
-
-`sandbox` loads a bundled ECMAScript module in a capability-contained
-JavaScript runtime. It has no Node.js or browser host environment. The runtime
-provides basic JavaScript facilities, while every outside capability comes
-from the permission-constrained System API.
-
-The Sandbox accepts relative module imports that stay inside the Server
-directory. Package dependencies must be bundled into the Server entry so the
-runtime does not acquire an ambient package or filesystem capability.
-
-In every environment, application code uses the same imports:
-
-```ts
-import { context, system } from "@phreshos/server"
-
-console.log((await context.program()).identity)
-console.log(await system.uploads.path())
-```
-
-Context identity, domain handles, System capabilities, permission decisions,
-communication values, and lifecycle remain equal. Ending any runtime ends the
-Server Endpoint incarnation and publishes the same Endpoint lifecycle.
-
-## Development
-
-Development is intentionally separate from the production execution choice:
-
-```ts
-server: {
-  location: "dist/server",
-  sandbox: "main.js",
-  development: {
-    command: "vite-node server/main.ts",
-  },
-}
-```
-
-`development.command` always runs as a child process from the project root so
-development code can use the project's source tools. It does not reinterpret
-the production `command`, `worker`, or `sandbox` declaration.
+A `command` or `worker` Server retains the host capabilities of its process.
+A `sandbox` Server has no ambient host access; its only outside capabilities
+are permission-constrained System operations. Permissions constrain the
+System API in every mode. See [Security](/system/security) and
+[Program configuration](/sdks/core/program-configuration).

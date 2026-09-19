@@ -1,17 +1,18 @@
 ---
 title: Security
-description: Understand owner authentication, Program permissions, and execution authority.
+description: Owner authentication, Program permissions, and execution authority.
 icon: ShieldCheck
 ---
 
 PhreshOS security separates three questions. Authentication establishes which
 browser Connections belong to the System owner. Permissions determine which
 System capabilities a Program may see and use. The Server execution mode
-determines which capabilities its runtime has independently of the System API.
+determines which capabilities its runtime has independently of the System
+API.
 
-The separation matters because a browser Connection and a Program are
-different authorities. One Session may authorize several Connections, while
-both Endpoints of a Process receive the permission state of their Program.
+A browser Connection and a Program are different authorities. One Session may
+authorize several Connections. A Program's permission state governs System
+access for every Endpoint it owns.
 
 <Cards>
   <Card
@@ -26,11 +27,17 @@ both Endpoints of a Process receive the permission state of their Program.
   />
 </Cards>
 
-Initial setup signs up the owner. Later browser Connections sign in by attaching
-a Session. Program permissions constrain System operations in both Client and
-Server Endpoints. They do not claim to remove direct host capabilities granted
-by a Server's execution mode; a Sandbox is the mode that withholds those
-capabilities.
+Initial setup signs up the owner. Later browser Connections sign in by
+attaching a Session.
 
-The System provides no independent recovery authority above the owner's chosen
-authentication method.
+A Server declaration chooses exactly one execution mechanism:
+
+- `command` — a supervised operating-system process with that process's host
+  capabilities
+- `worker` — an ECMAScript module in a Node.js Worker, still on the host
+- `sandbox` — a bundled module in a capability-contained JavaScript runtime
+  with no ambient host access
+
+The three mechanisms share the Server SDK and Endpoint contract. A sandbox
+Server's only outside capabilities are the permission-constrained System
+operations. See [Program configuration](/sdks/core/program-configuration).

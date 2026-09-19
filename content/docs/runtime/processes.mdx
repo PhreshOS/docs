@@ -1,23 +1,23 @@
 ---
 title: Processes
-description: Understand one live execution created from a Program and a Launch.
+description: One live execution created from a Program and a Launch.
 icon: Workflow
 ---
 
 A Process is one live execution of a Program. It groups the Server and Client
-Endpoints that belong to the same run and preserves the exact intent that
-created them.
+Endpoints that belong to the same run and preserves the intent that created
+them.
 
-Its `identity`, optional Program-local `name`, `startedAt` time, launch options,
-and parent never change. Its Endpoint incarnations may start and stop
-independently. The Process remains addressable until it exits, and the final
-live Endpoint cannot be stopped as an independent operation.
+Its `identity`, optional Program-local `name`, `startedAt` time, launch
+options, and parent never change. Its Endpoint incarnations may start and
+stop independently. The Process remains addressable until it exits. The
+final live Endpoint cannot be stopped as an independent operation.
 
-## Launch defines the run
+## Launch
 
-A `Launch` decides which declared Endpoints start, whether either Endpoint is a
-Service, the Client's initial Window state, and the string options shared by
-both Endpoints. Omitted Endpoint choices use the Program declaration.
+A `Launch` decides which declared Endpoints start, whether either Endpoint is
+a Service, the Client's initial Window state, and the string options shared
+by both Endpoints. Omitted Endpoint choices use the Program declaration.
 
 ```ts
 const process = await program.createProcess({
@@ -32,13 +32,13 @@ const process = await program.createProcess({
 ```
 
 `process.options()` returns the complete immutable option object;
-`process.options(name)` returns one value. Context exposes the same options to
-the running Endpoint.
+`process.options(name)` returns one value. Context exposes the same options
+to the running Endpoint.
 
-A name gives the Process a stable address inside its Program. Creating another
-live Process with the same name normally rejects. With `replace: true`, the
-System ends the existing named Process and creates the requested replacement as
-one serialized operation.
+A name gives the Process a stable address inside its Program. Creating
+another live Process with the same name rejects, unless `replace: true` is
+set. Then the System ends the existing named Process and creates the
+requested replacement as one serialized operation.
 
 ```ts
 await program.createProcess({
@@ -48,15 +48,15 @@ await program.createProcess({
 })
 ```
 
-`findOrCreateProcess()` is different: without replacement, it returns the
-named Process when its resolved Launch already matches, creates it when absent,
-and rejects when the name is occupied by a different Launch.
+`findOrCreateProcess()` returns the named Process when its resolved Launch
+already matches, creates it when absent, and rejects when the name is
+occupied by a different Launch.
 
 ## Endpoints are permanent handles
 
-Every Process exposes `server` and `client`, regardless of which Endpoint kinds
-the Program declared or which ones are currently running. These are permanent
-addresses whose `exists()` state changes as Endpoint incarnations start and
+Every Process exposes `server` and `client`, regardless of which Endpoint
+kinds the Program declared or which ones are currently running. These are
+permanent addresses whose `exists()` state changes as incarnations start and
 stop.
 
 ```ts
@@ -65,15 +65,14 @@ if (await process.server.exists()) {
 }
 ```
 
-This lets code retain an Endpoint handle and follow its lifecycle instead of
-replacing the object every time execution restarts.
+See [Endpoints](/runtime/endpoints).
 
-## Parentage records creation
+## Parentage
 
 `program()` returns the owner. `parent()` returns the Process whose Endpoint
-created this Process, or `null` when there was no parent visible to the caller.
-Parentage records origin, not ownership: both Processes still belong to their
-own Programs. A retained parent handle remains meaningful after that parent
+created this Process, or `null` when there was no parent visible to the
+caller. Parentage records origin, not ownership: both Processes still belong
+to their own Programs. A parent handle remains available after that parent
 exits.
 
 ## Attached runs
@@ -90,13 +89,25 @@ for await (const event of program.runProcess({ server: true })) {
 ```
 
 Aborting the supplied signal, returning from the generator early, or losing
-the connection that owns the run exits the Process. This makes an attached run
-suitable for development and bounded jobs without inventing another Process
-kind.
+the connection that owns the run exits the Process. `phresh dev` and
+`phresh start` use this lifetime: the Process belongs to the terminal
+command.
 
 ## Exit and observation
 
 `exit()` ends the Process and all live Endpoints. `exited()` reports whether
-that terminal transition has happened. The Process emits one `exit` event with
-its status, exit code, and signal. Its Program and the System Process collection
-publish the same lifecycle at their respective scopes.
+that terminal transition has happened. The Process emits one `exit` event
+with its status, exit code, and signal.
+
+```ts
+const processes = await system.process.list()
+const found = await system.process.find(process.identity)
+```
+
+```sh
+phresh process list
+phresh process exit --process main --program notes
+```
+
+`system.process.find()` accepts a Process identity. A Program-local name is
+resolved through the Program that owns it.

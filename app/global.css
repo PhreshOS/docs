@@ -33,7 +33,6 @@ body {
   overflow: hidden;
   border: 1px solid var(--color-fd-border);
   border-radius: 0.75rem;
-  background: var(--color-fd-card);
 }
 
 .component-preview-tabs {
@@ -80,16 +79,42 @@ body {
 }
 
 .component-preview-result {
-  display: grid;
-  min-height: 10rem;
-  padding: 1.25rem;
-  place-items: center;
-  overflow: hidden;
-  background: var(--color-fd-secondary);
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
 }
 
-.component-preview-result > * {
-  max-width: 100%;
+.component-showcase-stage {
+  min-height: 20rem;
+}
+
+.component-showcase-stage-content {
+  display: grid;
+  width: 100%;
+  min-height: 16rem;
+  place-items: center;
+}
+
+.component-showcase {
+  display: grid;
+  width: 100%;
+  align-items: stretch;
+}
+
+.component-showcase-with-controls {
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 15rem);
+}
+
+.component-showcase-scene {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+}
+
+@media (max-width: 48rem) {
+  .component-showcase-with-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .component-preview-code > .docs-code-block {
