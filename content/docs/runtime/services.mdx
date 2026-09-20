@@ -73,16 +73,16 @@ stops, the handle becomes unavailable rather than ending. If a Process with
 the same Program identity and Process name later exposes the same Endpoint as
 a ready Service, that handle becomes usable again.
 
-## Provider metadata
+## Program metadata
 
 An available Service exposes the current provider Program's presentation
 metadata as one consistent snapshot:
 
 ```ts
-const provider = await editor.programMetadata({ icon: "small" })
+const metadata = await editor.programMetadata({ icon: "small" })
 
-console.log(provider.name, provider.version)
-document.querySelector("img")!.src = URL.createObjectURL(provider.icon)
+console.log(metadata.name, metadata.version)
+document.querySelector("img")!.src = URL.createObjectURL(metadata.icon)
 ```
 
 The optional `icon` value is `small`, `medium`, or `large`; omitting the options
