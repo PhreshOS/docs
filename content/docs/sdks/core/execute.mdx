@@ -77,7 +77,7 @@ These descriptions come from the same schemas used to validate execution.
 
 ## Catalog
 
-Execute covers Program, Process, Endpoint, and Window operations, plus
+Execute covers Program, Process, Endpoint, Service, and Window operations, plus
 discovery.
 
 | Domain | Operations |
@@ -86,7 +86,8 @@ discovery.
 | `program` | `list`, `find`, `agent`, `getLaunch`, `setLaunch`, `logs`, `wait` |
 | `process` | `list`, `find`, `create`, `findOrCreate`, `exit`, `wait` |
 | `endpoint` | `inspect`, `start`, `stop`, `waitReady`, `ask`, `publish`, `wait`, `waitLifecycle` |
-| `window` | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `maximize`, `changeTitle`, `changeHeader`, `raise`, `wait` |
+| `service` | `list`, `search`, `inspect`, `waitReady`, `ask`, `publish`, `wait`, `waitLifecycle`, `waitDiscovery` |
+| `window` | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `maximize`, `setTitle`, `setHeader`, `setFrame`, `setTransaction`, `raise`, `wait` |
 
 Program logs use the Program handle's existing read-only SQL capability.
 The `logs` table has columns `createdAt`, `process`, `source`, `kind`, and

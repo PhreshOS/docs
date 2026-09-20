@@ -63,7 +63,7 @@ reason. Content depth belongs inside this stable structure.
 | Core | `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, endpoint traffic, lifecycle, ask, answer, and capture types | Runtime / Endpoints and Communication |
 | Core | `Program` and all Program declaration, process, startup, saved launch, command, event, and icon types | Runtime / Programs |
 | Core | `Process`, `Exit`, `ProcessEvents` | Runtime / Processes |
-| Core | `Service`, `ServerService`, `ClientService`, `ServiceKey`, `isServiceKey` | Runtime / Services |
+| Core | `Service`, `ServerService`, `ClientService`, `ServiceAddress`, `ServiceEndpoint`, `ServiceProgramMetadata`, `ServiceProgramMetadataOptions`, Service lifecycle contracts, and `isServiceAddress` | Runtime / Services |
 | Core | `Context`, `EndpointContext`, `ClientContext`, `ServerContext`, `ContextMessage`, `ContextEvents`, `ContextCapture`, `Answerer` | Runtime / Context |
 | Core | `Window`, `WindowPresentation`, their operations, state, events, geometry, layers, launch values, frames, and transactions | System / Desktop |
 | Core | `Desktop`, surface snapshots and events, preferences, themes, and writable preference contracts | System / Desktop and Appearance |

@@ -1,74 +1,134 @@
 ---
 title: Services
-description: Stable addresses for reachable Endpoint capabilities.
+description: Discoverable Endpoint communication through stable addresses.
 icon: Waypoints
 ---
 
-A Service is a stable communication address for an Endpoint that chose to be
-reachable. It lets another part of the System communicate with that Endpoint
-without owning its Process or controlling its lifecycle.
+A Service is an Endpoint that has chosen to be discoverable while it is
+running. It lets another Program communicate with that Endpoint without owning
+its Process or controlling its lifecycle.
 
-## Addressing a Service
-
-A Service key identifies a Process and one of its Endpoint kinds. A
-Program-local Process name also needs the Program identity that gives the
-name its namespace:
+Every Service address has three coordinates:
 
 ```ts
-const notes = system.service({
-  program: "notes",
-  process: "main",
+type ServiceAddress = {
+  program: string
+  process: string
+  endpoint: "server" | "client"
+}
+```
+
+`program` is the stable Program identity. `process` is the Program-local
+Process name and acts as the Service name. `endpoint` identifies the Server or
+Client Endpoint. An unnamed Process cannot be a discoverable Service.
+
+## Discovering Services
+
+`system.service.list()` returns every Service currently available to the
+caller. `search(name)` narrows that result to Services whose Process has the
+given name. More than one Program may use the same Process name, so a search
+can return several Services. For example, separate text-editing and
+image-editing Programs may both expose a Process named `editor`.
+
+```ts
+const editors = await system.service.search("editor")
+
+for (const editor of editors) {
+  console.log(editor.address())
+}
+```
+
+Only ready Endpoints running in Service mode appear in discovery results.
+Results are also limited by the caller's `services` permission.
+
+## Preparing an exact address
+
+When the address is already known, `prepare()` creates its canonical local
+handle without contacting the System:
+
+```ts
+const editor = system.service.prepare({
+  program: "text-studio",
+  process: "editor",
   endpoint: "server",
 })
 ```
 
-This address follows replacement Processes created under the same name. If
-the key uses a globally unique Process identity, the Program coordinate is
-not needed and the address refers only to that exact Process:
+The Endpoint discriminant determines whether the result is a `ServerService`
+or `ClientService`. Repeated preparation of the same address in one SDK
+context returns the same handle.
+
+Preparing a handle does not prove that the Service exists, is available, or is
+authorized. Those facts matter when an asynchronous operation is performed.
+`available()` checks the current state, while `waitReady()` waits for an
+available Endpoint at that address.
 
 ```ts
-const exact = system.service({
-  process: process.identity,
-  endpoint: "server",
+await editor.waitReady()
+const result = await editor.ask("document.open", { path: "welcome.txt" })
+```
+
+The address is stable across execution contexts. If the matching Endpoint
+stops, the handle becomes unavailable rather than ending. If a Process with
+the same Program identity and Process name later exposes the same Endpoint as
+a ready Service, that handle becomes usable again.
+
+## Provider metadata
+
+An available Service exposes the current provider Program's presentation
+metadata as one consistent snapshot:
+
+```ts
+const provider = await editor.programMetadata({ icon: "small" })
+
+console.log(provider.name, provider.version)
+document.querySelector("img")!.src = URL.createObjectURL(provider.icon)
+```
+
+The optional `icon` value is `small`, `medium`, or `large`; omitting the options
+object or `icon` selects `medium`. This operation uses Service authority rather
+than exposing a Program handle. It rejects when the Service is unavailable,
+and its result is not retained by the Service after the Endpoint stops.
+
+## Availability and communication
+
+A Service handle publishes `available` and `unavailable` lifecycle events.
+These events describe whether the addressed Endpoint can currently receive
+communication; application events remain on the Service handle itself.
+
+```ts
+editor.lifecycle.subscribe("unavailable", () => {
+  console.log("The editor is temporarily unavailable")
+})
+
+editor.subscribe("document.changed", change => {
+  console.log(change)
 })
 ```
 
-`system.service(key)` creates or reuses the canonical handle synchronously.
-It does not search for a provider or start one.
+Services expose publishing and event observation. Server Services additionally
+support `ask()` and `timeout().ask()`. They do not start or stop their Endpoint;
+those operations remain with the Endpoint and Process owners.
 
-## Availability without ownership
+## Becoming discoverable
 
-A Service follows the addressed Endpoint's `start` and `stop` lifecycle and
-reports its current availability through `exists()` and `waitReady()`. It can
-publish and observe application events. A Server Service can also ask
-questions.
-
-```ts
-notes.lifecycle.subscribe("stop", () => console.log("unavailable"))
-
-await notes.waitReady()
-const result = await notes.ask("document.open", { path: "welcome.txt" })
-```
-
-The handle has no `start()`, `stop()`, `enable()`, or `disable()` operation.
-Those belong to the Endpoint and Process owners. The Service addresses
-whatever valid execution context currently occupies its coordinates.
-
-## Becoming a Service
-
-An Endpoint declaration sets the default Service role. A Launch may override
-that role for one execution context:
+An Endpoint declaration can select Service mode by default, and a Launch can
+select it for one execution context:
 
 ```ts
 const process = await program.createProcess({
-  name: "main",
+  name: "editor",
   server: { service: true },
   client: false,
 })
 ```
 
-`endpoint.isService()` and `context.isService()` report the resolved role.
+A Service is available only while that named Process has a ready Endpoint
+running in Service mode. `endpoint.isService()` and `context.isService()`
+report the resolved role of the current execution context.
 
-A Program may address its own Services. Foreign Services become visible
-through its `services`, `programs`, or `all` permission. See
-[Permissions](/system/permissions).
+Service authority is independent of Program authority. Granting
+`services: ["editor"]` permits access to every available Service whose Process
+is named `editor`, across Programs and Endpoint kinds. It does not make those
+Programs visible, and the `programs` permission does not grant access to their
+Services. See [Permissions](/system/permissions).

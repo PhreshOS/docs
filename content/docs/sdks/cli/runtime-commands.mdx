@@ -1,6 +1,6 @@
 ---
 title: Runtime commands
-description: Operate Programs, Processes, Endpoints, and Windows through Execute.
+description: Operate Programs, Processes, Endpoints, Services, and Windows through Execute.
 ---
 
 Runtime commands are the [Execute](/sdks/core/execute) catalog as human-facing
@@ -13,6 +13,7 @@ phresh program list
 phresh program inspect --program notes
 phresh process create --program notes --client
 phresh endpoint ask --program notes --process main --endpoint server --event status.read
+phresh service search --name editor
 phresh window inspect --program notes --process main
 ```
 
@@ -23,7 +24,8 @@ Add `--json` for the complete result as one JSON value.
 | `program list \| inspect \| agent \| getLaunch \| setLaunch \| logs \| wait` | `program.*` |
 | `process list \| inspect \| create \| findOrCreate \| exit \| wait` | `process.*` |
 | `endpoint inspect \| start \| stop \| waitReady \| ask \| publish \| wait \| waitLifecycle` | `endpoint.*` |
-| `window inspect \| move \| resize \| setGeometry \| minimize \| maximize \| changeTitle \| changeHeader \| raise \| wait` | `window.*` |
+| `service list \| search \| inspect \| waitReady \| ask \| publish \| wait \| waitLifecycle \| waitDiscovery` | `service.*` |
+| `window inspect \| move \| resize \| setGeometry \| minimize \| maximize \| setTitle \| setHeader \| setFrame \| setTransaction \| raise \| wait` | `window.*` |
 | `operation list \| describe` | `operation.*` |
 | `execute` | raw JSON request |
 

@@ -26,8 +26,8 @@ are observable collections. They find and list the domain objects currently
 visible to the caller and publish their System-wide lifecycle events.
 
 `system.storage`, `system.uploads`, `system.appearance`, and `system.network`
-expose persistent and host capabilities. `system.service(key)` creates a
-stable communication address. `system.shell()` runs a command whose lifetime
+expose persistent and host capabilities. `system.service` discovers available
+Endpoint Services and prepares stable address handles. `system.shell()` runs a command whose lifetime
 is owned by its returned iterator. `system.execute()` is the JSON form of
 selected operations, documented under [Execute](/sdks/core/execute).
 
@@ -37,7 +37,7 @@ pipe. This gateway is an external trusted transport, not a browser Connection
 or an authentication Session.
 
 <Cards>
-  <Card title="Desktop" description="Authoritative Windows, layers, viewport, and presentation." href="/system/desktop" />
+  <Card title="Desktop" description="The graphical System environment, its state, and Client presentation." href="/system/desktop" />
   <Card title="Appearance" description="The complete visual source and its resolution." href="/system/appearance" />
   <Card title="Storage" description="Native files, uploads, and Program-owned persistence." href="/system/storage" />
   <Card title="Network" description="Fetch and WebSocket through System authority." href="/system/network" />

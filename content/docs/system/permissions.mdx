@@ -39,8 +39,8 @@ An exact permission assignment takes priority over `all`.
 
 | Permission | What it grants |
 | --- | --- |
-| `services` | Every foreign Service, or Services belonging to selected Programs |
-| `programs` | Every Program, or selected Programs, including their Processes, Endpoints, Windows, Services, and resources |
+| `services` | Every Service, or every Service using selected Process names |
+| `programs` | Every Program, or selected Programs, including their Processes, Endpoints, Windows, and resources |
 | `layers` | Every restricted Client Window layer, or selected `under`, `over`, `wallpaper`, and `start-menu` layers |
 | `network` | Every System network target, or selected URL scopes |
 | `storage` | Every native path and operation, or selected operation-and-path scopes |
@@ -51,9 +51,9 @@ An exact permission assignment takes priority over `all`.
 | `connections` | Every Connection and Session; also grants `desktopConnection` |
 | `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted System capabilities |
 
-`programs` contributes access to the corresponding Services. `services` does
-not reveal the Program or its other resources. `connections` includes
-`desktopConnection`.
+`services` is independent from `programs`. A selected value grants every
+Service whose Process uses that name, without revealing its Program or other
+resources. `connections` includes `desktopConnection`.
 
 Program creation, force-creation, `program.permissions` administration, and
 `system.shell()` require `all`. Effective `all` also permits same-origin

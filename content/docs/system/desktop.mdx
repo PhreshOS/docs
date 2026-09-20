@@ -1,13 +1,50 @@
 ---
 title: Desktop
-description: The authoritative Window model and its Desktop presentation.
+description: The graphical System environment, its state, and Client presentation.
 icon: PanelsTopLeft
 ---
 
-A Desktop is one graphical representation of the System. The System owns each
-Window's authoritative state. A Desktop applies the parts of that state that
-have meaning in the Window's current layer and owns the measurements, pointer
-interaction, iframe, and animation required to present it on one screen.
+A Desktop is one complete graphical representation of the System. It provides
+the workspace through which a person reaches Programs, combines System
+Appearance with Desktop preferences, reports the available viewport, and
+belongs to the browser Connection carrying it. Its shell includes regions such
+as the wallpaper, taskbar, and Start Menu alongside the Client Endpoints it
+presents.
+
+## Desktop state
+
+Client code uses the separate `desktop` root for state belonging to the
+containing Desktop:
+
+```ts
+import { desktop } from "@phreshos/client"
+
+const { size } = await desktop.viewport.snapshot()
+const preferences = await desktop.preferences.snapshot()
+const connection = await desktop.connection()
+```
+
+`desktop.viewport` exposes the current workspace size in CSS pixels and emits
+a complete `{ size }` snapshot when it changes.
+
+`desktop.preferences` exposes the effective theme, animation choice, and scale
+for this Desktop. Scale is a multiplier between `0.5` and `2`, defaulting to
+`1`. A preference update may set `theme`, `animations`, or `scale` to
+`"default"` to restore its native or System default.
+
+```ts
+await desktop.preferences.update({ theme: "dark" })
+```
+
+`desktop.connection()` returns the browser Connection carrying this Desktop.
+The executing Program needs `desktopConnection` or `connections` to access it.
+
+## Client Windows
+
+The System owns each Client Endpoint's authoritative Window state. A Desktop
+applies the parts of that state that have meaning in the Window's current layer
+and owns the measurements, pointer interaction, iframe, and animation required
+to present it on one screen.
 
 This creates two related capabilities:
 
@@ -19,14 +56,13 @@ They normally remain aligned, but they are not the same state. More than one
 Desktop may represent the same authoritative Window, and a presentation may be
 temporarily detached from it.
 
-Client code reaches these capabilities through its Context. Desktop-wide state
-has a separate root:
+Client code reaches both Window capabilities through its Context:
 
 ```ts
-import { context, desktop } from "@phreshos/client"
+import { context } from "@phreshos/client"
 ```
 
-## Authoritative Window
+### Authoritative Window
 
 Every declared Client Endpoint has one authoritative Window, even while its
 execution context is stopped. The Window belongs to the Client Endpoint and
@@ -34,12 +70,14 @@ survives its execution contexts.
 
 ```ts
 await context.window.setGeometry({
-  position: { x: 120, y: 80 },
-  size: { width: 900, height: 640 },
+  x: 120,
+  y: 80,
+  width: 900,
+  height: 640,
 })
 
 await context.window.maximize()
-await context.window.changeHeader(false)
+await context.window.setHeader(false)
 ```
 
 Window operations record authoritative values. They are therefore valid even
@@ -51,17 +89,19 @@ Stopping a Client does not reset its Window. Starting it again preserves every
 stored value omitted from the new launch. An explicitly supplied launch value
 replaces only its corresponding authoritative value.
 
-The Window exposes title, header, frame, opening transaction, geometry,
+The Window exposes title, header, frame, default transaction, position, size,
 minimized and maximized states, front state, and layer. Position and size
 accept finite pixels or relative expressions such as `"1/2"`.
-`setGeometry()` changes position and size atomically. Minimized and maximized
-are independent, and neither discards the stored geometry. `raise()` brings a
-Window to the front of its own layer.
+`setGeometry()` accepts `{ x, y, width, height }` and commits position and size
+atomically. Minimized and maximized are independent, and neither discards the
+stored geometry. `raise()` brings a Window to the front of its own layer.
 
-Window events are `move`, `resize`, `geometry`, `minimize`, `maximize`,
-`changeTitle`, `changeHeader`, `changeFrame`, and `front`.
+Window events are `move`, `resize`, `minimize`, `maximize`, `changeTitle`,
+`changeHeader`, `changeFrame`, `changeTransaction`, and `front`. An atomic
+geometry change emits `move` and `resize` only for the parts that changed,
+after the complete geometry has been committed.
 
-## Presentation
+### Presentation
 
 `context.presentation` addresses the executing Client's actual representation
 on the current Desktop. Its changes are local to that Desktop and do not mutate
@@ -69,8 +109,10 @@ the authoritative Window.
 
 ```ts
 await context.presentation.setGeometry({
-  position: { x: 24, y: 24 },
-  size: { width: 720, height: 480 },
+  x: 24,
+  y: 24,
+  width: 720,
+  height: 480,
 })
 
 await context.presentation.unfollow()
@@ -89,27 +131,31 @@ is asynchronous, so unsupported events remain silent instead. Supported events
 are emitted immediately as the presentation changes, including continuously
 during an animated change.
 
-Transaction-capable presentation mutations use the current Appearance
-transaction by default. The `under` and `over` layers additionally allow an
-explicit transaction:
+The `under` and `over` layers support presentation transactions. Their
+authoritative Window transaction is the default for the first appearance and
+for later presentation mutations:
 
 ```ts
 await context.presentation
   .transactionAndWait({ duration: 180, easing: "ease-out" })
   .setGeometry({
-    position: { x: 24, y: 24 },
-    size: { width: 720, height: 480 },
+    x: 24,
+    y: 24,
+    width: 720,
+    height: 480,
   })
 ```
 
 `transaction()` resolves when the Desktop accepts the operation.
-`transactionAndWait()` resolves after its visual transition finishes. `true`
-uses the Appearance transaction, `false` applies no transition, a number is a
-duration in milliseconds using the Appearance easing, and an object supplies
-both duration and easing. Explicit presentation transactions are unrestricted
-by the Appearance customization duration limit.
+`transactionAndWait()` resolves after its visual transition finishes. On a
+presentation operation, `true` uses the authoritative Window transaction and
+`false` applies no transition. A number supplies a duration in milliseconds
+using the Appearance easing, and an object supplies both duration and easing.
+If the authoritative Window transaction is itself `true`, it resolves to the
+Appearance transaction. Window presentation transactions are unrestricted by
+the Appearance customization duration limit.
 
-## Layers
+### Layers
 
 A layer gives a Window a presentation role. The authoritative Window retains
 the complete state in every layer; the Desktop decides which values can be
@@ -118,59 +164,44 @@ applied by that role.
 | Layer | Presentation concepts | Initial relationship |
 | --- | --- | --- |
 | `window` | Title, header, read-only frame, geometry, minimize, maximize, front, layer | Follows |
-| `under` | Title, frame, geometry, minimize, maximize, front, layer | Unfollowed |
-| `over` | Title, frame, geometry, minimize, maximize, front, layer | Unfollowed |
-| `wallpaper` | Title and layer | Unfollowed |
-| `start-menu` | Title and layer | Unfollowed |
+| `under` | Frame, geometry, minimize, maximize, front, layer | Unfollowed |
+| `over` | Frame, geometry, minimize, maximize, front, layer | Unfollowed |
+| `wallpaper` | Layer | Unfollowed |
+| `start-menu` | Layer | Unfollowed |
 
 The standard `window` layer has a permanent Desktop-controlled frame. Its
 header defaults to visible and may be hidden independently. Programs cannot
 customize or remove that frame through presentation operations.
+
+Only the standard `window` layer presents a title because it is the only layer
+with a header concept. Hiding that header does not remove the title from the
+layer's contract; it only hides the region that displays it.
 
 `under` and `over` have no header. Their frame defaults to absent and may be
 enabled or customized. A frame accepts `true`, `false`, or an object with
 specific `radius`, `color`, and `material` overrides:
 
 ```ts
-await context.window.changeFrame({
+await context.window.setFrame({
   radius: "full",
   color: "primary",
   material: { opacity: 0.8, grain: 0.03 },
 })
 ```
 
-An `under` or `over` launch may also set `transaction`. It controls only that
-Client's first appearance after the Desktop is already running. Existing
-Windows do not replay opening transactions when a Desktop loads.
+An `under` or `over` launch may also set `transaction`. It controls the
+Client's first appearance after the Desktop is already running and remains the
+default for later presentation operations. Existing Windows do not replay
+that appearance when a Desktop loads.
 
 `wallpaper` and `start-menu` are fixed, exclusive roles. Starting another
 Client in the same role ends the existing occupant's Process before presenting
-the replacement. Their geometry, visibility, frame, and header are determined
-by the Desktop region rather than by Window presentation values.
+the replacement. Their title, geometry, visibility, frame, and header are not
+presentation concepts; the Desktop owns the region itself.
 
 Layers are isolated for ordering. Raising a Window changes its depth only
 within its own layer, and the taskbar remains above every Window layer.
 A Program needs the `layers` permission to launch outside the standard layer.
-
-## Viewport and preferences
-
-`desktop.viewport` exposes the current workspace size in CSS pixels and emits
-a complete `{ size }` snapshot when it changes.
-
-`desktop.preferences` exposes the effective theme, animation choice, and scale
-for this Desktop. Scale is a multiplier between `0.5` and `2`, defaulting to
-`1`. A preference update may set `theme`, `animations`, or `scale` to
-`"default"` to restore its native or System default.
-
-```ts
-const { size } = await desktop.viewport.snapshot()
-const preferences = await desktop.preferences.snapshot()
-
-await desktop.preferences.update({ theme: "dark" })
-```
-
-`desktop.connection()` returns the browser Connection carrying this Desktop.
-The executing Program needs `desktopConnection` or `connections`.
 
 ```sh
 phresh window inspect --process main --program notes

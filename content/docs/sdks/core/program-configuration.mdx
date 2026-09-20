@@ -36,7 +36,8 @@ Node Project reads this file and derives a development or production
 `identity` is the required stable kebab-case name used by the System. `name`,
 `version`, and `description` describe the Program to people. `icon`, `agent`,
 `categories`, `keywords`, and `website` describe its public resources and
-catalog presence.
+catalog presence. When `version` is omitted, the resolved Program version is
+`0.0.0`.
 
 An icon is a Program-relative PNG between 128 and 2,048 pixels per side and
 no larger than 5 MiB. `agent` names a Program-relative Markdown document
@@ -72,19 +73,22 @@ Server chooses exactly one. Development remains separate and uses
 `uninstallCommand` prepare and clean the production Server location.
 
 A Client location contains its production `index.html`. Its declaration can
-also choose the initial Window title, header state, size, position, layer,
-minimized state, and maximized state:
+also choose the initial Window title, header state, frame, default transaction,
+size, position, layer, minimized state, and maximized state:
 
 ```ts
 client: {
   location: "dist/client",
-  header: false,
+  layer: "over",
+  frame: { radius: "full", color: "default" },
+  transaction: { duration: 180, easing: "ease-out" },
   size: { width: 800, height: 600 },
 }
 ```
 
-`header` affects standard windows only. Other layers use their own fixed
-presentation.
+The authoritative Window retains these values in every layer. The Desktop
+applies only the values understood by the selected presentation role. See
+[Desktop](/system/desktop) for layer capabilities, frames, and transactions.
 
 `devUrl` selects an existing HTTP or HTTPS server. When a Client
 `devCommand` is supplied without `devUrl`, Node Project selects an
