@@ -23,7 +23,7 @@
     "verify": "node --run check && node --run build && node --run test"
   },
   "dependencies": {
-    "@phreshos/react-ui": "^0.1.29",
+    "@phreshos/react-ui": "^0.1.30",
     "cnfast": "^0.1.0",
     "fumadocs-core": "16.14.4",
     "fumadocs-mdx": "15.2.3",
