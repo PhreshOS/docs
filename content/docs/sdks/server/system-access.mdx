@@ -11,9 +11,7 @@ Connections, and Sessions are visible, and which System operations may run.
 import { system } from "@phreshos/server"
 
 const programs = await system.program.list()
-const appearance = await system.appearance.snapshot()
-
-await system.appearance.update({ ...appearance, spacing: 14 })
+await system.appearance.update({ spacing: 14 })
 ```
 
 `system.shell()` requires `all`. Native storage requires a covering

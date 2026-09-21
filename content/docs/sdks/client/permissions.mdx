@@ -1,10 +1,10 @@
 ---
 title: Permissions
-description: Inspect authority and request an owner's decision from a Client.
+description: Inspect, request, and assign Program authority.
 ---
 
-Permissions belong to the Program. The Client Context is how the executing
-Client reads that state and asks the owner to change it. The catalog and
+Permissions belong to the Program. The Client Context exposes the same
+permission handle as every Program, already bound to the executing Program. The catalog and
 visibility rules are documented under [Permissions](/system/permissions).
 
 ```ts
@@ -17,8 +17,8 @@ if (!allowed) {
 }
 ```
 
-`get` returns the stored assignment without applying fallback authority.
-`allows` reports whether the stored permission permits the requested
+`get` returns the effective assignment after stored state is resolved over the
+Program declaration. `all` returns the effective snapshot. `allows` reports whether that permission permits the requested
 capability. `request` prompts the owner, replaces the stored permission, and
 returns the resulting canonical value. Approval returns the granted list,
 denial returns `false`, and dismissal or expiry returns `null`.
@@ -26,11 +26,12 @@ denial returns `false`, and dismissal or expiry returns `null`.
 is two minutes.
 
 `request()` always creates an owner decision. It does not skip the prompt when
-the Program already has the same or broader authority. The operation requires
-a live Client presentation, and one Client Process may have only one permission
-request pending at a time.
+the Program already has the same or broader authority. A request initiated by
+an Endpoint remains tied to that execution's lifetime.
 
-`program.permissions` is the administration API: `get`, `all`, `allows`,
-`set`, and `delete`. `set()` accepts `true`, a valid value list, or `false`;
-`delete()` removes the exact assignment so broader fallback authority may apply
-again. Those operations require `all`.
+`context.permissions` and `program.permissions` both expose `get`, `all`,
+`allows`, `allow`, `deny`, `request`, and `timeout`. `allow()` replaces the
+complete stored assignment with an allowed value; `deny()` stores `false`.
+Those two direct mutation operations require `all`. The other operations
+require access to the target Program, so an accessible Program handle can also
+request an owner decision on that Program's behalf.

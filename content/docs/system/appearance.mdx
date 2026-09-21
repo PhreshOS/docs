@@ -20,14 +20,16 @@ system.appearance.subscribe("change", next => {
 })
 ```
 
-`snapshot()` returns the complete immutable value. A `change` event carries
-the complete replacement rather than a partial patch. `update(appearance)`
-validates and atomically replaces the whole value. The executing Program
-needs the `appearance` permission.
+`snapshot()` returns the complete immutable value. `update(partial)` recursively
+merges the supplied fields into the current Appearance, validates the resolved
+result, and commits it atomically. A complete Appearance is also a valid update.
+A `change` event carries the complete resolved snapshot rather than the partial
+input. The executing Program needs the `appearance` permission.
 
-Core exports `defaultAppearance`, `appearanceLimits`, and
-`createAppearanceSnapshot()`. Independent tools can therefore create or edit a
-valid complete value without first connecting to a System.
+Core exports `defaultAppearance`, `appearanceLimits`,
+`createAppearanceSnapshot()`, and `applyAppearanceUpdate()`. Independent tools
+can therefore create, update, and validate Appearance values without first
+connecting to a System.
 
 ## What the document contains
 
@@ -89,9 +91,7 @@ selects the bundled wallpaper for that theme; both defaults are `null`.
 const uploaded = await system.uploads.write(file)
 
 await system.appearance.update({
-  ...appearance,
   desktopWallpaper: {
-    ...appearance.desktopWallpaper,
     dark: uploaded.file,
   },
 })

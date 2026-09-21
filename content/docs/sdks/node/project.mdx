@@ -63,7 +63,7 @@ for await (const event of lifecycle) {
 ```
 
 `install()` accepts the ordinary `ProgramInstallOptions`: an optional launch
-and `purge`. `pack()` returns the archive, declaration, and checksum paths plus
+and `purge`. `pack()` returns the archive, definition, and checksum paths plus
 the SHA-256 digest. The package contains each declared production Endpoint,
 the resolved `program.json`, and optional icon and agent document.
 
@@ -79,4 +79,4 @@ if that command ends.
 
 `phresh dev`, `phresh start`, `phresh install`, and `phresh pack` are this
 API as commands. See [Program configuration](/sdks/core/program-configuration)
-for the declaration itself.
+for the definition itself.

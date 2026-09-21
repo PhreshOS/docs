@@ -66,30 +66,30 @@ console.log(same === process)
 `findOrCreateProcess()` and `runProcess()` are described with
 [Processes](/runtime/processes).
 
-## Saved launches
+## System-managed state
 
-The Program owns two persisted Launch values.
+A Program owns runtime state managed by the System. It is kept with the
+Program's storage, survives updates and ordinary uninstallation, and is
+removed when that storage is purged.
 
-`program.launch` is used when a person opens the Program from its icon.
-`program.startup` is used when the System starts and immediately after the
-Program is installed.
+`program.startup` controls whether the System creates one Process when it
+boots.
 
 ```ts
-await program.launch.set({
-  name: "main",
-  options: { document: "home.txt" },
-})
-
 await program.startup.enable({ name: "background", server: true })
+await program.pin()
 ```
 
-`launch.get()` and `startup.get()` return the stored Launch or `null`.
-`startup.disable()` removes only the startup instruction.
+`startup.get()` returns its stored Launch or `null`. Calling `enable()` without
+a Launch stores `{}`, which uses the Endpoint declaration defaults.
+`startup.disable()` disables startup. `pinned()` returns a boolean; `pin()` and
+`unpin()` change it. Pinning tells Desktop interfaces that they may retain the
+Program as a favorite; it does not start a Process.
 
-A declaration may provide `launch` or `startup` as `true` or as a Launch.
-`true` stores an empty Launch. Omission makes no decision and leaves a stored
-value unchanged. Declared values are applied when the Program is created and
-when it is installed.
+Permissions are also part of System-managed state. Their effective values are
+described under [Permissions](/system/permissions). `definition()` remains the
+source for author-declared metadata and defaults; it does not include this
+mutable state.
 
 ## Program-owned resources
 
@@ -103,12 +103,14 @@ the Program see the same ones.
 | `store` | Persistent key-value state |
 | `database` | Writable SQLite |
 | `logs` | Read-only captured Endpoint output |
-| `permissions` | Authoritative permission state |
+| `permissions` | Effective permission state and stored assignments |
 
 `icon(size?)` returns a PNG at `small`, `medium`, or `large`; omission selects
 `medium`. Programs without an authored icon receive the System default.
 `agent()` returns the Program's agent document, or `null`. `hasAgent` reports
-whether one is declared.
+whether one is declared. `definition()` returns the complete canonical
+`ProgramDefinition` accepted by `system.program.create()`; it describes the
+Program and does not include mutable runtime state.
 
 See [Storage](/system/storage) and [Permissions](/system/permissions).
 
@@ -138,11 +140,14 @@ produce ordered `stdout` and `stderr` chunks.
 
 Installation keeps existing Processes alive while the installation command
 runs. Immediately before the Program switches to its installed definition,
-those Processes end. An explicit `launch` runs from the new Program first,
-followed by configured startup.
+those Processes end. After installation succeeds, at most one Process is
+created: `install({ launch })` overrides the definition's `installLaunch`.
+`false` disables it, `true` uses Endpoint defaults, and a Launch supplies its
+settings. Omission uses `installLaunch`; when both are absent, nothing starts.
+Startup is independent and runs only when the System boots.
 
 For installation, `purge: true` removes previous installed storage before the
-new declaration is applied. Uninstallation removes the installed form. With
+new definition is applied. Uninstallation removes the installed form. With
 `purge: true`, it also ends Processes, removes storage, and forgets the
 runtime Program. Ordinary uninstallation of a Program that already has no
 installed form completes without output. An explicit purge still removes the
@@ -153,8 +158,8 @@ uninstalling its files.
 
 ## Lifecycle
 
-A Program emits `processCreate` and `processExit` for its own Processes. It
-emits `uninstall` with `{ purge }` when its installed form is removed, and
-`forget` when the runtime Program leaves the registry. The System-level
-Program collection publishes `create`, `install`, `uninstall`, and `forget`
-for visible Programs.
+A Program emits `processCreate` and `processExit` for its own Processes,
+`pinned` when its pinned state changes, `uninstall` with `{ purge }` when its
+installed form is removed, and `forget` when the runtime Program leaves the
+registry. The System-level Program collection publishes `create`, `install`,
+`uninstall`, `forget`, and `{ program, pinned }` changes for visible Programs.

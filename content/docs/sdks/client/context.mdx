@@ -25,8 +25,8 @@ The Client position adds:
 - `context.server` — the paired Server Endpoint of the same Process
 - `context.window` — the Client Endpoint's authoritative Window
 - `context.presentation` — this Desktop's applied representation of that Window
-- `context.permissions` — the executing Program's stored assignment, and
-  owner requests
+- `context.permissions` — the executing Program's effective permissions,
+  direct assignments, and owner requests
 
 ```ts
 await context.window.setTitle("Notes")

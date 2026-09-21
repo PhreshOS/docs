@@ -61,9 +61,9 @@ reason. Content depth belongs inside this stable structure.
 | Core | `JsonValue`, `WritableContent` | Runtime / Communication |
 | Core | `Message`, `Cleanup`, `Capture`, `Captures`, `CaptureSubscriber`, `EventMessage`, `EventName`, `EventOptions`, `EventSubscriber`, `Subscribable`, `SubscribableEvents`, `SubscribableFallback`, `Publishable`, `Timeoutable`, `Askable`, `TimedAskable` | Runtime / Communication |
 | Core | `Endpoint`, `ServerEndpoint`, `ClientEndpoint`, endpoint traffic, lifecycle, ask, answer, and capture types | Runtime / Endpoints and Communication |
-| Core | `Program` and all Program declaration, process, startup, saved launch, command, event, and icon types | Runtime / Programs |
+| Core | `Program` and all Program definition, process, startup, saved launch, command, event, and icon types | Runtime / Programs |
 | Core | `Process`, `Exit`, `ProcessEvents` | Runtime / Processes |
-| Core | `Service`, `ServerService`, `ClientService`, `ServiceAddress`, `ServiceEndpoint`, `ServiceProgramMetadata`, `ServiceProgramMetadataOptions`, Service lifecycle contracts, and `isServiceAddress` | Runtime / Services |
+| Core | `Service`, `ServerService`, `ClientService`, `ServiceAddress`, `ServiceEndpoint`, `ServiceProgramMetadata`, `programIcon()`, Service lifecycle contracts, and `isServiceAddress` | Runtime / Services |
 | Core | `Context`, `EndpointContext`, `ClientContext`, `ServerContext`, `ContextMessage`, `ContextEvents`, `ContextCapture`, `Answerer` | Runtime / Context |
 | Core | `Window`, `WindowPresentation`, their operations, state, events, geometry, layers, launch values, frames, and transactions | System / Desktop |
 | Core | `Desktop`, surface snapshots and events, preferences, themes, and writable preference contracts | System / Desktop and Appearance |
@@ -71,7 +71,7 @@ reason. Content depth belongs inside this stable structure.
 | Core | `Storage`, `StorageFile`, file/stat/read/write/transfer/list/space/watch/change/scope types and scope parsers | System / Storage |
 | Core | `SystemUploads`, `Upload`, `isUploadFile` | System / Storage |
 | Core | `System`, `SystemProgram`, `SystemProcess`, definitions, shell types, events, and `parseShellEvent` | System capability pages |
-| Core | Permission names, value domains, Program declarations, values, capabilities, guards, and parsers | System / Security |
+| Core | Permission names, value domains, Program definitions, values, capabilities, guards, and parsers | System / Security |
 | System | Permission defaults, presentation, resolution policy, persistence, and enforcement | System / Security |
 | Core | Network scope, parser, and containment operation | System / Network and Security |
 | Core | `LogKind`, `LogRecord`, `LogSource`, `ProgramSql` | Runtime / Programs |

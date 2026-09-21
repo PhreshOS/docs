@@ -25,6 +25,16 @@ The Server position adds:
 - `context.client` — the paired Client Endpoint of the same Process
 - `context.answer(event, answerer)` — a handler for questions
 
+Every Endpoint Context also exposes `context.permissions`, the executing
+Program's permission handle. It can inspect effective authority or request an
+owner decision without depending on a Client iframe:
+
+```ts
+if (!await context.permissions.allows("network", ["https://api.example.com"])) {
+  await context.permissions.request("network", ["https://api.example.com"])
+}
+```
+
 ```ts
 const cleanup = context.answer("status.read", () => ({ ready: true }))
 

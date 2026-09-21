@@ -38,8 +38,10 @@ Endpoint output, and exit that Process when the command ends.
 versioned release archive, and its SHA-256 checksum.
 
 `install` without a name builds and installs this project. A name installs a
-verified official release. `--run` creates a Process from the installed Program
-before configured startup runs. On install, `--purge` removes previous
+verified official release. `--run` overrides the Program's installation
+default and creates one Process using its Endpoint defaults. Without `--run`,
+the definition's `installLaunch` decides whether installation starts a Process.
+Startup remains independent and runs only when the System boots. On install, `--purge` removes previous
 installed Program storage before replacement. On uninstall it also removes
 Processes, persistent storage, and the runtime Program; ordinary uninstall
 removes only the installed form.

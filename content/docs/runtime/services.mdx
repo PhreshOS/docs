@@ -89,20 +89,21 @@ a ready Service, that handle becomes usable again.
 
 ## Program metadata
 
-An available Service exposes the current provider Program's presentation
-metadata as one consistent snapshot:
+An available Service exposes the current provider Program's name and version.
+Its icon is a separate binary operation:
 
 ```ts
-const metadata = await editor.programMetadata({ icon: "small" })
+const metadata = await editor.programMetadata()
+const icon = await editor.programIcon("small")
 
 console.log(metadata.name, metadata.version)
-document.querySelector("img")!.src = URL.createObjectURL(metadata.icon)
+document.querySelector("img")!.src = URL.createObjectURL(icon)
 ```
 
-The optional `icon` value is `small`, `medium`, or `large`; omitting the options
-object or `icon` selects `medium`. This operation uses Service authority rather
-than exposing a Program handle. It rejects when the Service is unavailable,
-and its result is not retained by the Service after the Endpoint stops.
+`programIcon()` accepts `small`, `medium`, or `large`; omission selects
+`medium`. Both operations use Service authority rather than exposing a Program
+handle. They reject when the Service is unavailable, and their results are not
+retained by the Service after the Endpoint stops.
 
 ## Availability and communication
 

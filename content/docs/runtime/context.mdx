@@ -38,6 +38,11 @@ The Context receives messages addressed to its Endpoint and can publish
 destinationless output. Inbound messages contain `{ from, payload }`. `from`
 is `null` when the sender lies outside the Context's visible scope.
 
+Every Endpoint Context exposes `permissions`, the executing Program's complete
+permission handle. It reads effective authority, assigns explicit values when
+authorized, and can request an owner's decision. See
+[Permissions](/system/permissions).
+
 ## Client Context
 
 A Client Context adds the capabilities that exist because it is running
@@ -46,8 +51,6 @@ inside a Desktop:
 - `server` is the paired Server Endpoint in the same Process
 - `window` is the Client Endpoint's authoritative Window
 - `presentation` is this Desktop's applied representation of that Window
-- `permissions` reads the executing Program's authority and can request an
-  owner's decision
 
 ```ts
 import { context, desktop } from "@phreshos/client"
@@ -57,7 +60,6 @@ const { size } = await desktop.viewport.snapshot()
 ```
 
 `desktop` is a separate root, documented under [Desktop](/system/desktop).
-Permissions belong to the Program; see [Permissions](/system/permissions).
 
 ## Server Context
 

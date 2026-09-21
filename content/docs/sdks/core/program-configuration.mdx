@@ -1,6 +1,6 @@
 ---
 title: Program configuration
-description: Describe a Program project, its Endpoints, and its initial stored decisions.
+description: Describe a Program project, its Endpoints, and its installation behavior.
 ---
 
 `phresh.config.ts` describes how a Program project becomes a runtime Program.
@@ -46,8 +46,9 @@ explaining the Program's own identity and tool contract to agents.
 `buildCommand` runs before a production start, installation, or package is
 created.
 
-`permissions` writes initial assignments into the Program's authoritative
-permission state. See [Permissions](/system/permissions).
+`permissions` declares the System capabilities the Program requests. Runtime
+permission state may override each declared assignment. See
+[Permissions](/system/permissions).
 
 ## Endpoint declarations
 
@@ -123,20 +124,22 @@ The authoring Config does not contain the runtime `storage` field: Node Project
 derives that absolute directory when it creates the concrete
 `ProgramDefinition`.
 
-## Stored launch decisions
+## Installation launch
 
-Top-level `launch` describes how opening the Program icon creates a Process.
-`startup` describes the Process created after installation and when the
-System boots.
+`installLaunch` asks the System to create one Process after installation
+succeeds. It is an installation default, not stored runtime state and not the
+meaning of opening a Program in a particular interface.
 
 ```ts
 export default defineConfig({
   identity: "notes",
-  launch: { name: "main", client: true },
-  startup: { name: "background", server: true },
+  installLaunch: { name: "main", client: true },
   client: { location: "dist/client" },
 })
 ```
 
-`true` stores an empty Launch. Omission leaves a stored value unchanged.
-See [Programs](/runtime/programs) for how those stored values are used.
+`true` uses an empty Launch and therefore the Endpoint declaration defaults.
+Omission means installation does not launch a Process unless the installation
+operation supplies its own `launch` option. That option can also override the
+definition with a specific Launch or disable it with `false`. See
+[Programs](/runtime/programs).

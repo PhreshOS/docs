@@ -6,8 +6,8 @@ description: Supply and resolve the visual source used by React UI components.
 React UI owns the visual `Appearance` its components consume: colors,
 spacing, radius, shadow, material, and transaction. The System's Appearance
 has the same visual shape and can be passed directly. Wallpapers remain
-outside the React UI contract. React UI also accepts one complete set of
-environment preferences and one concrete direction.
+outside the React UI contract. React UI also accepts environment preferences
+and one concrete direction.
 
 See [Appearance](/system/appearance) for the System document.
 
@@ -30,11 +30,23 @@ nothing.
 </UIProvider>
 ```
 
-React UI Preferences are one complete `{ theme, animations }` value. A
-provider either supplies that complete value or inherits it. A System Desktop
-preferences snapshot can be passed directly; Desktop-only values such as
-`scale` remain outside the React UI contract. Appearance follows the same
-whole-value rule.
+An `appearance` or `preferences` value is a partial update over the nearest
+provider. Omitted leaves continue to inherit, including leaves inside themed
+colors, shadows, and materials. At the outermost provider, omitted values come
+from React UI's defaults and browser preferences.
+
+```tsx
+<UIProvider
+  appearance={{ colors: { dark: { primary: "#5aa7ff" } } }}
+  preferences={{ animations: false }}
+>
+  <Application />
+</UIProvider>
+```
+
+A complete Appearance or Preferences snapshot remains valid input. A System
+Desktop preferences snapshot can be passed directly; Desktop-only values such
+as `scale` remain outside the React UI contract.
 
 `useBrowserPreferences()` exposes the browser fallback.
 `useThemedValue(value)` selects the light or dark branch using the effective

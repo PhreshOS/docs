@@ -5,8 +5,8 @@ icon: Shield
 ---
 
 Permissions describe which System capabilities a Program may access. A Program
-declares them, the System stores and enforces them as Program state, and that
-state applies to every Client and Server Endpoint the Program owns.
+declares requested defaults, the System stores runtime assignments, and the
+effective result applies to every Client and Server Endpoint the Program owns.
 
 Permissions constrain the System API. They do not remove capabilities granted
 directly by an execution environment: Client code retains browser APIs, while
@@ -42,7 +42,7 @@ Each permission stores one of three states:
 For a valued permission, an empty array grants its complete domain. A
 non-empty array grants only the selected values. For a value-less permission,
 the empty array is its canonical granted value. `true` is shorthand for the
-permission's default grant when declaring, setting, or requesting it.
+permission's default grant when declaring, allowing, or requesting it.
 
 An exact permission assignment takes priority over `all`.
 
@@ -66,17 +66,18 @@ An exact permission assignment takes priority over `all`.
 Service whose Process uses that name, without revealing its Program or other
 resources. `connections` includes `desktopConnection`.
 
-Program creation, force-creation, `program.permissions` administration, and
-`system.shell()` require `all`. Effective `all` also permits same-origin
-access for the Program's Client iframe.
+Program creation, force-creation, direct permission assignment, and
+`system.shell()` require `all`. Reading another visible Program's permissions
+requires access to that Program, not `all`. Effective `all` also permits
+same-origin access for the Program's Client iframe.
 
 ## Declaring, inspecting, and requesting
 
-A Program declares initial values in `phresh.config.ts`. Those declarations
-are written into authoritative storage at creation and installation. Each
-declared entry replaces that exact stored permission; omitted entries remain
-unchanged. Declarations accept `true` or a value list; denial and removal are
-runtime administration decisions made through the permission API.
+A Program declares requested values in `phresh.config.ts`. Creation and
+installation do not write those values into runtime state. For each permission,
+a stored assignment takes precedence; otherwise the declared value is used.
+Declarations accept `true` or a value list. Stored assignments are canonical
+value lists or `false` for explicit denial.
 
 ```ts
 permissions: {
@@ -85,13 +86,14 @@ permissions: {
 }
 ```
 
-`program.permissions` is the administration API: `get`, `all`, `allows`,
-`set`, and `delete`. `set()` accepts `true`, a value list, or `false`;
-`delete()` removes the exact assignment so fallback authority can apply again.
-Those operations require `all`.
+Every Program permission handle exposes the same contract. `get()` and `all()`
+return effective values after stored state is resolved over the declaration,
+while `allows()` tests one requested capability. `allow()` replaces the
+complete stored assignment with `true` or a value list; it does not merge with
+the previous assignment. `deny()` stores `false`. Direct `allow()` and `deny()`
+operations require `all`; reads and requests require access to the Program.
 
-The Client Context exposes the executing Program's stored assignment and lets
-it ask the owner to grant more:
+An Endpoint Context exposes that contract already bound to its own Program:
 
 ```ts
 const allowed = await context.permissions.allows("network", ["https://api.example.com"])
@@ -101,24 +103,23 @@ if (!allowed) {
 }
 ```
 
-`get` returns the stored assignment without applying fallback authority.
-`allows` reports whether the stored permission permits the requested
-capability. `request` prompts the owner, replaces the stored permission, and
-returns that canonical value. `timeout(milliseconds)` selects another
+`request` prompts the owner, replaces the stored assignment when approved, and
+returns the resulting canonical value. `timeout(milliseconds)` selects another
 deadline for the prompt. The default request deadline is two minutes. Approval
 returns the canonical granted list, denial returns `false`, and dismissal or a
 deadline returns `null`.
 
 Every `request()` opens a decision; it does not silently succeed because the
-same or broader permission is already stored. A request requires a live Client
-Endpoint because the owner decision is presented through the Desktop, and one
-Client Process can have only one permission request pending at a time.
+same or broader permission is already stored. The System presents that request
+through its dialog queue. When an Endpoint initiates it, the request is tied to
+that execution's lifetime. A Program handle may request a decision for any
+Program it can access; possessing the handle does not itself grant authority.
 
 ## Window layer authority
 
 The ordinary `window` layer needs no layer permission. Selecting `under`,
 `over`, `wallpaper`, or `start-menu` requires `layers` coverage. This applies
-when a Program creates a Process, starts a Client Endpoint, or stores a launch
+when a Program creates a Process, starts a Client Endpoint, or stores a startup launch
 that explicitly selects one of those layers. Omitting `layer` continues through
 the declaration or existing authoritative Window value.
 
