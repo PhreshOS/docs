@@ -28,6 +28,12 @@ await client.start()
 await client.waitReady()
 ```
 
+`process()` returns the owning Process. `subscribe()`, `wait()`, and
+`events()` observe application publications addressed to this Endpoint;
+`publish()` sends a publication to it. Lifecycle observation is intentionally
+separate under `endpoint.lifecycle`, so application event names cannot collide
+with `start` or `stop`.
+
 `waitReady()` waits for an execution context that can be used. A Client is
 ready when it is running. A Server must also announce readiness. The default deadline
 is ten seconds. Temporary absence remains waitable while the owning Process
@@ -89,3 +95,8 @@ Publications appear as `{ to, payload }`. Questions appear through
 `subscribeAsks()` and `asks()`. A Server's traffic can additionally observe
 answers through `subscribeAnswers()` and `answers()`. An identity outside the
 observer's authority is `null`.
+
+Ask and answer captures contain the application event and a `questionId` that
+correlates the pair. An answer outcome is either a successful `result` or a
+failed error string. Traffic subscriptions are observation only: they neither
+consume the value nor affect delivery to the destination.

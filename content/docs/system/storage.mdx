@@ -33,6 +33,11 @@ A directory can be created, listed, copied, moved, deleted, or cleared.
 `watch()` yields ordered `change` and `rename` events until its signal is
 aborted or iteration ends.
 
+`list()` returns immediate children by default. `recursive: true` includes
+descendants, and `depth` can cap that recursive traversal.
+`clear()` removes the contents while preserving the selected directory;
+`delete()` removes the selected entry itself.
+
 ```ts
 for await (const change of reports.watch({ recursive: true })) {
   console.log(change.event, change.path)
@@ -41,7 +46,7 @@ for await (const change of reports.watch({ recursive: true })) {
 
 A file can be read as a stream, bytes, UTF-8 text, or parsed JSON. Byte reads
 accept an offset and length. `write()` replaces the file atomically and
-permits overwrite by default; `append()` extends it. Copying and moving
+permits overwrite by default; `append()` extends it. `copy()` and `move()`
 reject an existing destination unless `overwrite: true` is supplied.
 
 Writable content may be JSON data, a `Blob`, an `ArrayBuffer`, an
@@ -85,7 +90,17 @@ const bytes = await system.uploads.bytes(upload.file)
 ```
 
 A Program needs the `uploads` permission to create an upload. Keys have the
-form `uuid.ext`. Wallpapers in Appearance are upload keys.
+form `uuid.ext`. `write()` returns the key together with the stored file's
+size and modification time. `stat(file)` returns that metadata later, or `null` when
+the key is absent. `stream()`, `bytes()`, `text()`, and `json()` read the same
+file in the representation the caller needs.
+
+`path()` returns the native upload directory. Exposing that host path to a
+Program requires a covering `storage` permission; creating uploads and reading
+their contents continue to use the separate upload contract. In the Desktop,
+public upload responses are served from `/uploads/<encoded-key>` with immutable
+caching because an existing key never changes. Wallpapers in Appearance are
+upload keys; see [Appearance](/system/appearance) for their supported formats.
 
 ## Store and SQL
 
@@ -97,3 +112,14 @@ output. Each `query` runs one statement.
 await program.store.set("draft", { title: "Untitled" })
 const rows = await program.logs.query("SELECT content FROM logs WHERE kind = ?", ["error"])
 ```
+
+`store.get(key)` returns `undefined` when the key is absent. `set()` accepts an
+optional time-to-live in milliseconds and reports whether the value was
+written. `has()`, `delete()`, and `clear()` provide the corresponding
+existence and removal operations; `delete()` accepts one key or an array of
+keys.
+
+The writable database and read-only logs both use parameterized SQL through
+`query(statement, values?)`. The logs table contains `createdAt`, `process`,
+`source`, `kind`, and `content`. Use bound values rather than interpolating
+untrusted data into a statement.

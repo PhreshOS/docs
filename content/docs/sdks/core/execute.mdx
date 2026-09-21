@@ -49,6 +49,25 @@ const result = await system.execute(request)
 Environment SDKs implement `system.execute()`. Execute contracts and parsers
 remain imported from Core.
 
+The catalog itself is local contract data. Generic tooling can inspect it
+without a System connection:
+
+```ts
+import {
+  describeExecuteOperation,
+  listExecuteOperations,
+} from "@phreshos/core"
+
+const endpointOperations = listExecuteOperations("endpoint")
+const ask = describeExecuteOperation("endpoint", "ask")
+```
+
+`listExecuteOperations()` returns summaries and accepts an optional domain
+filter. `describeExecuteOperation()` returns the operation description and its
+JSON request and result schemas, or `null` for an unknown pair. The equivalent
+`operation.list` and `operation.describe` requests exist so a remote JSON-only
+consumer can discover the same catalog through `execute()`.
+
 ## Discovery
 
 The `operation` domain describes the interface itself:

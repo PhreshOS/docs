@@ -21,11 +21,17 @@ const items = await response.json()
 
 The operation accepts `RequestInfo | URL` and an optional `RequestInit`.
 Supplying a `Request` preserves its method, headers, body, and abort signal.
+The returned `Response` retains the standard status, headers, streaming body,
+and body readers. HTTP failures remain ordinary Responses; transport or
+permission failures reject the Promise.
 
 ## WebSocket
 
 ```ts
-const socket = await system.network.websocket("wss://example.com/events")
+const socket = await system.network.websocket(
+  "wss://example.com/events",
+  ["events.v1"],
+)
 
 socket.addEventListener("message", event => {
   console.log(event.data)
@@ -34,7 +40,9 @@ socket.addEventListener("message", event => {
 
 The returned socket uses the standard lifecycle, methods, properties, and
 events. Acquisition is asynchronous because a Client may need to cross the
-System boundary before receiving that socket.
+System boundary before receiving that socket. The optional protocol value is
+the same string or string-array subprotocol selection accepted by the browser
+`WebSocket` constructor.
 
 Server and Node sockets close when their owning execution Context or System
 connection ends. A Client-owned socket follows the browser frame that

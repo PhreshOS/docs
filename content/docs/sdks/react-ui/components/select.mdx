@@ -1,0 +1,30 @@
+---
+title: Select
+description: Choose one string value from a list that remains collapsed until opened.
+---
+
+<SelectShowcase />
+
+`Select` accepts string-valued options and reports the selected string or
+`null`. Use it when choices should remain compact and do not require filtering.
+
+```tsx
+<Select
+  label="Region"
+  value={region}
+  onChange={setRegion}
+  options={[
+    { value: "eu", label: "Europe" },
+    { value: "us", label: "United States" },
+    { value: "local", label: "Local only", disabled: true },
+  ]}
+/>
+```
+
+The popup owns keyboard navigation, typeahead, focus restoration, and scrolling
+for long lists. A disabled option remains discoverable but cannot be selected.
+
+Use [`ComboBox`](./combo-box) when the list should be searchable, or
+[`ListBox`](./list-box) when the collection should remain visible or support
+multiple selection.
+

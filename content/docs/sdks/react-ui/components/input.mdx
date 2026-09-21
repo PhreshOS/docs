@@ -1,0 +1,45 @@
+---
+title: Input
+description: Accessible single-line text entry with shared React UI field states.
+---
+
+<InputShowcase />
+
+`Input` owns its label, description, validation feedback, and Surface states. Its
+`value`, `defaultValue`, and `onChange` contract uses strings directly.
+
+```tsx
+const [name, setName] = useState("")
+
+<Input label="Name" value={name} onChange={setName} />
+```
+
+## Validation and naming
+
+Set `invalid` when application validation fails and provide `errorMessage` for
+the explanation. `required` establishes the accessible field state; it does not
+choose the application's validation rules.
+
+```tsx
+<Input
+  label="Username"
+  value={username}
+  onChange={setUsername}
+  required
+  invalid={username.length > 0 && username.length < 3}
+  errorMessage="Use at least three characters."
+/>
+```
+
+A visible `label` is preferred. When the surrounding interface already conveys
+the meaning, provide `aria-label` or `aria-labelledby`; a placeholder is not an
+accessible name.
+
+```tsx
+<Input aria-label="Search Programs" placeholder="Search Programs…" />
+```
+
+Native single-line types such as `email`, `password`, `search`, `tel`, and `url`
+remain available. Use `readOnly` when the value should remain focusable and
+readable, and `disabled` when it should not be interactive.
+

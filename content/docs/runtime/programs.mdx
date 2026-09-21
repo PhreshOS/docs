@@ -30,6 +30,7 @@ phresh program inspect --program notes
 ```
 
 `system.program.list()` returns the Programs visible to the caller.
+Pass `true` to `list(true)` to include only installed Programs.
 `find(identity)` returns one visible Program or `null`. Absence and
 inaccessibility look the same: the handle does not exist. See
 [Permissions](/system/permissions).
@@ -104,9 +105,10 @@ the Program see the same ones.
 | `logs` | Read-only captured Endpoint output |
 | `permissions` | Authoritative permission state |
 
-`icon(size?)` returns a PNG. Programs without an authored icon receive the
-System default. `agent()` returns the Program's agent document, or `null`.
-`hasAgent` reports whether one is declared.
+`icon(size?)` returns a PNG at `small`, `medium`, or `large`; omission selects
+`medium`. Programs without an authored icon receive the System default.
+`agent()` returns the Program's agent document, or `null`. `hasAgent` reports
+whether one is declared.
 
 See [Storage](/system/storage) and [Permissions](/system/permissions).
 

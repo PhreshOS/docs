@@ -1,0 +1,54 @@
+---
+title: Accordion
+description: Coordinate a group of identified Disclosure items.
+---
+
+<AccordionShowcase />
+
+Accordion coordinates several related disclosures. Each item has a stable
+string identity, while `Accordion.Trigger` and `Accordion.Content` retain the
+same behavior and presentation as their Disclosure counterparts.
+
+```tsx
+<Accordion defaultValue="general">
+  <Accordion.Item id="general">
+    <Accordion.Trigger>General</Accordion.Trigger>
+    <Accordion.Content>Program identity and startup behavior.</Accordion.Content>
+  </Accordion.Item>
+  <Accordion.Item id="privacy">
+    <Accordion.Trigger>Privacy</Accordion.Trigger>
+    <Accordion.Content>Permissions and data access.</Accordion.Content>
+  </Accordion.Item>
+</Accordion>
+```
+
+By default, at most one item is expanded. The value is the expanded item's
+string identity, or `null` when every item is collapsed.
+
+## Multiple expansion
+
+Set `multiple` when each item may remain independently expanded. In this mode,
+`value`, `defaultValue`, and `onChange` use string arrays.
+
+```tsx
+const [expanded, setExpanded] = useState<readonly string[]>(["general"])
+
+<Accordion multiple value={expanded} onChange={setExpanded}>
+  {/* identified items */}
+</Accordion>
+```
+
+The single and multiple contracts are distinct in TypeScript, so the selected
+mode determines the value and callback types.
+
+## Disabled state and customization
+
+Set `disabled` on the Accordion to prevent every item from changing. Set it on
+one `Accordion.Item` when only that item is unavailable.
+
+`color`, `size`, and `radius` establish defaults for every item. An individual
+item may override them. `gap` controls spacing between items using the shared
+Appearance-derived spacing contract.
+
+Accordion supplies coordination and layout, not an outer Surface. Place it in a
+Panel or Surface when the surrounding section owns that material.

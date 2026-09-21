@@ -1,0 +1,35 @@
+---
+title: Dialog
+description: Present modal work with explicit structural and behavioral roles.
+---
+
+<DialogShowcase />
+
+`Dialog` blocks interaction behind its Backdrop while open. Its compound parts
+provide the accessible title, description, body, actions, and close behavior.
+
+```tsx
+<Dialog>
+  <Dialog.Trigger>Edit profile</Dialog.Trigger>
+  <Dialog.Backdrop isDismissable>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Profile</Dialog.Title>
+        <Dialog.Description>Update the visible details.</Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Body><Input label="Name" /></Dialog.Body>
+      <Dialog.Footer>
+        <Dialog.Close>Cancel</Dialog.Close>
+        <Button color="primary:base" onPress={save}>Save</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Backdrop>
+</Dialog>
+```
+
+Set `isDismissable` when outside interaction may close the dialog. Use
+[`AlertDialog`](./alert-dialog) when every outcome must be explicit.
+
+`Dialog.Backdrop` accepts `color`; React UI derives the translucent backdrop
+from that base. `Dialog.Content` separately accepts the Surface `color`,
+`material`, `shadow`, and `radius` props because it owns the dialog surface.

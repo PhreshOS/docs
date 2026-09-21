@@ -6,7 +6,7 @@ import { afterEach, expect, test, vi } from "vitest"
 import { usePreferences } from "@phreshos/react-ui"
 import { ComponentPreview } from "../components/component-preview"
 
-const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" }))
+const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" as "dark" | "light" | undefined }))
 vi.mock("fumadocs-ui/provider/base", () => ({ useTheme: () => docsTheme }))
 
 afterEach(cleanup)
@@ -25,6 +25,7 @@ test("the preview follows the docs theme and switches between result and source"
   docsTheme.resolvedTheme = "dark"
   const view = render(<Example />)
   expect(screen.getByLabelText("Preview theme").textContent).toBe("dark")
+  expect(document.querySelector(".component-showcase-stage")?.classList.contains("not-prose")).toBe(true)
   docsTheme.resolvedTheme = "light"
   view.rerender(<Example />)
   expect(screen.getByLabelText("Preview theme").textContent).toBe("light")
@@ -35,9 +36,13 @@ test("the preview follows the docs theme and switches between result and source"
 })
 
 test("server markup hydrates without a theme mismatch before adopting the docs theme", async () => {
-  docsTheme.resolvedTheme = "dark"
+  docsTheme.resolvedTheme = undefined
   const container = document.createElement("div")
   container.innerHTML = renderToString(<Example />)
+  expect(container.querySelector("output")).toBeNull()
+  expect(container.querySelector('[role="status"]')?.textContent).toContain("Loading preview")
+
+  docsTheme.resolvedTheme = "dark"
   const errors: unknown[] = []
   let root: ReturnType<typeof hydrateRoot> | undefined
   try {
@@ -46,6 +51,7 @@ test("server markup hydrates without a theme mismatch before adopting the docs t
     })
     expect(errors).toEqual([])
     expect(container.querySelector("output")?.textContent).toBe("dark")
+    expect(container.querySelector('[role="status"]')).toBeNull()
   } finally {
     await act(async () => root?.unmount())
   }

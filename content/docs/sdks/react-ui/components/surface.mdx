@@ -18,7 +18,8 @@ more specific component such as `Panel` or `Window`.
 
 ## Choose a material rendering mode
 
-React UI offers three browser rendering modes for the same Appearance Material:
+React UI offers four progressively richer browser rendering modes for the same
+Appearance Material:
 
 ```tsx
 <Surface material="none">Solid color only</Surface>
@@ -36,6 +37,11 @@ React UI offers three browser rendering modes for the same Appearance Material:
   rendering.
 - A Material options object selects full rendering and overrides individual
   values for this Surface.
+
+Backdrop filters are meaningful only when the resolved Surface paint exposes
+the backdrop. If the final Material opacity is `1`, React UI omits backdrop
+blur, distortion, and saturation even in full mode. Grain, paint, edge, radius,
+and shadow continue to render normally.
 
 ```tsx
 <Surface material={{ opacity: 0.72, backdrop: 18 }}>

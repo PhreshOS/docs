@@ -1,15 +1,17 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useAppearance } from '@phreshos/react-ui';
-import { Panel, Window } from '../react-ui';
+import { Window } from '../react-ui';
 
 export function WindowScene({
   title,
   children,
+  contentStyle,
 }: {
   title: string;
   children: ReactNode;
+  contentStyle?: CSSProperties;
 }) {
   const appearance = useAppearance();
   const spacing = appearance.spacing;
@@ -31,46 +33,11 @@ export function WindowScene({
           alignContent: 'start',
           gap: spacing,
           padding: spacing * 1.5,
+          ...contentStyle,
         }}
       >
         {children}
       </Window.Content>
     </Window>
-  );
-}
-
-export function PanelScene({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  const appearance = useAppearance();
-  const spacing = appearance.spacing;
-
-  return (
-    <Panel style={{ width: 'min(100%, 26rem)' }}>
-      <Panel.Header
-        style={{
-          paddingInline: spacing * 1.5,
-          paddingBlock: spacing,
-          fontWeight: 500,
-          fontSize: '0.8125em',
-        }}
-      >
-        {title}
-      </Panel.Header>
-      <Panel.Content
-        color="background:soft"
-        style={{
-          padding: spacing * 1.5,
-          display: 'grid',
-          gap: spacing,
-        }}
-      >
-        {children}
-      </Panel.Content>
-    </Panel>
   );
 }

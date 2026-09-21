@@ -1,0 +1,81 @@
+---
+title: Range Calendar
+description: Select an inclusive start and end date from one month grid.
+---
+
+<RangeCalendarShowcase />
+
+`RangeCalendar` selects one inclusive date-only range. Its value is a
+`DateRange` containing `start` and `end` `CalendarDate` values. The first
+selection establishes an anchor; the second completes the range.
+
+```tsx
+import { RangeCalendar } from "@phreshos/react-ui"
+import { parseDate } from "@internationalized/date"
+
+<RangeCalendar
+  aria-label="Trip dates"
+  defaultValue={{
+    start: parseDate("2026-09-21"),
+    end: parseDate("2026-09-24")
+  }}
+/>
+```
+
+It shares the layout, navigation, date constraints, and visual contract of
+`Calendar`. Like `Calendar`, it does not add a surrounding Surface.
+
+## Controlled ranges
+
+Use the complete range as one controlled value. `onChange` runs after a range
+has both endpoints rather than exposing the temporary anchor as a second public
+state.
+
+```tsx
+const [trip, setTrip] = useState<DateRange | null>(null)
+
+<RangeCalendar
+  aria-label="Trip dates"
+  value={trip}
+  onChange={setTrip}
+/>
+```
+
+## Availability within a range
+
+The availability callback receives both the date being evaluated and the
+current anchor. This permits rules whose result depends on the first selected
+date.
+
+```tsx
+<RangeCalendar
+  aria-label="Booking dates"
+  isDateUnavailable={(date, anchor) =>
+    date.day === 7 || (anchor != null && date.compare(anchor.add({ days: 14 })) > 0)
+  }
+/>
+```
+
+By default, an unavailable date prevents selecting a range that crosses it.
+Set `allowsNonContiguousRanges` when the application intentionally permits a
+range to contain unavailable dates.
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `value` | uncontrolled | Supply a controlled `DateRange` or `null`. |
+| `defaultValue` | empty | Set the initial uncontrolled range. |
+| `onChange` | — | Receive a complete start and end range. |
+| `minValue` / `maxValue` | unbounded | Restrict selectable dates. |
+| `isDateUnavailable` | — | Evaluate availability with the current anchor. |
+| `allowsNonContiguousRanges` | `false` | Permit a range to cross unavailable dates. |
+| `firstDayOfWeek` | locale | Override the first weekday. |
+| `readOnly` | `false` | Permit navigation without changing the range. |
+| `disabled` | `false` | Disable calendar interaction. |
+| `color` | `default:base` | Select navigation and range color. |
+| `size` | `medium` | Derive day, navigation, spacing, and typography dimensions. |
+| `radius` | `medium` | Select day-cell corner radius. |
+
+Provide `aria-label` or `aria-labelledby` when no visible label is associated
+with the calendar.

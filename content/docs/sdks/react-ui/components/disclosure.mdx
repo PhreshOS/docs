@@ -1,0 +1,54 @@
+---
+title: Disclosure
+description: Reveal and hide one region of supporting content.
+---
+
+<DisclosureShowcase />
+
+Disclosure connects one trigger to one collapsible content region. It is useful
+when supporting information should remain available without occupying permanent
+space.
+
+```tsx
+<Disclosure defaultExpanded>
+  <Disclosure.Trigger>Connection details</Disclosure.Trigger>
+  <Disclosure.Content>
+    Connected through the encrypted System transport.
+  </Disclosure.Content>
+</Disclosure>
+```
+
+The trigger owns pointer and keyboard activation and communicates its expanded
+state to assistive technology. The content is unavailable to focus while it is
+collapsed.
+
+## Controlled state
+
+Use `expanded` with `onChange` when application state owns whether the content
+is visible. Use `defaultExpanded` for an initially open uncontrolled
+Disclosure.
+
+```tsx
+const [expanded, setExpanded] = useState(false)
+
+<Disclosure expanded={expanded} onChange={setExpanded}>
+  <Disclosure.Trigger>Advanced options</Disclosure.Trigger>
+  <Disclosure.Content>...</Disclosure.Content>
+</Disclosure>
+```
+
+`disabled` prevents the trigger from changing state. The current expanded state
+is preserved.
+
+## Appearance and layout
+
+`color`, `size`, and `radius` configure the shared trigger presentation using
+the active Appearance. `Disclosure.Content` accepts `padding`, using the same
+semantic spacing levels as the layout components.
+
+Expansion uses the Appearance transaction and respects the animation
+preference. React UI animates the content's actual measured height, so content
+does not need a fixed height and the duration is not used as a timing guess.
+
+Disclosure does not add a Surface around the revealed content. Compose a
+Surface inside the content when that content itself owns a material boundary.

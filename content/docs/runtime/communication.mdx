@@ -32,6 +32,12 @@ destination. `endpoint.publish()` targets that exact Endpoint.
 `service.publish()` targets the Endpoint currently occupying a Service
 address.
 
+Importing an SDK does not publish, subscribe, or begin application traffic.
+The Endpoint boundary only routes registrations and values requested by SDK
+operations. A Server runtime emits one boundary-owned readiness signal; all
+application communication begins with an explicit publish, ask, answer,
+subscription, wait, or event iterator.
+
 ## Observing future events
 
 Every `Subscribable` offers three ways to observe the same future event
@@ -56,6 +62,12 @@ These operations observe future messages. They do not read or replay current
 state. Calling `subscribe(subscriber)` or `events()` without an event name
 preserves each event as a correlated `{ event, message }` capture.
 
+A persistent subscription may remain registered while an Endpoint or Service
+is temporarily unavailable. It ends when its cleanup is called or when the
+owning boundary can prove that future delivery is impossible. An async event
+iterator follows the same rule and also ends when iteration is closed or its
+abort signal fires.
+
 ## Asking a Server
 
 Questions are directed to Server Endpoints and Server Services. Unlike a
@@ -74,11 +86,36 @@ The executing Server registers an answerer through its Context:
 const cleanup = context.answer("status.read", () => ({ ready: true }))
 ```
 
+The answerer receives the question payload and the asking Endpoint when that
+identity is visible:
+
+```ts
+const cleanup = context.answer<
+  { path: string },
+  { opened: boolean }
+>("document.open", async ({ payload, from }) => {
+  console.log("Requester is visible", from !== null)
+  return { opened: await openDocument(payload.path) }
+})
+```
+
+Returning resolves the ask. Throwing or rejecting sends a failed answer, and
+the asker's Promise rejects with that failure. The returned cleanup removes
+only this answer registration.
+
 An ask rejects when its destination is unavailable or disappears before
 answering. Once delivered, an unanswered question waits until its deadline.
 
 The default deadline is ten seconds and is shared with any readiness wait for
 that target.
+
+`endpoint.traffic` observes directed communication originating from one
+Endpoint. Ordinary publications retain their event name and carry
+`{ to, payload }`. `subscribeAsks()` and `asks()` expose questions as
+`{ event, questionId, message: { to, payload } }`. A Server traffic surface
+also exposes `subscribeAnswers()` and `answers()`, whose message contains the
+correlated success or failure outcome. Traffic observation does not consume or
+alter delivery.
 
 ## Values across the boundary
 

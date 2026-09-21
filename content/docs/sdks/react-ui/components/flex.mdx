@@ -1,0 +1,33 @@
+---
+title: Flex
+description: Arrange content along one primary axis without adding presentation.
+---
+
+<FlexShowcase />
+
+`Flex` expresses layout without adding material, color, padding, border, or
+shadow. Use it when the parent-child relationship owns arrangement and the
+children own their presentation.
+
+```tsx
+<Flex align="center" justify="between" gap="medium">
+  <span>Connection</span>
+  <Button size="small">Reconnect</Button>
+</Flex>
+```
+
+Use `direction="column"` for vertical composition and `wrap` when items may move
+onto additional lines.
+
+```tsx
+<Flex direction="column" gap="small">
+  <Input label="Name" />
+  <Input label="Email" />
+</Flex>
+```
+
+`gap` accepts an Appearance spacing scale, a pixel number, or a CSS value.
+`align` and `justify` use semantic `start` and `end` values so layout remains
+direction-neutral. Use [`Grid`](./grid) when rows and columns both define the
+relationship.
+

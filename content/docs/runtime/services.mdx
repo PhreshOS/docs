@@ -41,6 +41,20 @@ for (const editor of editors) {
 Only ready Endpoints running in Service mode appear in discovery results.
 Results are also limited by the caller's `services` permission.
 
+The discovery collection itself is observable. Its `available` and
+`unavailable` events carry the Service handle that entered or left the
+caller's visible ready set:
+
+```ts
+const cleanup = system.service.subscribe("available", service => {
+  console.log("Discovered", service.address())
+})
+```
+
+These are caller-scoped discovery events: a permission change can make a
+Service enter or leave this set even when the provider Endpoint did not start
+or stop at that moment.
+
 ## Preparing an exact address
 
 When the address is already known, `prepare()` creates its canonical local
@@ -110,6 +124,10 @@ Services expose publishing and event observation. Server Services additionally
 support `ask()` and `timeout().ask()`. They do not start or stop their Endpoint;
 those operations remain with the Endpoint and Process owners.
 
+The two event positions answer different questions: `system.service` observes
+the complete discovery set visible to the caller, while `service.lifecycle`
+observes repeating availability at one exact stable address.
+
 ## Becoming discoverable
 
 An Endpoint declaration can select Service mode by default, and a Launch can
@@ -131,4 +149,6 @@ Service authority is independent of Program authority. Granting
 `services: ["editor"]` permits access to every available Service whose Process
 is named `editor`, across Programs and Endpoint kinds. It does not make those
 Programs visible, and the `programs` permission does not grant access to their
-Services. See [Permissions](/system/permissions).
+Services. The same rule applies to a Program's own Services: Program ownership
+does not replace the name-based `services` grant. See
+[Permissions](/system/permissions).

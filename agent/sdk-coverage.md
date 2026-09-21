@@ -92,7 +92,7 @@ reason. Content depth belongs inside this stable structure.
 | React UI | `UIProvider`, `UIProviderProps`, `Preferences`, `useAppearance`, `usePreferences`, `useBrowserPreferences`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |
 | React UI | `Surface`, `SurfaceProps`, `SurfaceOwnProps`, `SurfaceHost`, `SurfaceHostProps`, `SurfaceComponent`, `MaterialOptions` | SDKs / React UI / Components / Surface |
 | React UI | `Panel`, `PanelProps`, `Flex`, `FlexProps`, `Grid`, `GridProps` | SDKs / React UI / Components |
-| React UI | `Button`, `Input`, `Textarea`, `Checkbox`, `Radio`, `RadioGroup`, `Switch`, `Select`, `Slider`, and their public property and option types | SDKs / React UI / Components |
+| React UI | `Button`, `Input`, `Textarea`, `Checkbox`, `RadioGroup`, `Switch`, `Select`, `Slider`, and their public property and option types | SDKs / React UI / Components |
 | React UI | `Color`, `ColorLevel`, `ColorScale`, `ControlColor`, `defaultColor`, `Radius`, `RadiusProps`, `Spacing`, `LayoutAlignment`, `LayoutGap`, `LayoutJustification`, `NumericScale`, `ScaleLevel`, `useColor`, `useScale`, `resolveRadius`, `resolveSpacing` | SDKs / React UI / Appearance and Components |
 | CLI | Project families: `create`, `init`, `dev`, `start`, `install`, `uninstall`, `pack` | SDKs / CLI |
 | CLI | Runtime families: `program`, `process`, `endpoint`, `window` and every declared child command | SDKs / CLI |

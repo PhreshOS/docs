@@ -28,3 +28,36 @@ A `sandbox` Server has no ambient host access; its only outside capabilities
 are permission-constrained System operations. Permissions constrain the
 System API in every mode. See [Security](/system/security) and
 [Program configuration](/sdks/core/program-configuration).
+
+## Lifecycle is shared
+
+All three modes load the Server entry, initialize the same Server SDK
+transport, and announce readiness after the SDK can receive traffic. Importing
+the SDK emits no application messages. `console` output is captured in Program
+logs, and an uncaught synchronous exception or unhandled rejected Promise ends
+the Server execution context in every mode.
+
+The Endpoint API does not reveal which mechanism is running. Starting,
+stopping, readiness, Services, communication, permissions, and exit behavior
+retain the same contract; only ambient host authority differs.
+
+Server SDK operations always cross the Endpoint boundary to the authoritative
+System, including in `command` and `worker` mode. The SDK does not silently
+replace `system.storage`, `system.network`, or other capabilities with local
+Node.js operations. Host-capable code may separately use its runtime's own APIs,
+but those calls are outside the System contract and its permission model.
+
+## Sandbox environment
+
+Sandbox code runs in QuickJS with a 128 MiB memory limit and no Node.js
+globals, filesystem, child-process, or direct network access. The current base
+environment includes JavaScript built-ins plus `console`, `crypto.randomUUID`,
+`TextEncoder`, `TextDecoder`, `URL`, timeout and microtask scheduling,
+`EventTarget`, abort primitives, streams, and the web body types `Blob`, `File`,
+`Headers`, `Request`, and `Response`.
+
+Relative JavaScript modules may be loaded from within the declared Server
+directory. Bare package imports are not resolved at runtime, so production
+dependencies must be bundled into the Server build. System network, storage,
+uploads, and other outside operations still use the Server SDK and the
+Program's permissions.

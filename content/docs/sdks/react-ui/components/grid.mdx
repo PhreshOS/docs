@@ -1,0 +1,25 @@
+---
+title: Grid
+description: Arrange content in explicit rows and columns without adding presentation.
+---
+
+<GridShowcase />
+
+`Grid` owns CSS Grid layout only. Use a number for equal columns, or provide a
+native CSS track expression when tracks have different roles.
+
+```tsx
+<Grid columns={3} gap="medium">
+  {items.map(item => <Surface key={item.id}>{item.name}</Surface>)}
+</Grid>
+
+<Grid columns="minmax(12rem, 1fr) 2fr" gap="large">
+  <Navigation />
+  <MainContent />
+</Grid>
+```
+
+`columns` and `rows` define tracks, while `flow` controls automatic placement.
+`gap`, `align`, `justify`, and `inline` follow the same layout contracts as
+[`Flex`](./flex). Grid does not introduce a Surface or content padding.
+

@@ -1,0 +1,28 @@
+---
+title: Popover
+description: Present non-modal supporting content anchored to a trigger.
+---
+
+<PopoverShowcase />
+
+Use Popover for supporting information or compact controls that remain
+connected to a trigger.
+
+```tsx
+<Popover>
+  <Popover.Trigger>Connection details</Popover.Trigger>
+  <Popover.Content placement="bottom start">
+    <Popover.Dialog aria-label="Connection details">
+      <Popover.Title>Connected</Popover.Title>
+      <p>Local System on port 4300.</p>
+      <Popover.Close>Done</Popover.Close>
+    </Popover.Dialog>
+  </Popover.Content>
+</Popover>
+```
+
+`Popover.Content` owns placement and Surface rendering. `Popover.Dialog` owns
+the accessible content boundary. Use [`Tooltip`](./tooltip) for a short
+description without interaction, or [`Dialog`](./dialog) when the content must
+be modal.
+

@@ -1,0 +1,25 @@
+---
+title: Switch
+description: Turn a setting on or off through a boolean value.
+---
+
+<SwitchShowcase />
+
+`Switch` represents an immediate on/off setting. Its controlled value uses
+`checked` and `onChange`; `defaultChecked` initializes uncontrolled state.
+
+```tsx
+<Switch
+  label="Automatic updates"
+  checked={automaticUpdates}
+  onChange={setAutomaticUpdates}
+/>
+```
+
+Use `readOnly` when the current state should remain focusable but cannot change.
+Use `disabled` when the setting is unavailable. The indicator receives the
+component's `color`, `material`, and `shadow` customization.
+
+Use [`Checkbox`](./checkbox) instead when the boolean represents a choice rather
+than the immediate state of a setting.
+

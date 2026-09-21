@@ -1,0 +1,61 @@
+---
+title: Toolbar
+description: Group related controls into one keyboard-navigable action region.
+---
+
+<ToolbarShowcase />
+
+Toolbar organizes related controls without replacing them. Buttons, menu
+triggers, switches, and other controls keep their own actions and visual
+contracts; Toolbar supplies their shared layout, labeling, and arrow-key
+navigation.
+
+```tsx
+<Toolbar aria-label="Document actions">
+  <Toolbar.Group aria-label="History">
+    <Button>Undo</Button>
+    <Button>Redo</Button>
+  </Toolbar.Group>
+  <Toolbar.Separator />
+  <Button color="primary:base">Save</Button>
+</Toolbar>
+```
+
+Give every Toolbar an accessible name with `aria-label` or
+`aria-labelledby`. Use `Toolbar.Group` when adjacent controls form a smaller
+related set. The group may have its own accessible name when that distinction
+helps identify its controls.
+
+## Orientation and keyboard behavior
+
+The default orientation is `horizontal`. Right and Left Arrow move focus
+between its available controls. A vertical Toolbar uses Down and Up Arrow
+instead.
+
+```tsx
+<Toolbar aria-label="Text alignment" orientation="vertical">
+  <Button>Start</Button>
+  <Button>Center</Button>
+  <Button>End</Button>
+</Toolbar>
+```
+
+Disabled controls are skipped. Tab enters or leaves the Toolbar as one action
+region, while arrow keys navigate inside it. A control still owns Enter, Space,
+pointer activation, and its resulting action.
+
+## Spacing and separators
+
+`gap` controls space between the Toolbar's direct children and accepts the same
+Appearance-derived spacing levels as `Flex` and `Grid`. `Toolbar.Group` has its
+own `gap` for spacing within a group.
+
+`Toolbar.Separator` automatically uses the axis perpendicular to the Toolbar:
+vertical in a horizontal Toolbar and horizontal in a vertical Toolbar. Its
+color is derived from the Toolbar's `color`, which defaults to
+`foreground:base`. Controls inside the Toolbar continue to own their own
+colors.
+
+Toolbar intentionally adds no Surface. Place it in a Window, Panel, or Surface
+when the surrounding interface owns a material boundary. This keeps the action
+region reusable both inside an existing container and on a plain background.

@@ -1,0 +1,40 @@
+---
+title: Menu
+description: Present a keyboard-navigable collection of commands or options.
+---
+
+<MenuShowcase />
+
+`Menu` owns command focus, keyboard navigation, typeahead, selection, and item
+presentation. Give every actionable Item a stable identity when handling
+actions centrally.
+
+```tsx
+<Menu aria-label="Process actions" onItemAction={handleAction}>
+  <Menu.Item id="show">Show</Menu.Item>
+  <Menu.Item id="maximize">Maximize</Menu.Item>
+  <Menu.Separator />
+  <Menu.Item id="close" color="danger:base">Close</Menu.Item>
+</Menu>
+```
+
+Command menus are selection-free by default. For persistent choices, set
+`selectionMode` to `single` or `multiple` and use the same string-based
+`value`, `defaultValue`, `onChange`, and `disabledValues` contract as other
+React UI collections.
+
+```tsx
+<Menu
+  aria-label="Density"
+  selectionMode="single"
+  value={density}
+  onChange={setDensity}
+>
+  <Menu.Item id="comfortable">Comfortable</Menu.Item>
+  <Menu.Item id="compact">Compact</Menu.Item>
+</Menu>
+```
+
+Use `Menu.Section` with `Menu.Header` to group longer collections. Menu does not
+choose how it opens; compose it with [`DropdownMenu`](./dropdown-menu) or
+[`ContextMenu`](./context-menu) for those interactions.

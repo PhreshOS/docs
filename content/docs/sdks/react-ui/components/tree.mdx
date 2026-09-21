@@ -1,0 +1,102 @@
+---
+title: Tree
+description: Navigate and select nested hierarchical information at any depth.
+---
+
+<TreeShowcase />
+
+Tree represents hierarchy. A branch may contain another branch or a leaf, and
+each item keeps one stable string identity across expansion, selection, and
+actions.
+
+```tsx
+<Tree aria-label="Project files" defaultExpanded={["source"]}>
+  <Tree.Item id="source" textValue="Source">
+    <Tree.Content>Source</Tree.Content>
+    <Tree.Item id="components" textValue="Components">
+      <Tree.Content>Components</Tree.Content>
+      <Tree.Item id="button" textValue="button.tsx">
+        <Tree.Content>button.tsx</Tree.Content>
+      </Tree.Item>
+    </Tree.Item>
+  </Tree.Item>
+</Tree>
+```
+
+`Tree.Content` is the visible row content. For branches, it also supplies the
+disclosure control used by pointer, keyboard, touch, and assistive technology.
+`textValue` gives every item a searchable accessible name and enables typeahead.
+
+## Expansion
+
+Branches begin collapsed unless their identities appear in `defaultExpanded`.
+Use `expanded` with `onExpandedChange` when application state owns expansion:
+
+```tsx
+const [expanded, setExpanded] = useState<readonly string[]>(["source"])
+
+<Tree
+  aria-label="Project files"
+  expanded={expanded}
+  onExpandedChange={setExpanded}
+>
+  {/* items */}
+</Tree>
+```
+
+Expansion is independent from selection. Opening a branch reveals its children;
+it does not imply that the branch is selected.
+
+## Selection and actions
+
+Tree is not selectable by default. Set `selectionMode` to `"single"` or
+`"multiple"` when selection belongs to the interaction. Single selection uses
+a string or `null`; multiple selection uses a string array or `"all"`.
+
+```tsx
+<Tree
+  aria-label="Project files"
+  selectionMode="multiple"
+  value={selected}
+  onChange={setSelected}
+  disabledValues={["archive"]}
+  onItemAction={openFile}
+>
+  {/* items */}
+</Tree>
+```
+
+`onItemAction` represents activating an item, such as opening a file. It remains
+separate from selection. Use `disabledValues` for identities disabled by the
+collection, or `disabled` on an individual `Tree.Item`.
+
+## Dynamic hierarchy
+
+Pass top-level data through `items`, then use `Tree.Collection` to render child
+collections recursively.
+
+```tsx
+function renderEntry(entry: Entry) {
+  return (
+    <Tree.Item id={entry.id} textValue={entry.name}>
+      <Tree.Content>{entry.name}</Tree.Content>
+      {entry.children && (
+        <Tree.Collection items={entry.children}>
+          {renderEntry}
+        </Tree.Collection>
+      )}
+    </Tree.Item>
+  )
+}
+
+<Tree aria-label="Project files" items={entries}>
+  {renderEntry}
+</Tree>
+```
+
+When a dynamic render function reads state outside its item data, pass that
+state through `dependencies` so React Aria refreshes the relevant cached items.
+
+Tree owns hierarchy, disclosure, keyboard navigation, focus, optional selection,
+and item presentation. It does not add a Surface or scrolling boundary. Compose
+those around Tree only when the surrounding interface owns them.

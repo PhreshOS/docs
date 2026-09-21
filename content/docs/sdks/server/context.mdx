@@ -12,7 +12,13 @@ import { context } from "@phreshos/server"
 
 const program = await context.program()
 const process = await context.process()
+const options = await context.options()
 ```
+
+`name()`, `parent()`, `options()`, and `isService()` have the same execution
+meaning as they do in the Client Context. `context.client` is the permanent
+Client Endpoint handle in this Process and remains stable while Client
+execution contexts start and stop.
 
 The Server position adds:
 
@@ -24,6 +30,14 @@ const cleanup = context.answer("status.read", () => ({ ready: true }))
 
 await context.client.waitReady()
 ```
+
+An answerer receives `{ from, payload }`, may return a value or a Promise, and
+turns a thrown error or rejected Promise into a failed answer. Its cleanup
+removes that exact answer registration.
+
+The Server Context also subscribes to messages addressed to this execution
+context and can publish destinationless output. The paired Client handle adds
+its authoritative `window` capability alongside the shared Endpoint behavior.
 
 `stop()` ends this Server execution context. Communication is documented under
 [Communication](/runtime/communication).

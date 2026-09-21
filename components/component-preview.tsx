@@ -10,7 +10,7 @@ import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 import { useTheme as useDocsTheme } from 'fumadocs-ui/provider/base';
 import type { Preferences } from '@phreshos/react-ui';
 import { useAppearance, useThemedValue } from '@phreshos/react-ui';
-import { Code2, Eye } from 'lucide-react';
+import { Code2, Eye, LoaderCircle } from 'lucide-react';
 import { useSyncExternalStore, type ComponentProps, type CSSProperties, type ReactNode } from 'react';
 import { UIProvider, useBrowserPreferences } from './react-ui';
 
@@ -37,18 +37,12 @@ export function ComponentPreview({
 }: ComponentPreviewProps) {
   const { resolvedTheme } = useDocsTheme();
   const browserPreferences = useBrowserPreferences();
-  const hydrated = useSyncExternalStore(subscribeToHydration, clientHydration, serverHydration);
-  const theme: Preferences['theme'] | undefined = hydrated
-    ? resolvedTheme === 'light'
-      ? 'light'
-      : resolvedTheme === 'dark'
-        ? 'dark'
-        : undefined
+  const hydrated = useHydrated();
+  const theme: Preferences['theme'] | undefined = hydrated && (resolvedTheme === 'light' || resolvedTheme === 'dark')
+    ? resolvedTheme
     : undefined;
 
-  const preferences = theme === undefined ? browserPreferences : { ...browserPreferences, theme };
-
-  return <UIProvider preferences={preferences}>
+  return (
     <Tabs
       {...properties}
       defaultValue="preview"
@@ -64,8 +58,16 @@ export function ComponentPreview({
           Code
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="preview" className="component-preview-result">
-        <Stage style={previewStyle}>{children}</Stage>
+      <TabsContent
+        value="preview"
+        className="component-preview-result"
+        aria-busy={theme === undefined}
+      >
+        {theme === undefined ? <PreviewLoading /> : (
+          <UIProvider preferences={{ ...browserPreferences, theme }}>
+            <Stage style={previewStyle}>{children}</Stage>
+          </UIProvider>
+        )}
       </TabsContent>
       <TabsContent value="code" className="component-preview-code">
         <DynamicCodeBlock
@@ -78,19 +80,26 @@ export function ComponentPreview({
         />
       </TabsContent>
     </Tabs>
-  </UIProvider>;
+  );
 }
 
-function subscribeToHydration() {
+function PreviewLoading() {
+  return (
+    <div className="component-preview-loading" role="status">
+      <span className="component-preview-loading-content">
+        <LoaderCircle className="component-preview-loading-icon" aria-hidden="true" />
+        Loading preview…
+      </span>
+    </div>
+  );
+}
+
+function useHydrated() {
+  return useSyncExternalStore(emptySubscription, () => true, () => false);
+}
+
+function emptySubscription() {
   return () => undefined;
-}
-
-function clientHydration() {
-  return true;
-}
-
-function serverHydration() {
-  return false;
 }
 
 function Stage({ children, style }: { children: ReactNode; style?: CSSProperties }) {
@@ -100,7 +109,9 @@ function Stage({ children, style }: { children: ReactNode; style?: CSSProperties
 
   return (
     <div
-      className="component-showcase-stage"
+      // Previewed applications are not prose; documentation heading and table
+      // rules must not reinterpret the component being demonstrated.
+      className="component-showcase-stage not-prose"
       style={{
         backgroundColor: colors.background,
         backgroundImage: `url("${wallpaper}")`,

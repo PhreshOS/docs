@@ -31,6 +31,17 @@ const process = await program.createProcess({
 })
 ```
 
+`server` and `client` each accept a boolean or an options object. `false`
+keeps that Endpoint stopped, `true` starts it with declaration defaults, and
+an object starts it with the supplied overrides. A Server object can override
+`service`. A Client object can override `service`, title, header, frame,
+default transaction, position, size, layer, minimized state, and maximized
+state.
+
+Launch overrides replace only the values they contain. In particular,
+restarting a stopped Client with `{ client: true }` preserves its authoritative
+Window state; supplying a Window value explicitly replaces that stored value.
+
 `process.options()` returns the complete immutable option object;
 `process.options(name)` returns one value. Context exposes the same options
 to the running Endpoint.

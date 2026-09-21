@@ -1,0 +1,23 @@
+---
+title: Tooltip
+description: Show a short description when a trigger receives hover or focus.
+---
+
+<TooltipShowcase />
+
+Use Tooltip for a brief description, especially when an icon-only Button does
+not explain itself visually.
+
+```tsx
+<Tooltip>
+  <Tooltip.Trigger aria-label="Information">
+    <InfoIcon />
+  </Tooltip.Trigger>
+  <Tooltip.Content>Visible to this Program</Tooltip.Content>
+</Tooltip>
+```
+
+The trigger must still have its own accessible name. Do not place required
+instructions or interactive content in a Tooltip; use [`Popover`](./popover)
+when the content needs structure or interaction.
+

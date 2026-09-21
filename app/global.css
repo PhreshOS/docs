@@ -84,6 +84,34 @@ body {
   overflow: visible;
 }
 
+.component-preview-loading {
+  display: grid;
+  min-height: 20rem;
+  place-items: center;
+  color: var(--color-fd-muted-foreground);
+  font-size: 0.8125rem;
+}
+
+.component-preview-loading-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.component-preview-loading-icon {
+  width: 1rem;
+  height: 1rem;
+  animation: component-preview-loading 800ms linear infinite;
+}
+
+@keyframes component-preview-loading {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .component-preview-loading-icon { animation: none; }
+}
+
 .component-showcase-stage {
   min-height: 20rem;
 }

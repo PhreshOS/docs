@@ -54,6 +54,7 @@ permission state. See [Permissions](/system/permissions).
 A Program must declare a Server, a Client, or both. Each declaration names
 its production location and the defaults used when a Launch does not make
 another choice. `start` defaults to `true`; `service` defaults to `false`.
+At least one declared Endpoint must start in the default Process.
 
 A Server chooses exactly one execution mechanism:
 
@@ -90,9 +91,37 @@ The authoritative Window retains these values in every layer. The Desktop
 applies only the values understood by the selected presentation role. See
 [Desktop](/system/desktop) for layer capabilities, frames, and transactions.
 
+When neither a Launch nor the Client declaration supplies a value, the System
+uses these initial defaults:
+
+| Window value | Default |
+| --- | --- |
+| `title` | Program name |
+| `layer` | `window` |
+| `position` | `{ x: 120, y: 80 }`, offset for concurrently open Windows |
+| `size` | `{ width: 520, height: 340 }` |
+| `minimize`, `maximize` | `false` |
+| `header`, `frame`, `transaction` | Selected layer's defaults |
+
+The standard `window` layer starts with a header and frame. `under` and
+`over` start without either and without a transaction. Wallpaper and Start
+Menu presentations use only the layer value. These are presentation defaults;
+the authoritative Window still retains every field.
+
 `devUrl` selects an existing HTTP or HTTPS server. When a Client
 `devCommand` is supplied without `devUrl`, Node Project selects an
 available port and provides `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`.
+
+Server and Client `location` values are resolved from the project directory.
+`worker` and `sandbox` are module paths contained within the Server location.
+Production Server `command`, `installCommand`, and `uninstallCommand` execute
+from that Server location. `buildCommand`, `server.devCommand`, and
+`client.devCommand` execute from the project directory so they can use the
+project's development tooling.
+
+The authoring Config does not contain the runtime `storage` field: Node Project
+derives that absolute directory when it creates the concrete
+`ProgramDefinition`.
 
 ## Stored launch decisions
 

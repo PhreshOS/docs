@@ -1,0 +1,33 @@
+---
+title: Checkbox
+description: Represent an independent boolean choice or a partially selected group.
+---
+
+<CheckboxShowcase />
+
+`Checkbox` reports a boolean directly through `onChange`. Use `checked` for
+controlled state or `defaultChecked` for uncontrolled state.
+
+```tsx
+<Checkbox
+  label="Include completed Processes"
+  checked={includeCompleted}
+  onChange={setIncludeCompleted}
+/>
+```
+
+`indeterminate` represents a mixed group state. It changes the presentation but
+does not introduce a third value; the checked contract remains boolean.
+
+```tsx
+<Checkbox
+  label="Select all"
+  checked={allSelected}
+  indeterminate={someSelected && !allSelected}
+  onChange={setAllSelected}
+/>
+```
+
+Use a [`Switch`](./switch) when changing the value immediately enables or
+disables a setting. Use Checkbox when the value represents a choice.
+

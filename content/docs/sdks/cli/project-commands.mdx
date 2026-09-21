@@ -14,7 +14,12 @@ phresh init --server --client
 ```
 
 `create` writes a complete Server and Client project from the maintained
-starter. `init` writes `phresh.config.ts` for an existing package.
+starter. In an interactive terminal it asks for choices that were not supplied
+as options. `--no-install` leaves dependency installation to the caller.
+
+`init` writes `phresh.config.ts` for an existing package and derives available
+metadata from `package.json`. Server and Client flags choose the Endpoint
+shape; `--force` replaces an existing configuration.
 
 ```sh
 phresh dev
@@ -25,15 +30,25 @@ phresh install --run
 phresh uninstall
 ```
 
-`dev` and `start` attach a Process to the terminal. Ending the command exits
-that Process. `pack` builds production files and writes the release archive.
-`install` without a name installs this project. A name installs a verified
-official release. `--run` creates a Process before startup. `--purge` deletes
-existing installed storage on install, or Processes, data, and runtime state
-on uninstall.
+`dev` resolves the development definition. `start` runs the optional build and
+uses the production definition. Both attach one Process to the terminal, relay
+Endpoint output, and exit that Process when the command ends.
+
+`pack` runs the build, validates declared files, and writes `program.json`, a
+versioned release archive, and its SHA-256 checksum.
+
+`install` without a name builds and installs this project. A name installs a
+verified official release. `--run` creates a Process from the installed Program
+before configured startup runs. On install, `--purge` removes previous
+installed Program storage before replacement. On uninstall it also removes
+Processes, persistent storage, and the runtime Program; ordinary uninstall
+removes only the installed form.
 
 Pass Process options as `--run-option-<name>=<value>`:
 
 ```sh
 phresh dev --run-option-document=welcome.txt
 ```
+
+These values become the immutable string options returned by
+`context.options()` in both Endpoints.

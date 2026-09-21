@@ -20,6 +20,12 @@ await system.appearance.update({ ...appearance, spacing: 14 })
 `storage` scope. Network, uploads, Appearance, and the rest of `system`
 follow the same Program permission state.
 
+Every Server SDK operation crosses the Endpoint boundary to the authoritative
+System. `system.execute()` is an adapter over those same handles, so it does
+not introduce another authority path. Streams, sockets, requests, and shell
+command trees attached through that boundary are released when the Server
+execution context ends.
+
 The Server execution mode is a separate question. A `command` or `worker`
 process has its own operating-system access. A `sandbox` does not. See
 [Execution environments](/sdks/server/execution-environments).

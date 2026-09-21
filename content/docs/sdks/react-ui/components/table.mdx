@@ -1,0 +1,105 @@
+---
+title: Table
+description: Accessible structured data with composable columns, rows, and cells.
+---
+
+<TableShowcase />
+
+Table presents related records across named columns. Its compound structure
+keeps the relationships explicit while allowing each cell to contain ordinary
+React content.
+
+```tsx
+<Table aria-label="Processes">
+  <Table.Header>
+    <Table.Column id="name" isRowHeader>Name</Table.Column>
+    <Table.Column id="state">State</Table.Column>
+  </Table.Header>
+  <Table.Body>
+    <Table.Row id="editor">
+      <Table.Cell>Editor</Table.Cell>
+      <Table.Cell>Running</Table.Cell>
+    </Table.Row>
+  </Table.Body>
+</Table>
+```
+
+Every column and row has a stable string identity. Mark the column that names
+each row with `isRowHeader`; assistive technology uses that cell as the row's
+accessible name.
+
+## Row selection and actions
+
+Tables are not selectable by default. Enable selection explicitly and use the
+same string-value contract as ListBox:
+
+```tsx
+<Table
+  aria-label="Processes"
+  selectionMode="multiple"
+  value={selected}
+  onChange={setSelected}
+>
+  {/* header and body */}
+</Table>
+```
+
+Single selection reports a string or `null`. Multiple selection reports a
+string array or `"all"`. Use `disabledValues` for row identities disabled at
+the collection level, or `disabled` on an individual `Table.Row`.
+
+`onRowAction` represents opening or activating a row rather than selecting it.
+React Aria coordinates actions and selection according to the input method so
+the two behaviors remain accessible when both are enabled.
+
+## Sorting
+
+Set `allowsSorting` on sortable columns. Table reports sorting intent but does
+not reorder data it does not own.
+
+```tsx
+<Table sort={sort} onSortChange={setSort} aria-label="Processes">
+  <Table.Header>
+    <Table.Column id="name" isRowHeader allowsSorting>Name</Table.Column>
+    <Table.Column id="state" allowsSorting>State</Table.Column>
+  </Table.Header>
+  <Table.Body items={sortedProcesses}>
+    {process => (
+      <Table.Row id={process.id}>
+        <Table.Cell>{process.name}</Table.Cell>
+        <Table.Cell>{process.state}</Table.Cell>
+      </Table.Row>
+    )}
+  </Table.Body>
+</Table>
+```
+
+The sort value is `{ column, direction }`, where `direction` is `"ascending"`
+or `"descending"`. Reorder the source collection in application state and pass
+the active descriptor back through `sort`.
+
+## Dynamic and empty collections
+
+`Table.Header` accepts `columns`, and `Table.Body` accepts `items`, with render
+functions for data-backed collections. `renderEmptyState` supplies the content
+shown when the body has no rows. When a render function reads state that is not
+contained in its items, pass that state through `dependencies` so the affected
+cached rows are rebuilt.
+
+Table owns navigation, selection, sorting interaction, and row presentation.
+It does not add a Surface or scrolling policy. Place it inside Surface, Panel,
+or a horizontal ScrollArea when that boundary belongs to the surrounding
+interface.
+
+`color` selects the Table's row-selection paint and derived interaction
+states. `Table.Header` follows that color by default and accepts its own
+`color` when the header needs an independent base paint.
+
+```tsx
+<Table color="primary:base" aria-label="Processes">
+  <Table.Header color="background:strong">
+    {/* columns */}
+  </Table.Header>
+  {/* body */}
+</Table>
+```

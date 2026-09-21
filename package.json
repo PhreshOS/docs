@@ -23,6 +23,7 @@
     "verify": "node --run check && node --run build && node --run test"
   },
   "dependencies": {
+    "@internationalized/date": "^3.12.3",
     "@phreshos/react-ui": "^0.1.30",
     "cnfast": "^0.1.0",
     "fumadocs-core": "16.14.4",

@@ -12,6 +12,11 @@ Every provider accepts `children`, its corresponding contract, and an optional
 provider's initial values resolve. A failed read reaches the nearest React
 error boundary.
 
+Providers do not create a transport, mutate the supplied handle, or infer one
+root from another. They start the reads and subscriptions required by their
+own hooks, stop them when replaced or unmounted, and expose the exact supplied
+contract to descendants.
+
 ## ContextProvider
 
 `ContextProvider` resolves the Program, Process, and parent belonging to one
@@ -25,6 +30,10 @@ Client Context before rendering its children.
 
 `useContext()` returns the complete Client Context. `useProgram()`,
 `useProcess()`, and `useParent()` return the resolved execution identities.
+Unlike state hooks, these identity hooks do not return `undefined`: the
+provider keeps rendering its fallback until all three identity reads finish.
+`useParent()` may return `null` because a Process can genuinely have no visible
+parent.
 
 ## SystemProvider
 
@@ -40,11 +49,29 @@ Client Context before rendering its children.
 The System may come from Client or from Node. `ContextProvider` and
 `DesktopProvider` require Client Context and Desktop values.
 
+`useSystemAppearance()` returns the complete first snapshot and then follows
+complete `change` replacements. Children are withheld behind the provider's
+fallback until the first Appearance read resolves.
+
+The provider subscribes before reading that first snapshot. If Appearance
+changes while the read is in flight, the newer event is applied after the
+snapshot instead of being overwritten by it.
+
 ## DesktopProvider
 
 `DesktopProvider` supplies the Desktop handle. `useDesktop()` returns it.
 `useDesktopViewport()`, `useDesktopPreferences()`, and
 `useDesktopConnection()` follow those Desktop sources.
 
+Viewport and preferences are resolved before children render. The containing
+browser Connection is different: `useDesktopConnection()` begins its read
+only when that hook is used and returns `undefined` until it resolves.
+
 The three providers are independent. Supply only the roots the subtree
-actually uses.
+actually uses. Every corresponding hook rejects use outside its provider with
+a descriptive error.
+
+Changing a provider's supplied root ends the old lifetime, removes its
+subscriptions, and resolves the new source before showing children again.
+Unmounting performs the same cleanup without stopping a Context,
+disconnecting a System, or ending any domain entity.

@@ -18,4 +18,12 @@ phresh system uninstall
 ```
 
 `install` and `uninstall` accept `--purge` to delete the System home. The
-full host contract is documented under [Installation](/installation).
+install command verifies the official release, installs its production
+dependencies, selects the version, registers the per-user native service, and
+starts it. `status` reports both service state and the Desktop address.
+
+`start` and `stop` control the current service execution. `enable` and
+`disable` control automatic startup. `uninstall` removes the registered
+service and installed System release; its `--purge` option also deletes the
+System home. The full host contract and platform behavior are documented under
+[Installation](/installation).

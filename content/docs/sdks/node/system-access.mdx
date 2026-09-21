@@ -23,3 +23,9 @@ remain the Core `shell()` and `Storage` contracts.
 
 `system.execute()` is the JSON catalog documented under
 [Execute](/sdks/core/execute). The CLI's runtime commands use this connection.
+
+Programs, Processes, Endpoints, Services, Connections, Sessions, Appearance,
+uploads, and networking still use the connected System. Only capabilities
+whose Core contract has an equivalent owner-local implementation—currently
+shell and native Storage—execute locally without changing their public
+meaning.

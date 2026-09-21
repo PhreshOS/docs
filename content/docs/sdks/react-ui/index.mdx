@@ -32,7 +32,8 @@ runtime and does not own application state.
 </Tabs>
 
 React and React DOM are peer dependencies because the application and React
-UI must share one React runtime.
+UI must share one React runtime. The current package supports React and React
+DOM `19.2` within their current major versions.
 
 ```tsx
 import { Button, Surface } from "@phreshos/react-ui"
@@ -41,6 +42,10 @@ import { Button, Surface } from "@phreshos/react-ui"
   <Button>Continue</Button>
 </Surface>
 ```
+
+`Surface` supplies paint, material, edge, radius, and shadow. It does not
+choose dimensions, padding, layout, overflow, or semantic content for the
+consumer.
 
 Without a provider, components use `defaultAppearance` and follow the
 browser's visual preferences. `UIProvider` supplies Appearance, Preferences,
@@ -55,9 +60,32 @@ retaining focus.
 
 Controls use the shared contracts that fit their role. Most accept `size` and
 `color`; Surface-based controls also accept material options. Individual
-component pages state the exact capabilities they expose.
+component pages state the exact capabilities they expose. A component's
+hover, pressed, focused, selected, and inactive paints derive from its base
+`color`; they are not separate customization values.
+
+## Direction
+
+React UI is direction-neutral. Native HTML inheritance handles direction when
+that is sufficient. Supplying `direction="ltr"` or `direction="rtl"` to
+`UIProvider` additionally establishes the guaranteed React UI direction for
+JavaScript behavior and portalled content:
+
+```tsx
+<UIProvider direction="rtl">
+  <Application />
+</UIProvider>
+```
+
+An omitted direction creates no DOM boundary and continues through a higher
+provider or the document. See [Appearance](/sdks/react-ui/appearance) for the
+provider, preference, and direction resolution contracts.
 
 <Cards>
   <Card title="Appearance" description="Supply and resolve the visual source." href="/sdks/react-ui/appearance" />
   <Card title="Components" description="Surface, layout, controls, and overlays." href="/sdks/react-ui/components/surface" />
 </Cards>
+
+React UI and the [React SDK](/sdks/react) are independent. React UI renders the
+visual component language; React adapts live PhreshOS domain values to React
+state. An application may use either package alone or compose them.

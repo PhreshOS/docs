@@ -1,0 +1,78 @@
+---
+title: Date Field
+description: Enter a calendar date through locale-aware editable segments.
+---
+
+<DateFieldShowcase />
+
+`DateField` represents a date without a time or time zone. The browser locale
+determines the visible segment order and separators, while the value remains a
+`CalendarDate` containing a year, month, and day.
+
+```tsx
+import { DateField } from "@phreshos/react-ui"
+import { parseDate } from "@internationalized/date"
+
+<DateField
+  label="Due date"
+  defaultValue={parseDate("2026-09-21")}
+/>
+```
+
+## Controlled dates
+
+Use `value` and `onChange` when another part of the application owns the date.
+An empty field reports `null`; it does not substitute the current date or a
+JavaScript `Date`.
+
+```tsx
+const [dueDate, setDueDate] = useState<CalendarDate | null>(null)
+
+<DateField
+  label="Due date"
+  value={dueDate}
+  onChange={setDueDate}
+/>
+```
+
+Each segment supports direct numeric entry and arrow-key adjustment. Focus,
+selection, locale rules, and segment boundaries are owned by the component, so
+consumers should treat the resulting `CalendarDate` as one value rather than
+managing the individual segments.
+
+## Bounds and unavailable dates
+
+`minValue` and `maxValue` define an inclusive date range.
+`isDateUnavailable` can reject dates according to application rules.
+
+```tsx
+<DateField
+  label="Maintenance date"
+  minValue={parseDate("2026-09-01")}
+  maxValue={parseDate("2026-09-30")}
+  isDateUnavailable={date => date.day === 7}
+/>
+```
+
+These constraints participate in validation. Use `invalid` when invalidity is
+owned externally, and `errorMessage` to explain the problem.
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `value` | uncontrolled | Supply a controlled `CalendarDate` or `null`. |
+| `defaultValue` | empty | Set the initial uncontrolled date. |
+| `onChange` | — | Receive the complete date or `null`. |
+| `minValue` / `maxValue` | unbounded | Restrict the accepted calendar range. |
+| `isDateUnavailable` | — | Mark application-specific dates unavailable. |
+| `readOnly` | `false` | Keep the value focusable without allowing edits. |
+| `disabled` | `false` | Remove interaction and keyboard focus. |
+| `required` | `false` | Require a value during validation. |
+| `color` | `default:base` | Select the field fill. |
+| `size` | `medium` | Derive field height and typography. |
+| `radius` | `medium` | Select the field corner radius. |
+| `material` | `basic` | Select the Surface material rendering level. |
+
+Provide `label`, `aria-label`, or `aria-labelledby` so the segmented field has
+an accessible name. Use `description` for associated guidance.

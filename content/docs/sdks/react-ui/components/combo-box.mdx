@@ -1,0 +1,62 @@
+---
+title: Combo Box
+description: Search and select one option without exposing collection mechanics.
+---
+
+<ComboBoxShowcase />
+
+ComboBox combines a text field with a single-selection popup. Use it when a
+Select would be appropriate but the available choices are numerous enough that
+typing a query is faster than scanning the complete list.
+
+```tsx
+const regions = [
+  { value: "eu", label: "Europe" },
+  { value: "us", label: "United States" },
+  { value: "local", label: "Local only", disabled: true },
+]
+
+<ComboBox
+  label="Region"
+  value={region}
+  onChange={setRegion}
+  options={regions}
+  placeholder="Search regions"
+/>
+```
+
+Each option has a stable string `value` and a visible `label`. Typing filters
+the options by their label. `onChange` receives the selected string identity or
+`null`; it does not receive the visible text.
+
+## Selection and query state
+
+Selection and text input are separate values. Control selection with `value`
+and `onChange`. Control the current query only when the surrounding interface
+needs it, using `inputValue` and `onInputChange`.
+
+```tsx
+<ComboBox
+  label="Program"
+  options={programs}
+  value={program}
+  onChange={setProgram}
+  inputValue={query}
+  onInputChange={setQuery}
+/>
+```
+
+For uncontrolled use, initialize those values with `defaultValue` and
+`defaultInputValue`. Selecting an option updates the text field to its label.
+
+## Availability and validation
+
+Set `disabled` on an individual option to keep it visible but unavailable.
+`disabled` disables the whole field, while `readOnly` keeps it focusable without
+allowing its value to change. The field also supports `required`, `invalid`,
+`description`, and `errorMessage`.
+
+ComboBox shares the input controls' `size`, `color`, `radius`, `material`, and
+`shadow` customization. Its field and popup use the existing Surface contract;
+keyboard navigation, focus management, filtering, and selection behavior are
+owned by the component.

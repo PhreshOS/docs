@@ -14,15 +14,60 @@ const endpointState = useEndpointState(process.server)
 const windowState = useWindowState(process.client.window)
 ```
 
-| Hook | Follows |
+Each hook subscribes before requesting its initial snapshot. Events that
+arrive while that read is in flight are applied after the snapshot, so a slow
+read cannot overwrite newer live state. Changing the handle replaces both the
+read and subscriptions. Unmounting removes every registration owned by the
+hook.
+
+| Hook | Resolved state |
 | --- | --- |
-| `useProgramState` | `installed` and live `processes` |
-| `useProcessState` | `exited` |
-| `useEndpointState` | `running` |
-| `useServiceState` | `available` for a Service handle |
+| `useProgramState` | `{ installed, processes }` |
+| `useProcessState` | `{ exited }` |
+| `useEndpointState` | `{ running }` |
+| `useServiceState` | `{ available }` for a stable Service address |
 | `useWindowState` | the complete authoritative `WindowState` |
-| `useConnectionState` | Connection `connected` and `session` |
-| `useSessionState` | Session `valid` and `connections` |
+| `useConnectionState` | `{ connected, session }` |
+| `useSessionState` | `{ valid, connections }` |
+
+```tsx
+const state = useProgramState(program)
+
+if (!state) return <Loading />
+
+return <p>{state.processes.length} running Processes</p>
+```
+
+The initial `undefined` is an unresolved state, not an empty domain value.
+For example, an unresolved Process list is different from a resolved empty
+list. A failed initial read is thrown to the nearest React error boundary.
+
+State hooks reconstruct a current snapshot from a read plus the domain's
+future events. For a raw future-only event, use
+[`useSubscribe`](/sdks/react/subscription-hooks) instead.
 
 These snapshots are derived from the same reads and events documented under
 [Runtime](/runtime) and [System](/system).
+
+## Window and authentication state
+
+`useWindowState()` resolves title, header, frame, default transaction,
+position, size, minimized, maximized, front, and layer in one render value. It
+then follows the authoritative Window events that can change those fields.
+
+```tsx
+const state = useWindowState(process.client.window)
+
+if (!state) return null
+return <p>{state.size.width} × {state.size.height}</p>
+```
+
+Connection and Session state remain separate because a live Connection can
+change or lose its Session, while one valid Session can authorize several
+Connections. When a Connection disconnects, its hook resolves to
+`{ connected: false, session: null }`. When a Session ends, its hook resolves
+to `{ valid: false, connections: [] }`.
+
+State hooks do not need a provider: the supplied handle is their complete
+source. Providers are only required for hooks that retrieve an ambient root or
+identity from React context.

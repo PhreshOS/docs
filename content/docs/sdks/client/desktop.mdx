@@ -16,5 +16,27 @@ const preferences = await desktop.preferences.snapshot()
 const connection = await desktop.connection()
 ```
 
+`desktop.viewport.snapshot()` returns `{ size: { width, height } }` for the
+current Desktop workspace. Subscribe to `resize` for complete later snapshots;
+changing Desktop scale also changes the logical viewport exposed to Clients.
+
+`desktop.preferences.snapshot()` returns the effective `{ theme, animations,
+scale }` value. `update()` accepts any non-empty subset. Use `"default"` for a
+field to remove its explicit override and resume its browser or System default:
+
+```ts
+await desktop.preferences.update({
+  theme: "default",
+  animations: false,
+  scale: 1.25,
+})
+```
+
+The `change` event carries the complete effective preference snapshot, not the
+partial update that caused it. Theme follows the browser color-scheme
+preference by default, animations invert the browser reduced-motion preference,
+and scale defaults to `1` within the supported `0.5`–`2` range.
+
 The executing Program needs `desktopConnection` or `connections` for
-`connection()`, and `desktopPreferences` for preference updates.
+`connection()`, and `desktopPreferences` for preference updates. Reading the
+viewport and current preferences does not require those mutation permissions.

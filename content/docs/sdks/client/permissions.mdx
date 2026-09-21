@@ -20,8 +20,17 @@ if (!allowed) {
 `get` returns the stored assignment without applying fallback authority.
 `allows` reports whether the stored permission permits the requested
 capability. `request` prompts the owner, replaces the stored permission, and
-returns that canonical value. `timeout(milliseconds)` selects another
-deadline for the prompt.
+returns the resulting canonical value. Approval returns the granted list,
+denial returns `false`, and dismissal or expiry returns `null`.
+`timeout(milliseconds)` selects another deadline for the prompt; the default
+is two minutes.
+
+`request()` always creates an owner decision. It does not skip the prompt when
+the Program already has the same or broader authority. The operation requires
+a live Client presentation, and one Client Process may have only one permission
+request pending at a time.
 
 `program.permissions` is the administration API: `get`, `all`, `allows`,
-`set`, and `delete`. Those operations require `all`.
+`set`, and `delete`. `set()` accepts `true`, a valid value list, or `false`;
+`delete()` removes the exact assignment so broader fallback authority may apply
+again. Those operations require `all`.

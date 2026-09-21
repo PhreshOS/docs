@@ -1,0 +1,30 @@
+---
+title: Radio Group
+description: Choose one visible option from a small set.
+---
+
+<RadioGroupShowcase />
+
+`RadioGroup` owns the selected string, label, feedback, and shared presentation.
+Each `RadioGroup.Item` contributes one identified option and is meaningful only
+inside its group.
+
+```tsx
+<RadioGroup
+  label="Release channel"
+  value={channel}
+  onChange={setChannel}
+>
+  <RadioGroup.Item value="stable" label="Stable" />
+  <RadioGroup.Item value="preview" label="Preview" />
+</RadioGroup>
+```
+
+The group is vertical by default. Set `orientation="horizontal"` when the
+available width and option labels make a row clearer. Arrow-key navigation
+follows the resolved direction.
+
+Selection and validation belong to the group. An Item may override inherited
+visual properties or be disabled individually, but it does not own a separate
+selected value.
+

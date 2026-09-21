@@ -1,0 +1,43 @@
+---
+title: Tabs
+description: Present related peer views through one active selection.
+---
+
+<TabsShowcase />
+
+Tabs presents related sections of one interface without turning them into
+separate navigation destinations. The selected Tab and its Panel share one
+string identity.
+
+```tsx
+<Tabs value={view} onChange={setView}>
+  <Tabs.List aria-label="Project views">
+    <Tabs.Tab id="overview">Overview</Tabs.Tab>
+    <Tabs.Tab id="activity">Activity</Tabs.Tab>
+  </Tabs.List>
+  <Tabs.Panel id="overview">Project overview</Tabs.Panel>
+  <Tabs.Panel id="activity">Recent activity</Tabs.Panel>
+</Tabs>
+```
+
+Every `Tabs.Tab` identity must match a `Tabs.Panel`. Horizontal Tabs divide the
+List width equally and move one continuous indicator between selections using
+the active Appearance transaction. Vertical Tabs arrange the same parts along
+the block axis.
+
+## Dynamic panels
+
+When panels come from a collection, group them with `Tabs.Panels` so React Aria
+can manage the dynamic collection as one unit.
+
+```tsx
+<Tabs defaultValue={views[0].id}>
+  <Tabs.List aria-label="Views" items={views}>
+    {view => <Tabs.Tab id={view.id}>{view.label}</Tabs.Tab>}
+  </Tabs.List>
+  <Tabs.Panels items={views}>
+    {view => <Tabs.Panel id={view.id}>{view.content}</Tabs.Panel>}
+  </Tabs.Panels>
+</Tabs>
+```
+

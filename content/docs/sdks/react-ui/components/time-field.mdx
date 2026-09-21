@@ -1,0 +1,84 @@
+---
+title: Time Field
+description: Enter a clock time through locale-aware editable segments.
+---
+
+<TimeFieldShowcase />
+
+`TimeField` represents a time of day without a date or time zone. It returns an
+`@internationalized/date` `Time` value, while the visible segment order,
+separators, and default 12- or 24-hour presentation follow the active locale.
+
+```tsx
+import { TimeField } from "@phreshos/react-ui"
+import { parseTime } from "@internationalized/date"
+
+<TimeField
+  label="Start time"
+  defaultValue={parseTime("09:30")}
+/>
+```
+
+## Precision and hour cycle
+
+The default smallest unit is `minute`. Set `granularity="hour"` when only the
+hour segment should be editable, or `granularity="second"` when seconds must be editable. `hourCycle`
+overrides locale presentation without changing the underlying 24-hour `Time`
+value.
+
+```tsx
+<TimeField
+  label="Run at"
+  defaultValue={parseTime("21:30:15")}
+  granularity="second"
+  hourCycle={24}
+/>
+```
+
+When `hourCycle` is omitted, the locale decides whether a day-period segment is
+shown. Use `shouldForceLeadingZeros` only when the hour must always occupy two
+digits rather than following locale formatting.
+
+## Controlled times and bounds
+
+Use `value` and `onChange` when another part of the application owns the time.
+An empty field reports `null`. `minValue` and `maxValue` define an inclusive
+allowed interval.
+
+```tsx
+const [startTime, setStartTime] = useState<Time | null>(null)
+
+<TimeField
+  label="Start time"
+  value={startTime}
+  onChange={setStartTime}
+  minValue={parseTime("08:00")}
+  maxValue={parseTime("18:00")}
+/>
+```
+
+Each visible unit supports direct numeric entry and arrow-key adjustment.
+Consumers receive one complete `Time` value rather than managing individual
+hour, minute, second, or day-period segments.
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `value` | uncontrolled | Supply a controlled `Time` or `null`. |
+| `defaultValue` | empty | Set the initial uncontrolled time. |
+| `onChange` | — | Receive the complete time or `null`. |
+| `granularity` | `minute` | Choose `hour`, `minute`, or `second` as the smallest visible unit. |
+| `hourCycle` | locale | Override presentation with `12` or `24`. |
+| `minValue` / `maxValue` | unbounded | Restrict the accepted time interval. |
+| `readOnly` | `false` | Keep the value focusable without allowing edits. |
+| `disabled` | `false` | Remove interaction and keyboard focus. |
+| `required` | `false` | Require a value during validation. |
+| `color` | `default:base` | Select the field fill. |
+| `size` | `medium` | Derive field height and typography. |
+| `radius` | `medium` | Select the field corner radius. |
+| `material` | `basic` | Select the Surface material rendering level. |
+
+Provide `label`, `aria-label`, or `aria-labelledby` so the segmented field has
+an accessible name. Use `description` and `errorMessage` for associated
+guidance and validation feedback.

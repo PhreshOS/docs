@@ -1,0 +1,43 @@
+---
+title: Textarea
+description: Accessible multi-line text entry with shared React UI field states.
+---
+
+<TextareaShowcase />
+
+`Textarea` uses the same string value, labeling, validation, and presentation
+contract as [`Input`](./input), while preserving native textarea behavior such
+as rows and resizing.
+
+```tsx
+const [notes, setNotes] = useState("")
+
+<Textarea
+  label="Notes"
+  description="Visible only to this Program."
+  rows={5}
+  value={notes}
+  onChange={setNotes}
+/>
+```
+
+Use `value` with `onChange` for controlled state, or `defaultValue` for
+uncontrolled state. `readOnly` preserves focus and selection without allowing
+edits; `disabled` removes interaction.
+
+## Validation
+
+```tsx
+<Textarea
+  label="Description"
+  value={description}
+  onChange={setDescription}
+  required
+  invalid={description.length > 500}
+  errorMessage="Keep the description under 500 characters."
+/>
+```
+
+`size`, `color`, `radius`, `material`, and `shadow` customize the same field
+boundary used by other React UI text controls.
+

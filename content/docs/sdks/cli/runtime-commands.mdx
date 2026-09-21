@@ -36,3 +36,42 @@ phresh operation describe --domain endpoint --operation ask
 
 `program list` also accepts `--installed-only`, `--search`, `--limit`, and
 `--offset` as presentation filters around the Execute result.
+
+## Processes and Endpoints
+
+A Process name is local to its Program, so commands that use a name also need
+`--program`. Endpoint creation flags translate into the same Launch fields as
+the SDK. Service flags select the role of that execution context; `--no-server`
+and `--no-client` keep the corresponding Endpoint stopped.
+
+```sh
+phresh process create \
+  --program notes \
+  --name main \
+  --server \
+  --client-service \
+  --option document=welcome.txt
+```
+
+Endpoint `wait` observes application publications, while `waitLifecycle`
+observes `start` and `stop`. CLI payloads use JSON even though direct SDK
+communication can preserve additional JavaScript and binary values.
+
+## Windows
+
+Window commands mutate the authoritative Window. Geometry accepts finite
+pixels or the same workspace-relative expressions accepted by Core, and
+`setGeometry` commits position and size together.
+
+```sh
+phresh window set-geometry \
+  --program notes \
+  --process main \
+  --x 0 \
+  --y 0 \
+  --width 100% \
+  --height 100%
+```
+
+The camel-case operation names and the kebab-case terminal aliases are both
+shown by `phresh describe`.

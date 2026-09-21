@@ -20,6 +20,17 @@ opaque. Collection `list()` operations return only visible handles. `find()`
 returns `null` when an identity is absent or inaccessible. Relationships and
 events apply the same filter.
 
+Without additional authority, an Endpoint can reach its own Program, that
+Program's Processes and resources, and the Services covered by an explicit
+`services` grant. A Client can also read its containing Desktop's viewport and
+effective preferences. Permissions extend that starting scope; they do not
+replace it.
+
+Lookup and direct access have deliberately different failure shapes. A lookup
+cannot reveal whether a hidden identity exists, so it returns `null`. A direct
+capability whose target is already known—such as changing Appearance or asking
+for the containing Desktop Connection—rejects when the caller lacks authority.
+
 ## The permission value
 
 Each permission stores one of three states:
@@ -62,7 +73,10 @@ access for the Program's Client iframe.
 ## Declaring, inspecting, and requesting
 
 A Program declares initial values in `phresh.config.ts`. Those declarations
-are written into authoritative storage at creation and installation.
+are written into authoritative storage at creation and installation. Each
+declared entry replaces that exact stored permission; omitted entries remain
+unchanged. Declarations accept `true` or a value list; denial and removal are
+runtime administration decisions made through the permission API.
 
 ```ts
 permissions: {
@@ -72,7 +86,9 @@ permissions: {
 ```
 
 `program.permissions` is the administration API: `get`, `all`, `allows`,
-`set`, and `delete`. Those operations require `all`.
+`set`, and `delete`. `set()` accepts `true`, a value list, or `false`;
+`delete()` removes the exact assignment so fallback authority can apply again.
+Those operations require `all`.
 
 The Client Context exposes the executing Program's stored assignment and lets
 it ask the owner to grant more:
@@ -89,4 +105,56 @@ if (!allowed) {
 `allows` reports whether the stored permission permits the requested
 capability. `request` prompts the owner, replaces the stored permission, and
 returns that canonical value. `timeout(milliseconds)` selects another
-deadline for the prompt.
+deadline for the prompt. The default request deadline is two minutes. Approval
+returns the canonical granted list, denial returns `false`, and dismissal or a
+deadline returns `null`.
+
+Every `request()` opens a decision; it does not silently succeed because the
+same or broader permission is already stored. A request requires a live Client
+Endpoint because the owner decision is presented through the Desktop, and one
+Client Process can have only one permission request pending at a time.
+
+## Window layer authority
+
+The ordinary `window` layer needs no layer permission. Selecting `under`,
+`over`, `wallpaper`, or `start-menu` requires `layers` coverage. This applies
+when a Program creates a Process, starts a Client Endpoint, or stores a launch
+that explicitly selects one of those layers. Omitting `layer` continues through
+the declaration or existing authoritative Window value.
+
+## Network and Storage values
+
+A network value names an explicit HTTP or WebSocket region:
+
+```ts
+permissions: {
+  network: [
+    "https://api.example.com",
+    "https://*.example.com/v1/**",
+    "http://localhost:*",
+    "wss://events.example.com/**",
+  ],
+}
+```
+
+The scheme is part of the grant. `*.` replaces complete leading host labels,
+`:*` covers every port, and a final `/**` includes a path subtree. Query and
+fragment text do not expand or narrow authority.
+
+A Storage value combines operations with a native path:
+
+```ts
+permissions: {
+  storage: [
+    "Documents/report.json",
+    "read:Documents/**",
+    "read,write:Downloads/**",
+  ],
+}
+```
+
+A bare path grants `read`, `write`, and `delete`. A final `/**` includes the
+named path and its descendants. Relative paths begin at `system.storage`; an
+absolute path keeps its native meaning. Deriving a handle with `navigate()` or
+`file()` performs no access. The permission is checked when an operation reads,
+writes, watches, or removes the selected native location.

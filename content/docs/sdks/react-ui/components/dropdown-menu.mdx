@@ -1,0 +1,25 @@
+---
+title: Dropdown Menu
+description: Open a Menu from a button trigger.
+---
+
+<DropdownMenuShowcase />
+
+`DropdownMenu` owns the button-triggered open state and positioned overlay.
+`Menu` remains the semantic command collection inside it.
+
+```tsx
+<DropdownMenu>
+  <DropdownMenu.Trigger>Actions</DropdownMenu.Trigger>
+  <DropdownMenu.Content>
+    <Menu aria-label="Document actions">
+      <Menu.Item id="rename">Rename</Menu.Item>
+      <Menu.Item id="delete" color="danger:base">Delete</Menu.Item>
+    </Menu>
+  </DropdownMenu.Content>
+</DropdownMenu>
+```
+
+Use [`ContextMenu`](./context-menu) when the platform context-menu gesture is
+the intended trigger.
+

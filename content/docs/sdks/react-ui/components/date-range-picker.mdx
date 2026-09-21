@@ -1,0 +1,92 @@
+---
+title: Date Range Picker
+description: Enter or select an inclusive date-only range.
+---
+
+<DateRangePickerShowcase />
+
+`DateRangePicker` combines two segmented date fields with one
+`RangeCalendar` popover. Direct entry and calendar selection read and update
+the same `DateRange | null` value.
+
+```tsx
+import { DateRangePicker } from "@phreshos/react-ui"
+import { parseDate } from "@internationalized/date"
+
+<DateRangePicker
+  label="Trip dates"
+  defaultValue={{
+    start: parseDate("2026-09-21"),
+    end: parseDate("2026-09-24")
+  }}
+/>
+```
+
+The locale determines the order and separators within each date. The two
+dates remain one range: consumers do not manage the individual field segments
+or the calendar's temporary anchor.
+
+## Controlled value and popover
+
+Use `value` and `onChange` for the range. Calendar visibility has its own
+controlled pair, `isOpen` and `onOpenChange`.
+
+```tsx
+<DateRangePicker
+  label="Report period"
+  value={period}
+  onChange={setPeriod}
+  isOpen={calendarOpen}
+  onOpenChange={setCalendarOpen}
+/>
+```
+
+Use `defaultValue` and `defaultOpen` when those states should remain internal.
+The popover closes after the range is completed by default; set
+`shouldCloseOnSelect={false}` to keep it open.
+
+## Constraints and forms
+
+The picker accepts the same range constraints as `RangeCalendar`. The
+availability callback receives the current selection anchor so availability
+may depend on the first chosen date.
+
+```tsx
+<DateRangePicker
+  label="Reservation"
+  minValue={parseDate("2026-09-01")}
+  maxValue={parseDate("2026-10-31")}
+  isDateUnavailable={date => date.day === 7}
+  startName="arrival"
+  endName="departure"
+/>
+```
+
+`startName` and `endName` submit the endpoints as separate native form values.
+Use `allowsNonContiguousRanges` only when unavailable dates may intentionally
+occur inside a selected range.
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `value` | uncontrolled | Supply a controlled `DateRange` or `null`. |
+| `defaultValue` | empty | Set the initial uncontrolled range. |
+| `onChange` | — | Receive the complete range or `null`. |
+| `isOpen` | uncontrolled | Control calendar visibility. |
+| `defaultOpen` | `false` | Initially open an uncontrolled picker. |
+| `shouldCloseOnSelect` | `true` | Keep the popover open after completing a range when false. |
+| `minValue` / `maxValue` | unbounded | Restrict both endpoints. |
+| `isDateUnavailable` | — | Evaluate dates with the current range anchor. |
+| `allowsNonContiguousRanges` | `false` | Permit ranges containing unavailable dates. |
+| `startName` / `endName` | — | Name each endpoint for form submission. |
+| `readOnly` | `false` | Permit inspection without changing the range. |
+| `disabled` | `false` | Disable entry and calendar access. |
+| `color` | `default:base` | Select field and selected-range color. |
+| `size` | `medium` | Derive field, calendar, and typography dimensions. |
+| `radius` | `medium` | Select field and day-cell corner radius. |
+| `material` | `basic` | Select the field Surface material level. |
+
+Provide a visible `label`, `aria-label`, or `aria-labelledby` for the complete
+picker. `description` and `errorMessage` remain associated with both date
+fields as one range input.

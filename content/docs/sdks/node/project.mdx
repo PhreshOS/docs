@@ -24,6 +24,17 @@ await system.disconnect()
 directory, a directory, or a config path. `Project.define(config, options?)`
 builds a Project from an already loaded configuration.
 
+```ts
+const discovered = await Project.open("/work/notes")
+const explicit = Project.define(config, { directory: "/work/notes" })
+
+console.log(discovered.directory, discovered.config.identity)
+```
+
+Both forms validate the authoring contract immediately. `manifest()` reads
+the project's `package.json`; its `name` must be kebab-case. Project paths are
+resolved from `directory`, never from the caller's later working directory.
+
 `productionDefinition()` and `developmentDefinition()` resolve the authoring
 configuration into Core `ProgramDefinition` values. Development Server
 execution uses `server.devCommand`. Development Client location
@@ -34,6 +45,37 @@ the production definition as an attached Process. `dev(system)` runs the
 development definition, starting the Client development server when
 `devCommand` is declared. `install(system, options?)` builds and installs.
 `pack()` builds and writes the release zip, `program.json`, and checksum.
+
+`start()` and `dev()` accept `{ options, signal }`. `options` becomes the
+immutable string-valued Launch options visible to both Endpoint Contexts.
+Aborting `signal` exits the attached Process. Both methods return the same
+`ProgramProcessRunEvent` async generator as `program.runProcess()`.
+
+```ts
+const lifecycle = await project.start(system, {
+  options: { workspace: "personal" },
+  signal: controller.signal,
+})
+
+for await (const event of lifecycle) {
+  if (event.event === "output") process.stdout.write(event.text)
+}
+```
+
+`install()` accepts the ordinary `ProgramInstallOptions`: an optional launch
+and `purge`. `pack()` returns the archive, declaration, and checksum paths plus
+the SHA-256 digest. The package contains each declared production Endpoint,
+the resolved `program.json`, and optional icon and agent document.
+
+Packaging takes its version from `config.version`, then `package.json`, and
+finally `0.0.0`. Runtime definitions use the Program contract directly, where
+an omitted version resolves to `0.0.0`.
+
+Development Server execution uses `devCommand` as a command process even when
+production selects `worker` or `sandbox`. A Client `devUrl` reuses an existing
+server. A Client `devCommand` is supervised by Project and receives
+`PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`; the development Process ends
+if that command ends.
 
 `phresh dev`, `phresh start`, `phresh install`, and `phresh pack` are this
 API as commands. See [Program configuration](/sdks/core/program-configuration)

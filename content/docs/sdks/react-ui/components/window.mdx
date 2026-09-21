@@ -77,5 +77,6 @@ their shared spacing, active state, and control treatment.
   clipping or scrolling. Set overflow yourself or place a `ScrollArea` inside.
 
 The Window root accepts Surface props such as `color`, `material`, `shadow`,
-and `radius`.
-
+and `radius`. `Window.Header` accepts its own `color` for header-owned text and
+icons. Every Header action is still a Button and accepts its own `color`;
+`Window.Header.Close` uses `danger:base` by default.

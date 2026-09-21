@@ -25,6 +25,10 @@ the complete replacement rather than a partial patch. `update(appearance)`
 validates and atomically replaces the whole value. The executing Program
 needs the `appearance` permission.
 
+Core exports `defaultAppearance`, `appearanceLimits`, and
+`createAppearanceSnapshot()`. Independent tools can therefore create or edit a
+valid complete value without first connecting to a System.
+
 ## What the document contains
 
 Colors are a closed set: `background`, `foreground`, `default`, `primary`,
@@ -36,8 +40,69 @@ every name.
 `grainAmount`, `backdrop`, `opacity`, `distortion`, and `saturation`.
 `transaction` is `{ duration, easing }` for visual change.
 
-Wallpapers are System upload keys, or `null`. They are themed independently
-for sign-in and for the Desktop.
+| Value | Accepted range |
+| --- | ---: |
+| Shadow `x`, `y` | `-48`–`48` |
+| Shadow `blur` | `0`–`96` |
+| Shadow `spread` | `-24`–`24` |
+| Shadow `opacity` | `0`–`1` |
+| Material `grain`, `grainAmount`, `opacity` | `0`–`1` |
+| Material `backdrop` | `0`–`24` |
+| Material `distortion` | `0`–`140` |
+| Material `saturation` | `1`–`2.6` |
+| Transaction `duration` | `0`–`60000` milliseconds |
+
+Transaction easing accepts `linear`, `ease`, `ease-in`, `ease-out`,
+`ease-in-out`, or a four-number cubic Bézier tuple. `appearanceLimits`
+exports these numeric bounds for editors and validation interfaces.
+
+The current `defaultAppearance` uses spacing `12`, radius `10`, and a
+`120ms ease-out` transaction. Its light and dark Material branches are:
+
+```ts
+{
+  light: {
+    grain: 0.04,
+    grainAmount: 0.95,
+    backdrop: 5,
+    opacity: 0.8,
+    distortion: 0,
+    saturation: 1.66,
+  },
+  dark: {
+    grain: 0.03,
+    grainAmount: 0.95,
+    backdrop: 12,
+    opacity: 0.8,
+    distortion: 0,
+    saturation: 1.77,
+  },
+}
+```
+
+`signInWallpaper` and `desktopWallpaper` each contain independent `light` and
+`dark` values. A non-null value is the opaque key returned by
+`system.uploads.write()` for a supported image, video, or HTML upload. `null`
+selects the bundled wallpaper for that theme; both defaults are `null`.
+
+```ts
+const uploaded = await system.uploads.write(file)
+
+await system.appearance.update({
+  ...appearance,
+  desktopWallpaper: {
+    ...appearance.desktopWallpaper,
+    dark: uploaded.file,
+  },
+})
+```
+
+Images use cover sizing; videos autoplay muted, loop, and play inline. HTML
+runs in a sandboxed iframe without top-level navigation or network access.
+Uploads are limited to 50 MiB and support common browser image formats,
+`mp4`, `ogg`, `ogv`, `webm`, and `html`. Wallpaper values are upload keys, not
+URLs or CSS colors; a self-contained SVG or HTML upload can represent a solid
+color.
 
 Theme names on a Desktop preference do not imply which colors are lighter.
 Whenever behavior depends on which color is lighter or darker, derive it from

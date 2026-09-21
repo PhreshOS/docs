@@ -51,3 +51,20 @@ Core exports stable values that consumers need to interpret contracts:
 - `appearanceLimits` contains the supported numeric Appearance bounds
 - `defaultAppearance` is the complete default visual document
 - `desktopPreferencesLimits` and `defaultDesktopScale` bound Desktop scale
+
+```ts
+import {
+  appearanceLimits,
+  defaultAppearance,
+  defaultDesktopScale,
+  layers,
+} from "@phreshos/core"
+
+console.log(layers)
+console.log(appearanceLimits.material.opacity)
+console.log(defaultAppearance.transaction)
+console.log(defaultDesktopScale)
+```
+
+These exports are immutable contract data. Changing them locally does not
+change a running System.

@@ -4,8 +4,8 @@ description: Read the CLI command contract as data.
 ---
 
 `phresh describe` returns the CLI's own command contract. It does not contact
-the System. Use it when a tool needs command names, options, and output shape
-without parsing `--help` text.
+the System. Use it when a tool needs command names, aliases, options, examples,
+or output shape without parsing `--help` text.
 
 ```sh
 phresh describe
@@ -14,8 +14,24 @@ phresh describe --all --json
 ```
 
 Omit the path to start at the CLI root. Add `--all` to retrieve the complete
-selected contract tree.
+selected contract tree. Add `--json` to receive the structured value rather
+than its terminal presentation.
+
+Each description states the selected path, aliases, arguments, options,
+guidance, examples, whether the command requires a running System, its output
+contract, and its child commands. Option descriptions retain whether a value is
+required or repeatable together with any allowed choices and default.
+
+```sh
+phresh describe endpoint ask --json
+```
+
+Human `--help` and structured `describe` output are generated from the same
+command declarations. Invalid command paths and options therefore lead back to
+the same contract rather than a separate handwritten help system.
 
 This is the CLI's command catalog. The System's operation catalog is
 [Execute](/sdks/core/execute), discovered with `phresh operation list` and
-`phresh operation describe`.
+`phresh operation describe`. Runtime commands reuse those operation
+descriptions, while project and native System-management commands remain part
+of the broader CLI catalog.

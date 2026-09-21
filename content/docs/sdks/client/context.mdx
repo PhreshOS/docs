@@ -12,7 +12,13 @@ import { context } from "@phreshos/client"
 
 const program = await context.program()
 const process = await context.process()
+const options = await context.options()
 ```
+
+`name()` returns the Process name or `null`. `parent()` returns the visible
+Process that created it or `null`. `options()` returns the immutable launch
+options, while `options(name)` returns one value. `isService()` describes the
+role of this running Client execution context.
 
 The Client position adds:
 
@@ -26,6 +32,16 @@ The Client position adds:
 await context.window.setTitle("Notes")
 const status = await context.server.ask("status.read")
 ```
+
+`context.server` is the permanent Server Endpoint handle from the same
+Process. It remains the same while Server execution contexts start and stop,
+and exposes the ordinary Endpoint lifecycle, traffic, publication, readiness,
+start, stop, and Server question contracts.
+
+Context subscriptions receive `{ from, payload }` for messages addressed to
+this Client. `from` is `null` when the sender is outside the Program's visible
+scope. `context.publish()` emits destinationless output from the executing
+Client.
 
 `stop()` ends this Client execution context. Communication on `context` is
 documented under [Communication](/runtime/communication). Window operations

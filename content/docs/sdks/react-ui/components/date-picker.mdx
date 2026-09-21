@@ -1,0 +1,81 @@
+---
+title: Date Picker
+description: Enter a calendar date directly or select it from a month view.
+---
+
+<DatePickerShowcase />
+
+`DatePicker` adds a calendar selection popover to the segmented date-entry
+behavior of `DateField`. Both interaction paths read and update the same
+`CalendarDate | null` value.
+
+```tsx
+import { DatePicker } from "@phreshos/react-ui"
+import { parseDate } from "@internationalized/date"
+
+<DatePicker
+  label="Appointment"
+  defaultValue={parseDate("2026-09-21")}
+/>
+```
+
+Users may type into the year, month, and day segments or open the calendar and
+choose a day. Selecting a day closes the popover by default. Set
+`shouldCloseOnSelect={false}` when the calendar should remain open.
+
+## Controlled selection and opening
+
+The date and popover are independently controllable. `value` and `onChange`
+own the date; `isOpen` and `onOpenChange` own whether the calendar is visible.
+
+```tsx
+<DatePicker
+  label="Release date"
+  value={releaseDate}
+  onChange={setReleaseDate}
+  isOpen={calendarOpen}
+  onOpenChange={setCalendarOpen}
+/>
+```
+
+Use `defaultValue` and `defaultOpen` when those states should remain internal
+to the component.
+
+## Date constraints
+
+The picker uses the same bounds and validation contract as `DateField`.
+Unavailable dates remain visible in the calendar but cannot be selected.
+
+```tsx
+<DatePicker
+  label="Delivery date"
+  minValue={parseDate("2026-09-01")}
+  maxValue={parseDate("2026-10-31")}
+  isDateUnavailable={date => date.day === 7}
+  description="The seventh day of each month is unavailable."
+/>
+```
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `value` | uncontrolled | Supply a controlled `CalendarDate` or `null`. |
+| `defaultValue` | empty | Set the initial uncontrolled date. |
+| `onChange` | — | Receive dates entered through either interaction path. |
+| `isOpen` | uncontrolled | Control calendar visibility. |
+| `defaultOpen` | `false` | Initially open an uncontrolled picker. |
+| `onOpenChange` | — | Observe calendar visibility changes. |
+| `shouldCloseOnSelect` | `true` | Keep the calendar open after selection when false. |
+| `minValue` / `maxValue` | unbounded | Restrict entry and calendar selection. |
+| `isDateUnavailable` | — | Mark application-specific dates unavailable. |
+| `readOnly` | `false` | Permit inspection without changing the date. |
+| `disabled` | `false` | Disable both segmented entry and calendar access. |
+| `color` | `default:base` | Select the field and selected-day color. |
+| `size` | `medium` | Derive field, calendar, and typography dimensions. |
+| `radius` | `medium` | Select the field and day-cell corner radius. |
+| `material` | `basic` | Select the field Surface material level. |
+
+The calendar popover owns focus containment, keyboard navigation, dismissal,
+and focus restoration. Provide a visible `label`, `aria-label`, or
+`aria-labelledby` for the complete picker.

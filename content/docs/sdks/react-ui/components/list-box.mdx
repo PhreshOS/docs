@@ -1,0 +1,42 @@
+---
+title: List Box
+description: Select one or more values from a collection that remains visible.
+---
+
+<ListBoxShowcase />
+
+`ListBox` presents a selectable collection without collapsing it into a popup.
+Single selection is the default; set `selectionMode="multiple"` for independent
+selection.
+
+```tsx
+const [tools, setTools] = useState<readonly string[]>(["editor"])
+
+<ListBox
+  aria-label="Tools"
+  selectionMode="multiple"
+  value={tools}
+  onChange={value => {
+    if (value !== "all") setTools(value)
+  }}
+>
+  <ListBox.Section id="work">
+    <ListBox.Header>Work</ListBox.Header>
+    <ListBox.Item id="editor">Editor</ListBox.Item>
+    <ListBox.Item id="terminal">Terminal</ListBox.Item>
+  </ListBox.Section>
+  <ListBox.Item id="archive" disabled>Archive</ListBox.Item>
+</ListBox>
+```
+
+Every Item has a string identity. Single-selection values are a string or
+`null`; multiple-selection values are a string array or `"all"`.
+`disabledValues` disables known identities at the collection level.
+
+Sections and Headers group choices without introducing hierarchy. Use
+[`Tree`](./tree) when parent and child items need expansion. For data-backed
+collections, pass `items` and render Items from their stable identities.
+
+ListBox owns focus, keyboard navigation, typeahead, and selection presentation.
+It does not add a Surface or scrolling boundary; compose those explicitly.
+

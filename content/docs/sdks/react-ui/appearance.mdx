@@ -66,6 +66,11 @@ value, or the document direction when there is none.
 </UIProvider>
 ```
 
+The DOM continues to own ordinary inheritance. Components call
+`useDirection()` only when behavior itself needs a concrete direction—for
+example logical overlay placement, direction-sensitive keyboard movement,
+scrolling, or content rendered through a portal.
+
 ## Derived levels
 
 Appearance provides one concrete spacing value, one radius value, and named
@@ -122,6 +127,26 @@ The named sources are `background`, `foreground`, `default`, `primary`,
 `secondary`, `success`, `warning`, `danger`, and `info`. Theme names select
 the source palette. Components that need luminance or contrast inspect the
 resolved colors.
+
+## Color ownership
+
+Every React UI component that owns a base paint exposes a `color` prop for
+that paint. Omit it to use the component's Appearance-derived default, or pass
+a semantic color or direct CSS color to replace that base. Compound parts with
+an independently meaningful paint, such as `Table.Header`, expose their own
+`color` prop.
+
+The omitted color follows the component's meaning. A component without an
+inherent color meaning uses `default:base`; a component with a specific role
+may select the corresponding Appearance color. For example,
+`Window.Header.Close` defaults to `danger:base`. These defaults never prevent
+an explicit `color` override.
+
+Hover, pressed, focused, selected, inactive, and similar interaction states
+are derived from the owning component's base color. They are not separate
+palette inputs. This keeps one customization coherent through the complete
+interaction lifecycle. Semantic validation remains semantic: an invalid
+control uses Appearance's `danger` color.
 
 ## Material and motion
 

@@ -25,3 +25,12 @@ trusted transport to the same System.
 
 `gatewayAddress` and `resolveHome` are available when a tool needs those
 paths without connecting.
+
+The connection owns the handles, pending operations, subscriptions, command
+streams, and locally implemented capabilities obtained through it.
+`disconnect()` releases that work. Later operations through the disconnected
+`System` reject because the connection is closed.
+
+Disconnecting does not stop the native System service and does not alter
+Programs, Processes, or persistent System state. It ends only this external
+owner connection.
