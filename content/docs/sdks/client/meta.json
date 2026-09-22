@@ -7,6 +7,7 @@
     "context",
     "desktop",
     "system-access",
-    "permissions"
+    "permissions",
+    "execution"
   ]
 }

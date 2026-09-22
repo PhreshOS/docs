@@ -4,9 +4,7 @@ description: Use PhreshOS from the Server Endpoint currently executing on the ho
 ---
 
 `@phreshos/server` is the adapter for a Program's Server Endpoint. It exposes
-the complete Core `system` contract and the current Server `context` in the
-three execution modes: a supervised `command` process, a System-owned
-`worker`, and a capability-contained `sandbox`.
+the common Core `system` contract and the current Server `context`.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -48,6 +46,7 @@ read and change the paired Client's authoritative Window through
 
 <Cards>
   <Card title="Context" description="The current execution, paired Client, and answers." href="/sdks/server/context" />
-  <Card title="System access" description="The complete System contract from a Server Endpoint." href="/sdks/server/system-access" />
-  <Card title="Execution environments" description="Command, Worker, and Sandbox as one Server contract." href="/sdks/server/execution-environments" />
+  <Card title="System access" description="Shared System capabilities from a Server Endpoint." href="/sdks/server/system-access" />
+  <Card title="Permissions" description="Use the Program authority shared by both Endpoint kinds." href="/sdks/server/permissions" />
+  <Card title="Execution" description="Run the Server through Command, Worker, or Sandbox." href="/sdks/server/execution" />
 </Cards>

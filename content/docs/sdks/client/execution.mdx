@@ -1,0 +1,35 @@
+---
+title: Execution
+description: Sandboxed and ordinary iframe execution as one Client Endpoint contract.
+---
+
+A Client Endpoint executes as a browser document presented by the Desktop. Its
+declaration selects whether that document runs in a sandboxed iframe. The
+Client SDK and Endpoint contract remain the same in both modes; only the
+document's ambient browser authority changes.
+
+The default is `sandbox: true`. The iframe permits the capabilities required
+to execute the Client while withholding ordinary same-origin authority:
+
+```ts
+client: {
+  location: "dist/client",
+  sandbox: true,
+}
+```
+
+Setting `sandbox: false` removes the iframe's `sandbox` attribute and gives the
+document the authority of an ordinary same-origin frame:
+
+```ts
+client: {
+  location: "dist/client",
+  sandbox: false,
+}
+```
+
+Iframe containment and Program permissions are independent. The execution
+mode controls browser capabilities supplied directly to the document, while
+the Program's permissions govern calls through the System API. See
+[Endpoint Execution](/system/security/execution) and
+[Program configuration](/sdks/core/program-configuration).

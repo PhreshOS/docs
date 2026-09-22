@@ -3,12 +3,12 @@ title: Permissions
 description: Inspect, request, and assign Program authority.
 ---
 
-Permissions belong to the Program and apply equally to its Client and Server
-Endpoints. Client `context.permissions` exposes the common permission contract
+Permissions belong to the Program and apply equally to its Server and Client
+Endpoints. Server `context.permissions` exposes the common permission contract
 already bound to the executing Program.
 
 ```ts
-import { context } from "@phreshos/client"
+import { context } from "@phreshos/server"
 
 const allowed = await context.permissions.allows("uploads")
 
@@ -23,7 +23,7 @@ requested value; that exact match resolves immediately. `timeout(milliseconds)`
 selects a request deadline. `allow()` and `deny()` directly replace a stored
 assignment and require `all`.
 
-Program handles returned by Client expose the same contract through
+Program handles returned by Server expose the same contract through
 `program.permissions`. Access to a Program permits reading and requesting its
 permissions; it does not grant the authority those permissions describe.
 

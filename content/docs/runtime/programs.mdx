@@ -160,6 +160,8 @@ uninstalling its files.
 
 A Program emits `processCreate` and `processExit` for its own Processes,
 `pinned` when its pinned state changes, `uninstall` with `{ purge }` when its
-installed form is removed, and `forget` when the runtime Program leaves the
+installed form is removed, `permissions` with the complete effective permission
+snapshot after it changes, and `forget` when the runtime Program leaves the
 registry. The System-level Program collection publishes `create`, `install`,
-`uninstall`, `forget`, and `{ program, pinned }` changes for visible Programs.
+`uninstall`, `forget`, `{ program, pinned }`, and `{ program, permissions }`
+changes for visible Programs.

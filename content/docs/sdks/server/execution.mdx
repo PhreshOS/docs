@@ -1,5 +1,5 @@
 ---
-title: Execution environments
+title: Execution
 description: Command, Worker, and Sandbox as one Server Endpoint contract.
 ---
 
@@ -20,16 +20,16 @@ server: {
 }
 ```
 
-Development always uses `server.devCommand` with the project's
-development tooling.
+Development always uses `server.devCommand` with the project's development
+tooling.
 
 A `command` or `worker` Server retains the host capabilities of its process.
 A `sandbox` Server has no ambient host access; its only outside capabilities
 are permission-constrained System operations. Permissions constrain the
-System API in every mode. See [Endpoint Execution](/system/security/execution) and
-[Program configuration](/sdks/core/program-configuration).
+System API in every mode. See [Endpoint Execution](/system/security/execution)
+and [Program configuration](/sdks/core/program-configuration).
 
-## Lifecycle is shared
+## Lifecycle
 
 All three modes load the Server entry, initialize the same Server SDK
 transport, and announce readiness after the SDK can receive traffic. Importing
@@ -42,15 +42,15 @@ stopping, readiness, Services, communication, permissions, and exit behavior
 retain the same contract; only ambient host authority differs.
 
 Server SDK operations always cross the Endpoint boundary to the authoritative
-System, including in `command` and `worker` mode. The SDK does not silently
-replace `system.storage`, `system.network`, or other capabilities with local
-Node.js operations. Host-capable code may separately use its runtime's own APIs,
-but those calls are outside the System contract and its permission model.
+System, including in `command` and `worker` mode. The SDK does not replace
+`system.storage`, `system.network`, or other capabilities with local Node.js
+operations. Host-capable code may separately use its runtime's own APIs, but
+those calls are outside the System contract and its permission model.
 
 ## Sandbox environment
 
 Sandbox code runs in QuickJS with a 128 MiB memory limit and no Node.js
-globals, filesystem, child-process, or direct network access. The current base
+globals, filesystem, child-process, or direct network access. The base
 environment includes JavaScript built-ins plus `console`, `crypto.randomUUID`,
 `TextEncoder`, `TextDecoder`, `URL`, timeout and microtask scheduling,
 `EventTarget`, abort primitives, streams, and the web body types `Blob`, `File`,

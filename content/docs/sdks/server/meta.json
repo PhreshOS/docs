@@ -6,6 +6,7 @@
     "index",
     "context",
     "system-access",
-    "execution-environments"
+    "permissions",
+    "execution"
   ]
 }

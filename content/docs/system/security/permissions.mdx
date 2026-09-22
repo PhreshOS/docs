@@ -101,17 +101,19 @@ if (!allowed) {
 }
 ```
 
-`request` prompts the owner, replaces the stored assignment when approved, and
-returns the resulting canonical value. `timeout(milliseconds)` selects another
-deadline for the prompt. The default request deadline is two minutes. Approval
-returns the canonical granted list, denial returns `false`, and dismissal or a
-deadline returns `null`.
+`request` returns immediately when the effective permission already equals the
+requested canonical value. Otherwise it prompts the owner and replaces the
+stored assignment when approved. A broader or narrower assignment is not an
+exact match and still requires a decision because approval replaces the whole
+assignment.
 
-Every `request()` opens a decision; it does not silently succeed because the
-same or broader permission is already stored. The System presents that request
-through its dialog queue. When an Endpoint initiates it, the request is tied to
-that execution's lifetime. A Program handle may request a decision for any
-Program it can access; possessing the handle does not itself grant authority.
+`timeout(milliseconds)` selects another deadline for the prompt. The default
+request deadline is two minutes. Approval returns the canonical granted list,
+denial returns `false`, and dismissal or a deadline returns `null`. The System
+presents unresolved requests through its dialog queue. When an Endpoint
+initiates one, the request is tied to that execution's lifetime. A Program
+handle may request a decision for any Program it can access; possessing the
+handle does not itself grant authority.
 
 ## Window layer authority
 

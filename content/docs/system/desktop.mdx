@@ -171,13 +171,13 @@ A layer gives a Window a presentation role. The authoritative Window retains
 the complete state in every layer; the Desktop decides which values can be
 applied by that role.
 
-| Layer | Presentation concepts | Initial relationship |
-| --- | --- | --- |
-| `window` | Title, header, read-only frame, geometry, minimize, maximize, front, layer | Permanently followed |
-| `under` | Frame, geometry, minimize, maximize, front, layer | Initially unfollowed; mutable |
-| `over` | Frame, geometry, minimize, maximize, front, layer | Initially unfollowed; mutable |
-| `wallpaper` | Layer | Permanently unfollowed |
-| `start-menu` | Layer | Permanently unfollowed |
+| Layer | Presented values | Direct presentation mutation | Following |
+| --- | --- | --- | --- |
+| `window` | Title, header, frame, geometry, minimize, maximize, front, layer | Rejected | Required |
+| `under` | Frame, geometry, minimize, maximize, front, layer | Allowed | Optional; initially unfollowed |
+| `over` | Frame, geometry, minimize, maximize, front, layer | Allowed | Optional; initially unfollowed |
+| `wallpaper` | Layer | Rejected | Forbidden |
+| `start-menu` | Layer | Rejected | Forbidden |
 
 The standard `window` layer has a permanent Desktop-controlled frame. Its
 header defaults to visible and may be hidden independently. Programs cannot
