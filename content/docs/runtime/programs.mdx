@@ -33,7 +33,7 @@ phresh program inspect --program notes
 Pass `true` to `list(true)` to include only installed Programs.
 `find(identity)` returns one visible Program or `null`. Absence and
 inaccessibility look the same: the handle does not exist. See
-[Permissions](/system/permissions).
+[Permissions](/system/security/permissions).
 
 `system.program.create(source)` creates an uninstalled runtime Program from a
 definition or an absolute `program.json` path. `forceCreate()` claims the same
@@ -87,7 +87,7 @@ a Launch stores `{}`, which uses the Endpoint declaration defaults.
 Program as a favorite; it does not start a Process.
 
 Permissions are also part of System-managed state. Their effective values are
-described under [Permissions](/system/permissions). `definition()` remains the
+described under [Permissions](/system/security/permissions). `definition()` remains the
 source for author-declared metadata and defaults; it does not include this
 mutable state.
 
@@ -112,7 +112,7 @@ whether one is declared. `definition()` returns the complete canonical
 `ProgramDefinition` accepted by `system.program.create()`; it describes the
 Program and does not include mutable runtime state.
 
-See [Storage](/system/storage) and [Permissions](/system/permissions).
+See [Storage](/system/storage) and [Permissions](/system/security/permissions).
 
 ## Installation and runtime form
 

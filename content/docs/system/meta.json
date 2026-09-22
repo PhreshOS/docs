@@ -9,8 +9,6 @@
     "storage",
     "network",
     "shell",
-    "security",
-    "authentication",
-    "permissions"
+    "security"
   ]
 }

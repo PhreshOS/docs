@@ -1,7 +1,6 @@
 ---
 title: Permissions
-description: Program-owned System authority and its visible scope.
-icon: Shield
+description: Program authority within the System and its visible scope.
 ---
 
 Permissions describe which System capabilities a Program may access. A Program
@@ -68,8 +67,7 @@ resources. `connections` includes `desktopConnection`.
 
 Program creation, force-creation, direct permission assignment, and
 `system.shell()` require `all`. Reading another visible Program's permissions
-requires access to that Program, not `all`. Effective `all` also permits
-same-origin access for the Program's Client iframe.
+requires access to that Program, not `all`.
 
 ## Declaring, inspecting, and requesting
 

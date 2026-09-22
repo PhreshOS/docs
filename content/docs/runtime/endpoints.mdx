@@ -61,7 +61,7 @@ A Server declaration chooses one execution mechanism: a supervised operating
 system command, an ECMAScript module loaded in a Node.js Worker, or a bundled
 module loaded in a capability-contained Sandbox. These mechanisms have the
 same Server SDK and Endpoint contract. They differ in the host authority
-available outside the System API. See [Security](/system/security).
+available outside the System API. See [Endpoint Execution](/system/security/execution).
 
 `server.start({ service: true })` may override the Service role for that new
 execution context.
@@ -69,8 +69,11 @@ execution context.
 ## Client Endpoint
 
 The Client Endpoint owns a permanent authoritative `window` value. Each
-running execution context presents through a Desktop iframe. Its launch can
-choose the Service role and the initial title, header
+running execution context presents through a Desktop iframe. The Client
+declaration's `sandbox` value determines how that document executes: omission
+uses a sandboxed iframe, while `false` removes the sandbox attribute.
+
+Its launch can choose the Service role and the initial title, header
 state, size, position, layer, minimized state, and maximized state.
 
 ```ts

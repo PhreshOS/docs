@@ -1,0 +1,44 @@
+---
+title: Overview
+description: How authentication, permissions, and execution containment form the PhreshOS security model.
+---
+
+PhreshOS security is divided into three independent boundaries:
+authentication identifies the System owner, permissions govern a Program's
+authority through the System API, and Endpoint execution determines the
+ambient capabilities of the runtime in which code runs.
+
+These boundaries answer different questions. None substitutes for another.
+
+## Authentication
+
+[Authentication](/system/security/authentication) determines whether a browser
+Connection belongs to the System owner. Sessions carry that authorization
+across Connections and govern sign-in, sign-out, and expiration.
+
+Authentication gives a person access to the Desktop. It does not grant a
+Program authority or decide how an Endpoint's code is contained.
+
+## Permissions
+
+[Permissions](/system/security/permissions) determine what a Program may see
+and do through the System API. Permission state belongs to the Program and
+applies to every Client and Server Endpoint it owns.
+
+Permissions govern System capabilities and visible domain scope. They do not
+remove capabilities supplied directly by an Endpoint's runtime.
+
+## Endpoint execution
+
+[Endpoint Execution](/system/security/execution) determines the environment in
+which an Endpoint runs and the ambient authority that environment provides.
+Servers choose among command, worker, and sandbox execution. Clients choose
+whether their browser document uses iframe sandboxing.
+
+Execution containment does not change the Endpoint's SDK contract. Calls into
+the System remain governed by the Program's permissions in every execution
+mode.
+
+Together, the three boundaries establish who is operating the Desktop, what a
+Program may request from the System, and what its code can do independently in
+its own runtime.

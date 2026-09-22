@@ -61,7 +61,9 @@ communication can preserve additional JavaScript and binary values.
 
 Window commands mutate the authoritative Window. Geometry accepts finite
 pixels or the same workspace-relative expressions accepted by Core, and
-`setGeometry` commits position and size together.
+`setGeometry` commits position and size together. Bare numeric arguments are
+pixel counts, even when quoted by the shell: `--height 1` means one pixel. Use
+`--height 1/1` or `--height 100%` for the complete workspace height.
 
 ```sh
 phresh window set-geometry \

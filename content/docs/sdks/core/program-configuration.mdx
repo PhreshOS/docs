@@ -48,7 +48,7 @@ created.
 
 `permissions` declares the System capabilities the Program requests. Runtime
 permission state may override each declared assignment. See
-[Permissions](/system/permissions).
+[Permissions](/system/security/permissions).
 
 ## Endpoint declarations
 
@@ -74,13 +74,18 @@ Server chooses exactly one. Development remains separate and uses
 `devCommand` when declared. Optional `installCommand` and
 `uninstallCommand` prepare and clean the production Server location.
 
-A Client location contains its production `index.html`. Its declaration can
-also choose the initial Window title, header state, frame, default transaction,
-size, position, layer, minimized state, and maximized state:
+A Client location contains its production `index.html`. `sandbox` defaults to
+`true`, which runs that document in an iframe sandbox allowing scripts and
+forms. Setting it to `false` removes the iframe's `sandbox` attribute entirely.
+
+The Client declaration can also choose the initial Window title, header state,
+frame, default transaction, size, position, layer, minimized state, and
+maximized state:
 
 ```ts
 client: {
   location: "dist/client",
+  sandbox: true,
   layer: "over",
   frame: { radius: "full", color: "default" },
   transaction: { duration: 180, easing: "ease-out" },
