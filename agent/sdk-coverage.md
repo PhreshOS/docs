@@ -65,7 +65,7 @@ reason. Content depth belongs inside this stable structure.
 | Core | `Process`, `Exit`, `ProcessEvents` | Runtime / Processes |
 | Core | `Service`, `ServerService`, `ClientService`, `ServiceAddress`, `ServiceEndpoint`, `ServiceProgramMetadata`, `programIcon()`, Service lifecycle contracts, and `isServiceAddress` | Runtime / Services |
 | Core | `Context`, `EndpointContext`, `ClientContext`, `ServerContext`, `ContextMessage`, `ContextEvents`, `ContextCapture`, `Answerer` | Runtime / Context |
-| Core | `Window`, `WindowPresentation`, their operations, state, events, geometry, layers, launch values, frames, and transactions | System / Desktop |
+| Core | `Window`, `WindowPresentation`, their operations, state, events, geometry, layers, launch values, surfaces, and presentation transactions | System / Desktop |
 | Core | `Desktop`, surface snapshots and events, preferences, themes, and writable preference contracts | System / Desktop and Appearance |
 | Core | `Appearance` and all appearance value, source, event, limit, default, and parser exports | System / Appearance |
 | Core | `Storage`, `StorageFile`, file/stat/read/write/transfer/list/space/watch/change/scope types and scope parsers | System / Storage |
@@ -87,7 +87,7 @@ reason. Content depth belongs inside this stable structure.
 | React | `ContextProvider`, `ContextProviderProperties`, `useContext`, `useProgram`, `useProcess`, `useParent` | SDKs / React |
 | React | `SystemProvider`, `SystemProviderProperties`, `useSystem`, `useSystemAppearance` | SDKs / React |
 | React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopViewport`, `useDesktopPreferences` | SDKs / React |
-| React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState`, `useWindowPresentationState` | SDKs / React |
+| React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState` | SDKs / React |
 | React | `useSubscribe`, `useSubscribeAsks`, `AskSubscribable`, `useSubscribeAnswers`, `AnswerSubscribable` | SDKs / React |
 | React UI | `UIProvider`, `UIProviderProps`, `Preferences`, `useAppearance`, `usePreferences`, `useBrowserPreferences`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |
 | React UI | `Surface`, `SurfaceProps`, `SurfaceOwnProps`, `SurfaceHost`, `SurfaceHostProps`, `SurfaceComponent`, `MaterialOptions` | SDKs / React UI / Components / Surface |

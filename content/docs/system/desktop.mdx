@@ -55,20 +55,18 @@ The executing Program needs `desktopConnection` or `authentication` to access it
 
 ## Client Windows
 
-The System owns each Client Endpoint's authoritative Window state. A Desktop
-applies the parts of that state that have meaning in the Window's current layer
-and owns the measurements, pointer interaction, iframe, and animation required
-to present it on one screen.
+The System owns each running Client Endpoint's authoritative Window state. The
+Desktop owns the execution document and its local representation on one
+screen.
 
 This creates two related capabilities:
 
-- `window` records authoritative state for the Client Endpoint.
-- `presentation` controls and observes how the executing Client is represented
-  by its current Desktop.
+- `window` is the authoritative state of the current Client execution.
+- `presentation` controls or cooperates with that execution's local Desktop
+  representation.
 
-They normally remain aligned, but they are not the same state. More than one
-Desktop may represent the same authoritative Window, and a presentation may be
-temporarily detached from it.
+The Window and presentation always report the same layer. They do not otherwise
+represent the same kind of state.
 
 Client code reaches both Window capabilities through its Context:
 
@@ -78,9 +76,9 @@ import { context } from "@phreshos/client"
 
 ### Authoritative Window
 
-Every declared Client Endpoint has one authoritative Window, even while its
-execution context is stopped. The Window belongs to the Client Endpoint and
-survives its execution contexts.
+The Window handle belongs to the Client Endpoint, but its readable and mutable
+state exists only while that Endpoint is running. Reads and mutations reject
+while it is stopped.
 
 ```ts
 await context.window.setGeometry({
@@ -94,17 +92,14 @@ await context.window.maximize()
 await context.window.setHeader(false)
 ```
 
-Window operations record authoritative values. They are therefore valid even
-when the current layer does not present the affected concept. For example, a
-Program may record geometry while its Client is in the wallpaper layer, then
-restart the Client in the standard window layer and use that geometry there.
+Stopping the Client discards that execution's Window state. The next start
+creates fresh state from the Client declaration plus the new start override;
+it does not inherit mutations from an earlier execution. Existing event
+subscriptions remain registered, stay silent while stopped, and observe the
+new execution after it starts.
 
-Stopping a Client does not reset its Window. Starting it again preserves every
-stored value omitted from the new launch. An explicitly supplied launch value
-replaces only its corresponding authoritative value.
-
-The Window exposes title, header, surface, default transaction, position, size,
-minimized and maximized states, front state, and layer. Position and size
+The Window exposes title, header, position, size, minimized and maximized
+states, front state, and layer. Position and size
 accept finite pixels or relative expressions such as `"1/2"`. A bare numeric
 value is always a pixel count: `1` means one pixel, while `"1/1"` and `"100%"`
 mean the complete available span.
@@ -113,60 +108,45 @@ atomically. Minimized and maximized are independent, and neither discards the
 stored geometry. `raise()` brings a Window to the front of its own layer.
 
 Window events are `move`, `resize`, `minimize`, `maximize`, `changeTitle`,
-`changeHeader`, `changeSurface`, `changeTransaction`, and `front`. An atomic
+`changeHeader`, and `front`. An atomic
 geometry change emits `move` and `resize` only for the parts that changed,
 after the complete geometry has been committed.
 
 ### Presentation
 
-`context.presentation` exposes the values the current Desktop relies on to
-represent the executing Client's Window. It does not report measurements of
-where or how the rendered Window visually appears. Rendering remains owned by
-the Desktop, which may derive a visual result from position, size, maximized
-state, minimized state, and the other presentation values without rewriting
-their meaning.
+`context.presentation` is a command handle for the executing Client's local
+representation. It has no state snapshot or events. `layer()` is its only read
+and always returns the same value as `context.window.layer()`.
 
-The authoritative `Window` is the truth retained by the Client Endpoint. A
-presentation may currently follow that truth or, where its layer permits local
-control, use different values. A presentation change is local to that Desktop
-and does not mutate the authoritative Window.
-
-The standard `window` layer initially follows its authoritative Window. Like
-`under`, `over`, and `shell`, it may unfollow and accept direct presentation
-mutations. `follow()` projects whatever authoritative values the current layer
-can apply, while `unfollow()` preserves the current applied state and stops
-later projection:
+In the standard `window` layer, the Desktop interprets authoritative Window
+state and owns movement, resizing, snapping, minimizing, maximizing, and the
+header. A custom header can hand an intentional pointer drag to that existing
+Desktop behavior:
 
 ```ts
-await context.presentation.unfollow()
-await context.presentation.setGeometry({
-  x: 24,
-  y: 24,
-  width: 720,
-  height: 480,
+const move = context.presentation.beginMoveGesture({
+  origin: { x: pressedX, y: pressedY },
+  point: { x: draggedX, y: draggedY },
 })
-await context.presentation.follow()
+
+await move.ready
+// The initiating document may now release its pointer capture.
+await move.finished
 ```
 
-`follow()` and `unfollow()` never reject merely because of the layer. A role
-with no applicable values simply has nothing to follow. The Desktop enforces a
-minimum presented size of 260 by 160 logical pixels for standard windows,
-limited by the available workspace, without rewriting smaller authoritative
-geometry.
+`ready` resolves only after the Desktop has installed its capture surface.
+`finished` resolves when the move ends or is cancelled, and `cancel()` ends an
+unfinished handoff.
 
-Presentation reads and mutations describe actual application. They reject when
-the current layer has no corresponding concept. Presentation event observation
-is asynchronous, so unsupported events remain silent instead. Supported events
-are emitted immediately when a presentation value changes. Visual interpolation
-remains private rendering output of the Desktop.
-
-The `window`, `under`, `over`, and `shell` layers support presentation
-transactions. Their authoritative Window transaction is the default for the
-first appearance and for later presentation mutations:
+In `under`, `over`, and `shell`, the Desktop starts the Client document at
+`{ x: 0, y: 0, width: 0, height: 0 }` and does not interpret authoritative
+Window values. The Program reads its Window and chooses how to represent those
+values through the raw operations `move()`, `resize()`, `setGeometry()`,
+`setSurface()`, and `raise()`.
 
 ```ts
 await context.presentation
-  .transactionAndWait({ duration: 180, easing: "ease-out" })
+  .transactionAndWait()
   .setGeometry({
     x: 24,
     y: 24,
@@ -175,53 +155,37 @@ await context.presentation
   })
 ```
 
-`transaction()` resolves when the Desktop accepts the operation.
-`transactionAndWait()` resolves after its visual transition finishes. On a
-presentation operation, `true` uses the authoritative Window transaction and
-`false` applies no transition. A number supplies a duration in milliseconds
-using the Appearance easing, and an object supplies both duration and easing.
-If the authoritative Window transaction is itself `true`, it resolves to the
-Appearance transaction. Window presentation transactions are unrestricted by
-the Appearance customization duration limit.
+Calling a raw operation directly applies it without a transaction.
+`transaction()` resolves when the Desktop accepts a transacted operation, and
+`transactionAndWait()` resolves after its visual transition finishes. Omission
+uses the effective Appearance transaction, a number supplies a duration in
+milliseconds with Appearance easing, and an object supplies both duration and
+easing. `raise()` is immediate and is not a transacted operation.
+
+`setSurface(false)` removes the optional Desktop-painted backing behind the
+Client document. A surface does not resize or clip the document; the Program
+owns the content rendered above it.
+
+Every operation exists on the shared presentation handle. An operation rejects
+when its meaning is unavailable in the current layer: standard Windows reject
+raw mutations, raw layers reject `beginMoveGesture()`, and wallpaper rejects
+both.
 
 ### Layers
 
-A layer gives a Window a presentation role. The authoritative Window retains
-the complete state in every layer; the Desktop decides which values can be
-applied by that role.
+A layer gives a Client representation one ownership model.
 
-| Layer | Presented values | Direct presentation mutation | Following |
-| --- | --- | --- | --- |
-| `window` | Title, header, surface, geometry, minimize, maximize, front, layer | Allowed | Optional; initially followed |
-| `under` | Surface, geometry, minimize, maximize, front, layer | Allowed | Optional; initially unfollowed |
-| `over` | Surface, geometry, minimize, maximize, front, layer | Allowed | Optional; initially unfollowed |
-| `wallpaper` | Layer | No mutable presented value | No applicable state to follow |
-| `shell` | Surface, geometry, minimize, maximize, front, layer | Allowed | Optional; initially unfollowed |
+| Layer | Representation owner | Presentation capabilities |
+| --- | --- | --- |
+| `window` | Desktop, interpreting authoritative Window state | `layer()`, `beginMoveGesture()` |
+| `under` | Program | `layer()`, raw operations and transactions |
+| `over` | Program | `layer()`, raw operations and transactions |
+| `wallpaper` | Desktop, using its fixed wallpaper role | `layer()` |
+| `shell` | Program | `layer()`, raw operations and transactions |
 
-The standard `window` layer defaults to a Desktop-painted surface. Its header
-defaults to visible and may be hidden independently. Both its authoritative
-surface and its local presentation surface may be customized or removed.
-
-Only the standard `window` layer presents a title because it is the only layer
-with a header concept. Hiding that header does not remove the title from the
-layer's contract; it only hides the region that displays it.
-
-`under`, `over`, and `shell` have no header. Their surface defaults to absent
-and may be enabled or customized. A surface accepts `true`, `false`, or an object with
-specific `radius`, `color`, and `material` overrides:
-
-```ts
-await context.window.setSurface({
-  radius: "full",
-  color: "primary",
-  material: { opacity: 0.8, grain: 0.03 },
-})
-```
-
-An `under`, `over`, `window`, or `shell` launch may also set `transaction`. It controls the
-Client's first appearance after the Desktop is already running and remains the
-default for later presentation operations. Existing Windows do not replay
-that appearance when a Desktop loads.
+The Desktop enforces a minimum presented size of 260 by 160 logical pixels for
+standard windows, limited by the available workspace, without rewriting
+smaller authoritative geometry.
 
 `wallpaper` is a fixed role whose presentation exposes only its layer. Starting
 another wallpaper Client ends the existing occupant's Process before presenting

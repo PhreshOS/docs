@@ -66,6 +66,29 @@ Surface without rendering the `Window` root.
 Header parts must remain inside `Window.Header`, because the Header provides
 their shared spacing, active state, and control treatment.
 
+## Hand a drag to a window host
+
+`Window.Header` can recognize an intentional pointer drag and hand it to an
+external window host. Pass only the host's move-start function; React UI owns
+the DOM pointer threshold and capture lifecycle without learning the host's
+other APIs.
+
+```tsx
+<Window.Header
+  beginMoveGesture={beginMoveGesture}
+  onMoveError={reportError}
+>
+  {/* header parts */}
+</Window.Header>
+```
+
+The same behavior is available through `useWindowMoveHandle()` when a custom
+drag region is not a `Window.Header`. The function receives an origin and the
+first intentional movement, then returns `{ ready, finished, cancel }`. React
+UI retains its pointer capture until `ready` confirms that the host can receive
+the pointer stream, then releases it. It cancels an unfinished handoff if the
+initiating component goes away.
+
 ## State and behavior
 
 - `active={false}` attenuates the identity without disabling the controls.

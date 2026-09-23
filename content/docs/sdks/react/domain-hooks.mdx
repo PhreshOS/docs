@@ -12,7 +12,6 @@ const programState = useProgramState(program)
 const processState = useProcessState(process)
 const endpointState = useEndpointState(process.server)
 const windowState = useWindowState(process.client.window)
-const presentationState = useWindowPresentationState(context.presentation)
 ```
 
 Each hook subscribes before requesting its initial snapshot. Events that
@@ -28,7 +27,6 @@ hook.
 | `useEndpointState` | `{ running }` |
 | `useServiceState` | `{ available }` for a stable Service address |
 | `useWindowState` | the complete authoritative `WindowState` |
-| `useWindowPresentationState` | the values the current Desktop relies on for the Window's layer |
 | `useConnectionState` | `{ connected, session }` |
 | `useSessionState` | `{ valid, connections }` |
 
@@ -53,8 +51,8 @@ These snapshots are derived from the same reads and events documented under
 
 ## Window and authentication state
 
-`useWindowState()` resolves title, header, surface, default transaction,
-position, size, minimized, maximized, front, and layer in one render value. It
+`useWindowState()` resolves title, header, position, size, minimized,
+maximized, front, and layer in one render value. It
 then follows the authoritative Window events that can change those fields.
 
 ```tsx
@@ -64,21 +62,10 @@ if (!state) return null
 return <p>{state.size.width} × {state.size.height}</p>
 ```
 
-`useWindowPresentationState()` follows the values the current Desktop relies
-on to represent the Client Window. Its result is layer-aware: standard Windows
-include title, header, surface, and geometry; `under`, `over`, and `shell`
-include surface and geometry; `wallpaper` exposes only its layer.
-
-```tsx
-const state = useWindowPresentationState(context.presentation)
-
-if (!state) return null
-return <p>{state.layer}</p>
-```
-
-Presentation geometry is the geometry retained by the Desktop as input to its
-representation. Maximizing a Window changes `maximized`; it does not replace
-that retained position or size with the rendered viewport bounds.
+Presentation is a command handle rather than observable domain state, so it
+has no React state hook. Use `context.presentation.layer()` for its explicit
+layer read and React UI's move-handle support when connecting DOM pointer input
+to `beginMoveGesture()`.
 
 Connection and Session state remain separate because a live Connection can
 change or lose its Session, while one valid Session can authorize several
