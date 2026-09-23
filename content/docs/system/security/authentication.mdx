@@ -32,8 +32,9 @@ terminal Connection event.
 After the Connection ends, `connected()` is `false` and `session()` is
 `null`.
 
-At System scope, `system.connection.list()` and `find()` expose live visible
-Connections. The collection emits `create` and `disconnect`.
+At System scope, `system.authentication.connections()` and `connection()`
+expose live visible Connections. The Authentication handle emits
+`connectionCreate` and `connectionDisconnect`.
 
 ## Session
 
@@ -56,9 +57,20 @@ a reason of `"signedOut"` or `"expired"`.
 
 After the Session ends, `valid()` is `false` and `connections()` is empty.
 
-`system.session` lists and finds visible valid Sessions and emits `create`
-and `end`. The System-level end event contains both the Session and its
-reason.
+`system.authentication.sessions()` and `session()` expose visible valid
+Sessions. The Authentication handle emits `sessionCreate` and `sessionEnd`.
+The end event contains both the Session and its reason.
+
+## Owner credentials
+
+`system.authentication.state()` returns the configured public username, or
+`null` before the owner has credentials. `requirements()` returns the username
+and password length bounds enforced by that System.
+
+`setCredentials()` replaces the complete username and password used for later
+sign-ins. Existing Sessions remain valid. A caller can end one Session with
+`session.signOut()` or explicitly end all Sessions with
+`system.authentication.signOutAllSessions()`.
 
 ## Validity
 
@@ -74,6 +86,7 @@ Signing out changes attached Connections from authorized to unauthorized. It
 does not close their WebSockets. Connection transport and Connection
 authorization are separate lifecycles.
 
-A Program needs the `connections` permission to list Connections and
-Sessions. `desktopConnection` gives its Client access to the containing
-Desktop Connection.
+A Program needs the `authentication` permission to read or change owner
+authentication and to access every Connection and Session. That permission
+also grants `desktopConnection`, which gives a Client access to the containing
+Desktop Connection and its attached Session.

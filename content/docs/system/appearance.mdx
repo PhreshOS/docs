@@ -5,12 +5,13 @@ icon: Palette
 ---
 
 Appearance is the System's complete unresolved visual state. It is one
-document: colors, spacing, radius, shadow, material, transaction, and wallpapers,
-each with both a light and a dark branch where the value is themed.
+document: colors, spacing, radius, shadow, material, transaction, Taskbar
+settings, and wallpapers. The values that vary by theme contain complete light
+and dark branches; Taskbar settings do not.
 
 Programs and the Desktop derive presentation from this source.
-[React UI](/sdks/react-ui) interprets the visual fields it owns; wallpapers
-remain System-only.
+[React UI](/sdks/react-ui) interprets the visual fields it owns; Taskbar
+settings and wallpapers remain System-only.
 
 ```ts
 const appearance = await system.appearance.snapshot()
@@ -41,6 +42,8 @@ every name.
 `x`, `y`, `blur`, `spread`, and `opacity`. Material is `grain`,
 `grainAmount`, `backdrop`, `opacity`, `distortion`, and `saturation`.
 `transaction` is `{ duration, easing }` for visual change.
+`taskbar` is `{ position, size }`. Position is `top`, `left`, `bottom`, or
+`right`; size is a number from `0` to `100`.
 
 | Value | Accepted range |
 | --- | ---: |
@@ -53,13 +56,15 @@ every name.
 | Material `distortion` | `0`–`140` |
 | Material `saturation` | `1`–`2.6` |
 | Transaction `duration` | `0`–`60000` milliseconds |
+| Taskbar `size` | `0`–`100` pixels |
 
 Transaction easing accepts `linear`, `ease`, `ease-in`, `ease-out`,
 `ease-in-out`, or a four-number cubic Bézier tuple. `appearanceLimits`
 exports these numeric bounds for editors and validation interfaces.
 
-The current `defaultAppearance` uses spacing `12`, radius `10`, and a
-`120ms ease-out` transaction. Its light and dark Material branches are:
+The current `defaultAppearance` uses spacing `12`, radius `10`, a
+`120ms ease-out` transaction, and Taskbar settings
+`{ position: "bottom", size: 44 }`. Its light and dark Material branches are:
 
 ```ts
 {

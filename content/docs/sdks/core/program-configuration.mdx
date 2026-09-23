@@ -79,7 +79,7 @@ A Client location contains its production `index.html`. `sandbox` defaults to
 forms. Setting it to `false` removes the iframe's `sandbox` attribute entirely.
 
 The Client declaration can also choose the initial Window title, header state,
-frame, default transaction, size, position, layer, minimized state, and
+surface, default transaction, size, position, layer, minimized state, and
 maximized state:
 
 ```ts
@@ -87,7 +87,7 @@ client: {
   location: "dist/client",
   sandbox: true,
   layer: "over",
-  frame: { radius: "full", color: "default" },
+  surface: { radius: "full", color: "default" },
   transaction: { duration: 180, easing: "ease-out" },
   size: { width: 800, height: 600 },
 }
@@ -95,7 +95,7 @@ client: {
 
 The authoritative Window retains these values in every layer. The Desktop
 applies only the values understood by the selected presentation role. See
-[Desktop](/system/desktop) for layer capabilities, frames, and transactions.
+[Desktop](/system/desktop) for layer capabilities, surfaces, and transactions.
 
 When neither a Launch nor the Client declaration supplies a value, the System
 uses these initial defaults:
@@ -107,11 +107,11 @@ uses these initial defaults:
 | `position` | `{ x: 120, y: 80 }`, offset for concurrently open Windows |
 | `size` | `{ width: 520, height: 340 }` |
 | `minimize`, `maximize` | `false` |
-| `header`, `frame`, `transaction` | Selected layer's defaults |
+| `header`, `surface`, `transaction` | Selected layer's defaults |
 
-The standard `window` layer starts with a header and frame. `under` and
-`over` start without either and without a transaction. Wallpaper and Start
-Menu presentations use only the layer value. These are presentation defaults;
+The standard `window` layer starts with a header and surface. `under`, `over`,
+and `shell` start without either and without a transaction. Wallpaper
+presentations use only the layer value. These are presentation defaults;
 the authoritative Window still retains every field.
 
 `devUrl` selects an existing HTTP or HTTPS server. When a Client

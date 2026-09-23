@@ -21,9 +21,10 @@ const processes = await system.process.list()
 console.log(programs.length, processes.length)
 ```
 
-`system.program`, `system.process`, `system.connection`, and `system.session`
-are observable collections. They find and list the domain objects currently
-visible to the caller and publish their System-wide lifecycle events.
+`system.program` and `system.process` are observable collections.
+`system.authentication` owns the System's public authentication state and the
+observable Connection and Session registries. Each returns only the domain
+objects visible to the caller.
 
 `system.storage`, `system.uploads`, `system.appearance`, and `system.network`
 expose persistent and host capabilities. `system.service` discovers available

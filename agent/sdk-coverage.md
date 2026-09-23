@@ -87,7 +87,7 @@ reason. Content depth belongs inside this stable structure.
 | React | `ContextProvider`, `ContextProviderProperties`, `useContext`, `useProgram`, `useProcess`, `useParent` | SDKs / React |
 | React | `SystemProvider`, `SystemProviderProperties`, `useSystem`, `useSystemAppearance` | SDKs / React |
 | React | `DesktopProvider`, `DesktopProviderProperties`, `useDesktop`, `useDesktopViewport`, `useDesktopPreferences` | SDKs / React |
-| React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState` | SDKs / React |
+| React | `useProgramState`, `ProgramState`, `useProcessState`, `ProcessState`, `useEndpointState`, `EndpointState`, `useServiceState`, `ServiceState`, `useWindowState`, `useWindowPresentationState` | SDKs / React |
 | React | `useSubscribe`, `useSubscribeAsks`, `AskSubscribable`, `useSubscribeAnswers`, `AnswerSubscribable` | SDKs / React |
 | React UI | `UIProvider`, `UIProviderProps`, `Preferences`, `useAppearance`, `usePreferences`, `useBrowserPreferences`, `useThemedValue`, `defaultAppearance` | SDKs / React UI / Appearance |
 | React UI | `Surface`, `SurfaceProps`, `SurfaceOwnProps`, `SurfaceHost`, `SurfaceHostProps`, `SurfaceComponent`, `MaterialOptions` | SDKs / React UI / Components / Surface |

@@ -51,19 +51,19 @@ An exact permission assignment takes priority over `all`.
 | --- | --- |
 | `services` | Every Service, or every Service using selected Process names |
 | `programs` | Every Program, or selected Programs, including their Processes, Endpoints, Windows, and resources |
-| `layers` | Every restricted Client Window layer, or selected `under`, `over`, `wallpaper`, and `start-menu` layers |
+| `layers` | Every restricted Client Window layer, or selected `under`, `over`, `wallpaper`, and `shell` layers |
 | `network` | Every System network target, or selected URL scopes |
 | `storage` | Every native path and operation, or selected operation-and-path scopes |
 | `uploads` | Creation of public uploads |
 | `appearance` | Replacement of System Appearance |
 | `desktopPreferences` | Changes to Desktop preferences |
 | `desktopConnection` | This Desktop's Connection and its attached Session |
-| `connections` | Every Connection and Session; also grants `desktopConnection` |
+| `authentication` | Owner authentication and every Connection and Session; also grants `desktopConnection` |
 | `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted System capabilities |
 
 `services` is independent from `programs`. A selected value grants every
 Service whose Process uses that name, without revealing its Program or other
-resources. `connections` includes `desktopConnection`.
+resources. `authentication` includes `desktopConnection`.
 
 Program creation, force-creation, direct permission assignment, and
 `system.shell()` require `all`. Reading another visible Program's permissions
@@ -118,7 +118,7 @@ handle does not itself grant authority.
 ## Window layer authority
 
 The ordinary `window` layer needs no layer permission. Selecting `under`,
-`over`, `wallpaper`, or `start-menu` requires `layers` coverage. This applies
+`over`, `wallpaper`, or `shell` requires `layers` coverage. This applies
 when a Program creates a Process, starts a Client Endpoint, or stores a startup launch
 that explicitly selects one of those layers. Omitting `layer` continues through
 the declaration or existing authoritative Window value.
