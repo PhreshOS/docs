@@ -13,7 +13,7 @@ through one storage API:
 | `uploads` | immutable public files addressed by opaque keys |
 | `program.store` | small structured values addressed by keys, optionally expiring |
 | `program.database` | relational Program data queried with SQLite |
-| `program.logs` | read-only SQL over captured Endpoint output |
+| `program.logs` | durable captured Endpoint output; see [Logs](/system/logs) |
 
 Choosing between them is part of the data contract. An upload key, for
 example, is stable public content; it is not a general writable file path.
@@ -115,12 +115,11 @@ upload keys; see [Appearance](/system/appearance) for their supported formats.
 ## Store and SQL
 
 `program.store` is key-value state with optional expiry. `program.database`
-is writable SQLite. `program.logs` is read-only SQL over captured Endpoint
-output. Each `query` runs one statement.
+is writable SQLite. Each database `query` runs one statement.
 
 ```ts
 await program.store.set("draft", { title: "Untitled" })
-const rows = await program.logs.query("SELECT content FROM logs WHERE kind = ?", ["error"])
+const rows = await program.database.query("SELECT title FROM drafts WHERE complete = ?", [false])
 ```
 
 `store.get(key)` returns `undefined` when the key is absent. `set()` accepts an
@@ -129,7 +128,7 @@ written. `has()`, `delete()`, and `clear()` provide the corresponding
 existence and removal operations; `delete()` accepts one key or an array of
 keys.
 
-The writable database and read-only logs both use parameterized SQL through
-`query(statement, values?)`. The logs table contains `createdAt`, `process`,
-`source`, `kind`, and `content`. Use bound values rather than interpolating
-untrusted data into a statement.
+The writable database uses parameterized SQL through
+`query(statement, values?)`. Use bound values rather than interpolating
+untrusted data into a statement. The separate read-only SQL and live event
+contract for System and Program records is described under [Logs](/system/logs).

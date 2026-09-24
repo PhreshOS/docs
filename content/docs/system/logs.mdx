@@ -1,0 +1,97 @@
+---
+title: Logs
+description: Query durable System and Program records and observe new ones live.
+icon: ScrollText
+---
+
+PhreshOS exposes two durable logs through one read-only contract. `system.logs`
+contains records produced by the System itself. `program.logs` contains output
+captured from the Client and Server Endpoints of one Program.
+
+Both handles provide `query()` for existing rows and a `log` event for future
+rows. A live event is published only after its row has been stored, so the
+record is already queryable when a listener receives it. Subscribing does not
+replay earlier rows.
+
+```ts
+const recent = await system.logs.query(
+  "SELECT * FROM logs WHERE level = ? ORDER BY createdAt DESC LIMIT ?",
+  ["error", 20],
+)
+
+const stop = system.logs.subscribe("log", record => {
+  console.error(record.source, record.content)
+})
+```
+
+`query()` accepts one SQLite statement and optional bound values. The database
+connection is read-only, so statements that modify the log reject. Query rows
+are generic records because the selected columns and SQLite expressions belong
+to the caller. The `log` event returns the typed record for that log.
+
+## System records
+
+A System record contains:
+
+| Field | Meaning |
+| --- | --- |
+| `createdAt` | capture time as Unix milliseconds |
+| `level` | `debug`, `info`, `warning`, or `error` |
+| `source` | System component that produced the record |
+| `kind` | stable machine-readable event name |
+| `content` | human-readable account of the event |
+| `data` | event-specific JSON data, or `null` |
+
+The live event exposes `data` as a `JsonValue`. In SQLite queries, the `data`
+column contains its JSON text so callers may select or transform it with
+SQLite's JSON functions.
+
+System components record intentional facts directly. For example, an
+unexpected Server Endpoint exit produces an `error` record whose `kind` is
+`unexpectedServerEndpointExit`. An explicitly stopped Endpoint does not
+produce that System error.
+
+The default Shell listens for new error records and may present them
+immediately. This is presentation owned by that Shell, not a queue of dialogs
+inside the System. If no Shell is listening, the record remains available to
+later queries.
+
+## Program records
+
+`program.logs` records what that Program's Endpoints produced. Its table and
+live event contain:
+
+| Field | Meaning |
+| --- | --- |
+| `createdAt` | capture time as Unix milliseconds |
+| `process` | Process identity |
+| `source` | `client` or `server` |
+| `kind` | console method, stream, or `exit` |
+| `content` | captured text |
+
+Server `stdout` and `stderr`, Client console messages, and Endpoint exits use
+this log. Exit records are kept for normal and abnormal termination; an
+abnormal Server exit may therefore appear both as the Program's `exit` record
+and as a System error, because the two records describe different domains.
+
+```ts
+const program = await system.program.find("notes")
+
+if (program) {
+  const stop = program.logs.subscribe("log", record => {
+    console.log(record.process, record.kind, record.content)
+  })
+}
+```
+
+## Access and retention
+
+A Client or Server Endpoint needs the `logs` permission to query or subscribe
+to `system.logs`. A Program log belongs to its Program handle: if the caller
+can access that handle, it can query and subscribe to `program.logs` without a
+second permission. An owner-local Node connection is trusted like the rest of
+its System access.
+
+The System is the only writer. Neither public log handle exposes a write
+operation. The System log and each Program log retain their newest 20,000
+records and remove older rows in batches.

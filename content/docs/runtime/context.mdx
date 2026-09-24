@@ -40,9 +40,9 @@ The Context receives messages addressed to its Endpoint and can publish
 destinationless output. Inbound messages contain `{ from, payload }`. `from`
 is `null` when the sender lies outside the Context's visible scope.
 
-Every Endpoint Context exposes `permissions`, the executing Program's complete
-permission handle. It reads effective authority, assigns explicit values when
-authorized, and can request an owner's decision. See
+Every Endpoint Context exposes `permissions`, the executing Program's
+Endpoint-owned permission handle. It reads effective authority and can request
+an owner's decision; direct assignment remains on `program.permissions`. See
 [Permissions](/system/security/permissions).
 
 ## Client Context

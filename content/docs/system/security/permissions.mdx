@@ -55,6 +55,7 @@ An exact permission assignment takes priority over `all`.
 | `network` | Every System network target, or selected URL scopes |
 | `storage` | Every native path and operation, or selected operation-and-path scopes |
 | `uploads` | Creation of public uploads |
+| `logs` | Reading and observing System logs |
 | `appearance` | Replacement of System Appearance |
 | `desktopPreferences` | Changes to Desktop preferences |
 | `desktopConnection` | This Desktop's Connection and its attached Session |
@@ -69,7 +70,7 @@ Program creation, force-creation, direct permission assignment, and
 `system.shell()` require `all`. Reading another visible Program's permissions
 requires access to that Program, not `all`.
 
-## Declaring, inspecting, and requesting
+## Declaring and inspecting
 
 A Program declares requested values in `phresh.config.ts`. Creation and
 installation do not write those values into runtime state. For each permission,
@@ -84,14 +85,20 @@ permissions: {
 }
 ```
 
-Every Program permission handle exposes the same contract. `get()` and `all()`
+`program.permissions` manages one Program's assignments. `get()` and `all()`
 return effective values after stored state is resolved over the declaration,
 while `allows()` tests one requested capability. `allow()` replaces the
 complete stored assignment with `true` or a value list; it does not merge with
 the previous assignment. `deny()` stores `false`. Direct `allow()` and `deny()`
-operations require `all`; reads and requests require access to the Program.
+operations require `all`; reads require access to the Program.
 
-An Endpoint Context exposes that contract already bound to its own Program:
+## Requesting from an Endpoint
+
+`context.permissions` is a separate, Endpoint-owned contract. It provides the
+same read operations by convention, then adds `request()` and
+`timeout(milliseconds)`. It cannot directly assign another Program's
+permissions. This keeps the request source exact: every request comes from a
+live Client or Server Endpoint, and always targets that Endpoint's Program.
 
 ```ts
 const allowed = await context.permissions.allows("network", ["https://api.example.com"])
@@ -101,19 +108,48 @@ if (!allowed) {
 }
 ```
 
-`request` returns immediately when the effective permission already equals the
-requested canonical value. Otherwise it prompts the owner and replaces the
+`request()` returns immediately when the effective permission already equals the
+requested canonical value. Otherwise it creates a pending owner decision and replaces the
 stored assignment when approved. A broader or narrower assignment is not an
 exact match and still requires a decision because approval replaces the whole
 assignment.
 
 `timeout(milliseconds)` selects another deadline for the prompt. The default
-request deadline is two minutes. Approval returns the canonical granted list,
-denial returns `false`, and dismissal or a deadline returns `null`. The System
-presents unresolved requests through its dialog queue. When an Endpoint
-initiates one, the request is tied to that execution's lifetime. A Program
-handle may request a decision for any Program it can access; possessing the
-handle does not itself grant authority.
+request deadline is two minutes. The System derives the request's creation and
+expiry times from its own clock, so a remote Endpoint's clock does not control
+the lifetime. Approval returns the canonical granted list, denial returns
+`false`, and dismissal or a deadline returns `null`. The System resolves the
+request with `null` if its originating Endpoint stops. Node code has no
+Endpoint Context and therefore cannot create permission requests.
+
+## Pending requests
+
+`system.permissions` exposes the System-wide request registry to callers with
+`all`. `requests()` returns the requests that are pending now.
+`permissionRequest` announces a new request, while `permissionResolve`
+announces its final value.
+
+```ts
+const stop = system.permissions.subscribe("permissionRequest", request => {
+  console.log(request.from, request.name, request.scope)
+})
+```
+
+A `PermissionRequest` keeps the request identity, originating Endpoint,
+creation and expiry times, permission name, and requested scope. `pending()`
+checks whether it is still present in the authoritative registry. `allow()`
+stores the requested scope, `deny()` stores `false`, and `cancel()` ends the
+request with `null` without changing the Program's assignment. Once resolved,
+the handle's information remains readable, but these three operations reject
+because the request no longer exists.
+
+Access to this registry requires `all`, rather than a separate permission,
+because resolving a request can grant `all` itself. A narrower permission for
+the registry would therefore provide `all` indirectly.
+
+The request contract contains no presentation text or dialog behavior. The
+Shell decides how pending requests are represented and sends only the domain
+decision back to the System.
 
 ## Window layer authority
 

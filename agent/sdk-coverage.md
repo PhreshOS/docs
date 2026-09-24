@@ -74,7 +74,7 @@ reason. Content depth belongs inside this stable structure.
 | Core | Permission names, value domains, Program definitions, values, capabilities, guards, and parsers | System / Security |
 | System | Permission defaults, presentation, resolution policy, persistence, and enforcement | System / Security |
 | Core | Network scope, parser, and containment operation | System / Network and Security |
-| Core | `LogKind`, `LogRecord`, `LogSource`, `ProgramSql` | Runtime / Programs |
+| Core | `Logs`, `ProgramLogs`, `ProgramLogRecord`, `SystemLogs`, `SystemLogRecord`, log events, levels, sources, parsers, and SQL query contracts | System / Logs |
 | Core | `defineConfig`, `Config`, Client and Server configuration and development types | SDKs / Core |
 | Client | `context` | SDKs / Client; shared behavior in Runtime / Context |
 | Client | `desktop` | SDKs / Client; shared behavior in System / Desktop |

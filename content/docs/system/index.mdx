@@ -28,8 +28,9 @@ The capabilities fall into three roles:
   graph and its communication addresses.
 - `system.authentication` exposes the public authentication state and the
   observable Connection and Session registries.
-- `system.storage`, `system.uploads`, `system.appearance`, `system.network`,
-  and `system.shell()` mediate persistent or host-owned resources.
+- `system.storage`, `system.uploads`, `system.logs`, `system.appearance`,
+  `system.network`, and `system.shell()` mediate persistent or host-owned
+  resources.
 
 Collections expose snapshots for current state and subscriptions for later
 changes. Every read returns only the domain objects visible to the caller;
@@ -49,6 +50,7 @@ or an authentication Session.
   <Card title="Desktop" description="The graphical System environment, its state, and Client presentation." href="/system/desktop" />
   <Card title="Appearance" description="The complete visual source and its resolution." href="/system/appearance" />
   <Card title="Storage" description="Native files, uploads, and Program-owned persistence." href="/system/storage" />
+  <Card title="Logs" description="Durable System and Program records with live observation." href="/system/logs" />
   <Card title="Network" description="Fetch and WebSocket through System authority." href="/system/network" />
   <Card title="Shell" description="Owned operating-system command execution." href="/system/shell" />
   <Card title="Security" description="Authentication, Program authority, and execution isolation." href="/system/security" />

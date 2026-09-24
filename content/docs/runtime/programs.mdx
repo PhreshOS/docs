@@ -113,7 +113,7 @@ the Program see the same ones.
 | `cache` | Disposable files |
 | `store` | Persistent key-value state |
 | `database` | Writable SQLite |
-| `logs` | Read-only captured Endpoint output |
+| `logs` | Read-only captured Endpoint output with live records |
 | `permissions` | Effective permission state and stored assignments |
 
 `icon(size?)` returns a PNG at `small`, `medium`, or `large`; omission selects
@@ -123,7 +123,8 @@ whether one is declared. `definition()` returns the complete canonical
 `ProgramDefinition` accepted by `system.program.create()`; it describes the
 Program and does not include mutable runtime state.
 
-See [Storage](/system/storage) and [Permissions](/system/security/permissions).
+See [Storage](/system/storage), [Logs](/system/logs), and
+[Permissions](/system/security/permissions).
 
 ## Installation and runtime form
 

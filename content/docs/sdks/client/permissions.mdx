@@ -4,8 +4,8 @@ description: Inspect, request, and assign Program authority.
 ---
 
 Permissions belong to the Program and apply equally to its Client and Server
-Endpoints. Client `context.permissions` exposes the common permission contract
-already bound to the executing Program.
+Endpoints. Client `context.permissions` is bound to the current Client
+Endpoint and its Program.
 
 ```ts
 import { context } from "@phreshos/client"
@@ -20,12 +20,17 @@ if (!allowed) {
 `get()`, `all()`, and `allows()` inspect effective authority. `request()` asks
 the owner for a decision unless the effective assignment already equals the
 requested value; that exact match resolves immediately. `timeout(milliseconds)`
-selects a request deadline. `allow()` and `deny()` directly replace a stored
-assignment and require `all`.
+selects a request deadline. The request ends with `null` if this Client
+Endpoint stops.
 
-Program handles returned by Client expose the same contract through
-`program.permissions`. Access to a Program permits reading and requesting its
-permissions; it does not grant the authority those permissions describe.
+Program handles expose a separate management contract through
+`program.permissions`: `get()`, `all()`, and `allows()` read assignments;
+`allow()` and `deny()` replace them and require `all`. Program handles cannot
+create requests because they do not identify a requesting Endpoint.
+
+Callers with `all` can list and observe pending requests through
+`system.permissions`, then use each `PermissionRequest` handle to allow, deny,
+or cancel it.
 
 The permission value model, visibility rules, mutation semantics, and request
 lifecycle are documented under [Permissions](/system/security/permissions).

@@ -29,3 +29,11 @@ uploads, and networking still use the connected System. Only capabilities
 whose Core contract has an equivalent owner-local implementation—currently
 shell and native Storage—execute locally without changing their public
 meaning.
+
+`system.logs` and each visible `program.logs` support the same read-only SQL
+queries and live `log` event described under [Logs](/system/logs).
+
+Node has no Endpoint Context, so it cannot create a permission request.
+Owner-local code can inspect or assign a Program's permissions through
+`program.permissions`, and can list, observe, and resolve pending Endpoint
+requests through `system.permissions`.

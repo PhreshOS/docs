@@ -18,6 +18,10 @@ await system.appearance.update({ spacing: 14 })
 `storage` scope. Network, uploads, Appearance, and the rest of `system`
 follow the same Program permission state.
 
+Reading or following `system.logs` requires `logs`. A visible Program handle
+includes access to its own `program.logs`. Their shared query and event
+contract is documented under [Logs](/system/logs).
+
 Every Server SDK operation crosses the Endpoint boundary to the authoritative
 System. `system.execute()` is an adapter over those same handles, so it does
 not introduce another authority path. Streams, sockets, requests, and shell

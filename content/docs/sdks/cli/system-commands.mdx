@@ -15,6 +15,7 @@ phresh system stop
 phresh system enable
 phresh system disable
 phresh system uninstall
+phresh system logs --statement 'select * from logs order by createdAt desc limit 100'
 ```
 
 `install` and `uninstall` accept `--purge` to delete the System home. The
@@ -27,3 +28,8 @@ starts it. `status` reports both service state and the Desktop address.
 service and installed System release; its `--purge` option also deletes the
 System home. The full host contract and platform behavior are documented under
 [Installation](/installation).
+
+`logs` is the running-System operation in this command family. It accepts a
+read-only SQL statement against the System `logs` table and optional bound
+values through `--values`. It requires the [`logs` permission](/system/security/permissions)
+and is documented with the underlying [System log contract](/system/logs).
