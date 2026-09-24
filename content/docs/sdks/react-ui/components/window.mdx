@@ -12,15 +12,12 @@ to whichever state owner it uses.
 
 ```tsx
 <Window style={{ width: 640, height: 420 }}>
-  <Window.Header>
+  <Window.Header maximized={maximized} onMaximize={toggleMaximize}>
     <Window.Header.Identity icon="/icon.png" title="Notes" />
     <Window.Header.Center />
     <Window.Header.Actions>
       <Window.Header.Minimize onPress={minimize} />
-      <Window.Header.Maximize
-        maximized={maximized}
-        onPress={toggleMaximize}
-      />
+      <Window.Header.Maximize />
       <Window.Header.Close onPress={close} />
     </Window.Header.Actions>
   </Window.Header>
@@ -64,7 +61,10 @@ Surface without rendering the `Window` root.
 ```
 
 Header parts must remain inside `Window.Header`, because the Header provides
-their shared spacing, active state, and control treatment.
+their shared spacing, active state, control treatment, and optional maximize
+action. When `maximized` and `onMaximize` are supplied to the Header,
+`Window.Header.Maximize` reads them automatically, and a double-click on the
+Header's drag region invokes the same action.
 
 ## Hand a drag to a window host
 
@@ -87,13 +87,16 @@ drag region is not a `Window.Header`. The function receives an origin and the
 first intentional movement, then returns `{ ready, finished, cancel }`. React
 UI retains its pointer capture until `ready` confirms that the host can receive
 the pointer stream, then releases it. It cancels an unfinished handoff if the
-initiating component goes away.
+initiating component goes away. The Header uses one drag-intent cursor before
+and throughout the handoff. A host that receives the pointer in another DOM
+region renders `Window.MoveCapture` for the active capture surface so that the
+same interaction remains visible after ownership transfers.
 
 ## State and behavior
 
 - `active={false}` attenuates the identity without disabling the controls.
-- `Window.Header.Maximize` uses `maximized` to change its icon and accessible
-  label between Maximize and Restore.
+- `Window.Header.Maximize` uses the Header's `maximized` state and
+  `onMaximize` action by default. Explicit part props may replace either value.
 - Header pointer handlers can connect a drag region. Center and Actions stop
   those interactions from leaking into their own controls.
 - `Window.Content` grows and can shrink correctly, but it does not choose

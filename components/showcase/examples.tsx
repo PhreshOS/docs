@@ -1133,7 +1133,7 @@ export function WindowShowcase() {
 
   return (
     <Showcase
-      code={`<Window material="${material}">\n  <Window.Header active={${active}} color="${headerColor}">\n    <Window.Header.Identity title="Notes" />\n    <Window.Header.Actions>\n      <Window.Header.Maximize maximized={${maximized}} />\n    </Window.Header.Actions>\n  </Window.Header>\n  <Window.Content>…</Window.Content>\n</Window>`}
+      code={`<Window material="${material}">\n  <Window.Header active={${active}} color="${headerColor}" maximized={${maximized}} onMaximize={toggleMaximize}>\n    <Window.Header.Identity title="Notes" />\n    <Window.Header.Actions>\n      <Window.Header.Maximize />\n    </Window.Header.Actions>\n  </Window.Header>\n  <Window.Content>…</Window.Content>\n</Window>`}
       controls={
         <>
           <ControlSelect label="Material" value={material} options={materialOptions} onChange={value => setMaterial(value as MaterialMode)} />
@@ -1144,12 +1144,12 @@ export function WindowShowcase() {
       }
     >
       <Window material={material} style={{ width: 'min(100%, 26rem)' }}>
-        <Window.Header active={active} color={headerColor}>
+        <Window.Header active={active} color={headerColor} maximized={maximized} onMaximize={() => setMaximized(value => !value)}>
           <Window.Header.Identity title="Notes" />
           <Window.Header.Center />
           <Window.Header.Actions>
             <Window.Header.Minimize />
-            <Window.Header.Maximize maximized={maximized} onPress={() => setMaximized(value => !value)} />
+            <Window.Header.Maximize />
             <Window.Header.Close />
           </Window.Header.Actions>
         </Window.Header>
