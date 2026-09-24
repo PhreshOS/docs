@@ -22,8 +22,11 @@ the Shell layer.
 
 Within the standard `window` layer, Appearance spacing defines the ordinary
 surface inset and the visible gap between adjacent tiled windows. The edge
-occupied by the Taskbar instead reserves the outer spacing, the configured
-Taskbar size, and one more spacing value before standard windows begin.
+occupied by a non-overlay Taskbar instead reserves the outer spacing, the
+configured Taskbar size, and one more spacing value before standard windows
+begin. An overlay Taskbar leaves the ordinary inset on every edge, remains
+hidden beyond its configured edge, and appears with the Appearance transaction
+while the pointer occupies that edge or the Taskbar itself.
 
 ## Desktop state
 
@@ -142,7 +145,7 @@ In `under`, `over`, and `shell`, the Desktop starts the Client document at
 `{ x: 0, y: 0, width: 0, height: 0 }` and does not interpret authoritative
 Window values. The Program reads its Window and chooses how to represent those
 values through the raw operations `move()`, `resize()`, `setGeometry()`,
-`setSurface()`, and `raise()`.
+`setSurface()`, `setInteractive()`, and `raise()`.
 
 ```ts
 await context.presentation
@@ -160,11 +163,17 @@ Calling a raw operation directly applies it without a transaction.
 `transactionAndWait()` resolves after its visual transition finishes. Omission
 uses the effective Appearance transaction, a number supplies a duration in
 milliseconds with Appearance easing, and an object supplies both duration and
-easing. `raise()` is immediate and is not a transacted operation.
+easing. `raise()` and `setInteractive()` are immediate and are not transacted
+operations.
 
 `setSurface(false)` removes the optional Desktop-painted backing behind the
 Client document. A surface does not resize or clip the document; the Program
 owns the content rendered above it.
+
+`setInteractive(false)` removes the raw presentation from focus and pointer
+hit testing, allowing pointer input to reach presentations behind it.
+`setInteractive(true)` restores interaction. A new presentation starts
+interactive.
 
 Every operation exists on the shared presentation handle. An operation rejects
 when its meaning is unavailable in the current layer: standard Windows reject
