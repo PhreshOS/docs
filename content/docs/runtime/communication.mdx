@@ -5,14 +5,24 @@ icon: MessagesSquare
 ---
 
 PhreshOS communication lets Endpoints exchange application values without
-making transport details part of the application contract. Context, Endpoint,
-and Service expose the same language from different positions: the current
-receiver, an exact Endpoint, or a stable Service address.
+making browser frames, worker channels, processes, or network transports part
+of the application contract. The operation is chosen by intent; the handle is
+chosen by position:
+
+| Position | Meaning |
+| --- | --- |
+| `context` | the Endpoint incarnation currently executing |
+| `endpoint` | one exact Process role across its starts and stops |
+| `service` | whichever ready Endpoint currently occupies a stable public address |
+
+All three expose the same publication and observation language where that
+meaning is available.
 
 ## Publishing a value
 
-`publish(event, payload?)` is synchronous and fire-and-forget. It reports no
-delivery result. If its destination is unavailable, the publication is not
+`publish(event, payload?)` is synchronous and fire-and-forget. Use it for a
+fact or signal whose sender does not require one correlated result. It reports
+no delivery result. If its destination is unavailable, the publication is not
 delivered.
 
 ```ts
@@ -59,8 +69,11 @@ optional `signal` cancels iteration, while `capacity` controls its queued
 messages and defaults to `64`.
 
 These operations observe future messages. They do not read or replay current
-state. Calling `subscribe(subscriber)` or `events()` without an event name
-preserves each event as a correlated `{ event, message }` capture.
+state because an application event is an occurrence, not a state snapshot.
+When a consumer needs current state, it should first use the domain's read
+operation and then follow its change events. Calling `subscribe(subscriber)`
+or `events()` without an event name preserves each event as a correlated
+`{ event, message }` capture.
 
 A persistent subscription may remain registered while an Endpoint or Service
 is temporarily unavailable. It ends when its cleanup is called or when the
@@ -71,7 +84,8 @@ abort signal fires.
 ## Asking a Server
 
 Questions are directed to Server Endpoints and Server Services. Unlike a
-publication, `ask()` waits for one success or failure answer:
+publication, `ask()` represents one correlated request whose caller requires
+one success or failure answer:
 
 ```ts
 const status = await server.ask("status.read")

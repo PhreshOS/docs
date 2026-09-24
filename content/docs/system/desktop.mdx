@@ -10,10 +10,15 @@ Appearance with Desktop preferences, reports the available viewport, and
 belongs to the browser Connection carrying it.
 
 Its visible environment consists of five coextensive layers ordered from back
-to front: `wallpaper`, `under`, `window`, `over`, and `shell`. Every layer uses
-the complete Desktop bounds. The built-in Taskbar, Start Menu, and dialog
-presentation belong to `shell`, so they appear above the other layers without
-reserving layout space inside them.
+to front: `wallpaper`, `under`, `window`, `over`, and `shell`. These are
+semantic roles, not arbitrary numeric depths. `wallpaper` is the single fixed
+background, `under` and `over` let Programs own representations on either side
+of standard windows, `window` is managed by the Desktop, and `shell` is the
+replaceable System interface above them all.
+
+Every layer uses the complete Desktop bounds. The built-in Taskbar, Start
+Menu, and dialog presentation belong to `shell`, so they appear above the
+other layers without reserving layout space inside them.
 
 Appearance selects the Taskbar's edge and cross-axis size. The built-in Start
 Menu is anchored to its Taskbar button and opens from that edge toward the
@@ -141,7 +146,8 @@ await move.finished
 `finished` resolves when the move ends or is cancelled, and `cancel()` ends an
 unfinished handoff.
 
-In `under`, `over`, and `shell`, the Desktop starts the Client document at
+In `under`, `over`, and `shell`, no universal window behavior exists for the
+Desktop to impose. The Desktop therefore starts the Client document at
 `{ x: 0, y: 0, width: 0, height: 0 }` and does not interpret authoritative
 Window values. The Program reads its Window and chooses how to represent those
 values through the raw operations `move()`, `resize()`, `setGeometry()`,
@@ -182,7 +188,8 @@ both.
 
 ### Layers
 
-A layer gives a Client representation one ownership model.
+A layer selects both ordering and the owner of representation behavior. It
+does not create another kind of Window state.
 
 | Layer | Representation owner | Presentation capabilities |
 | --- | --- | --- |
@@ -196,15 +203,18 @@ The Desktop enforces a minimum presented size of 260 by 160 logical pixels for
 standard windows, limited by the available workspace, without rewriting
 smaller authoritative geometry.
 
-`wallpaper` is a fixed role whose presentation exposes only its layer. Starting
-another wallpaper Client ends the existing occupant's Process before presenting
-the replacement.
+`wallpaper` is a fixed role whose presentation exposes only its layer. It is
+separate from `under` because the Desktop must always know which one occupant
+is its full-background representation. Starting another wallpaper Client ends
+the existing occupant's Process before presenting the replacement.
 
 The `shell` layer has one Program owner at a time. Any number of Processes from
-that Program may present Clients there. Before a different Program claims the
-layer, the System terminates every Process currently occupying it. With no
-Program-owned shell Client, the Desktop presents its built-in Taskbar, Start
-Menu, and dialogs.
+that Program may present Clients there. This makes the operating interface
+replaceable without moving System authority into that Program: the Client
+draws the shell, while the System continues to own runtime state and enforce
+its contracts. Before a different Program claims the layer, the System
+terminates every Process currently occupying it. With no Program-owned shell
+Client, the Desktop presents its built-in Taskbar, Start Menu, and dialogs.
 
 Layers are isolated for ordering. Raising a Window changes its depth only
 within its own layer. The standard `window` layer uses the complete Desktop

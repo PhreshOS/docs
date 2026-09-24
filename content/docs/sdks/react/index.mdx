@@ -4,9 +4,10 @@ description: Adapt live PhreshOS contracts to React without owning transport or 
 ---
 
 `@phreshos/react` adapts explicitly supplied Core contracts and live sources
-to React providers and hooks. It does not initialize a transport, import the
-Client SDK, access the browser, define domain state, or render visual
-language.
+to React providers and hooks. Its job is to translate SDK reads,
+subscriptions, unresolved values, and cleanup into React lifecycle. It does
+not initialize a transport, import the Client SDK, access the browser, define
+domain state, or render visual language.
 
 `SystemProvider`, `ContextProvider`, and `DesktopProvider` preserve the
 separation between the global System, current Client Context, and containing
@@ -53,7 +54,9 @@ import {
 </SystemProvider>
 ```
 
-The values come from Client, Node, or tests. React does not create them.
+The values come from Client, Node, or tests. React does not create them. This
+also keeps the package usable with non-DOM React renderers: environment access
+belongs to the value's adapter, not to the hooks.
 
 <Cards>
   <Card title="Providers" description="Supply System, Context, and Desktop to a React subtree." href="/sdks/react/providers" />

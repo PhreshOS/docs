@@ -4,9 +4,12 @@ description: Discoverable Endpoint communication through stable addresses.
 icon: Waypoints
 ---
 
-A Service is an Endpoint that has chosen to be discoverable while it is
-running. It lets another Program communicate with that Endpoint without owning
-its Process or controlling its lifecycle.
+A Service is the public communication role of an Endpoint that chose to be
+discoverable while running. It does not create another worker, lifecycle, or
+message contract: communication still reaches the underlying Endpoint. The
+separate Service handle exists so another Program can discover and address
+that capability without gaining the Program and Process authority that owns
+it.
 
 Every Service address has three coordinates:
 
@@ -20,7 +23,9 @@ type ServiceAddress = {
 
 `program` is the stable Program identity. `process` is the Program-local
 Process name and acts as the Service name. `endpoint` identifies the Server or
-Client Endpoint. An unnamed Process cannot be a discoverable Service.
+Client Endpoint. Together these coordinates already identify the existing
+runtime role, so a Service does not introduce a second independent identity.
+An unnamed Process cannot provide a stable discoverable address.
 
 ## Discovering Services
 
@@ -82,10 +87,12 @@ await editor.waitReady()
 const result = await editor.ask("document.open", { path: "welcome.txt" })
 ```
 
-The address is stable across execution contexts. If the matching Endpoint
-stops, the handle becomes unavailable rather than ending. If a Process with
-the same Program identity and Process name later exposes the same Endpoint as
-a ready Service, that handle becomes usable again.
+The address is stable across execution contexts and even across replacement of
+the named Process. If the matching Endpoint stops, the handle becomes
+unavailable rather than ending. If a Process with the same Program identity
+and Process name later exposes the same Endpoint as a ready Service, that
+handle becomes usable again. This is the essential difference from an
+Endpoint handle, which belongs to one exact Process.
 
 ## Program metadata
 

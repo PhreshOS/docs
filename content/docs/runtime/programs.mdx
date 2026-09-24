@@ -4,9 +4,16 @@ description: The stable software identity at the root of the runtime.
 icon: Package
 ---
 
-A Program is software as the System knows it. Its identity stays the same
-while its installed files, development source, and live Processes may change.
-Long-lived resources and policy belong here.
+A Program is software as the System knows it. It is the stable ownership root
+around changing implementations and executions: installed files can be
+replaced, development source can be attached temporarily, and Processes can
+come and go without changing which software owns its storage, permissions, or
+public identity.
+
+Use a Program when the question is about the software as a whole. Use a
+Process when the question is about one live run of it. This distinction lets a
+Program own durable resources once while creating as many independent live
+Processes as its work requires.
 
 ## Identity
 
@@ -46,7 +53,10 @@ not.
 
 ## Processes belong to the Program
 
-A Program is the only place from which one of its Processes is created.
+A Program is the only place from which one of its Processes is created. This
+keeps execution attached to the definition, authority, storage, and defaults
+that give it meaning; a Process identity alone is not enough to manufacture a
+new run.
 
 ```ts
 const process = await program.createProcess({
@@ -68,9 +78,10 @@ console.log(same === process)
 
 ## System-managed state
 
-A Program owns runtime state managed by the System. It is kept with the
-Program's storage, survives updates and ordinary uninstallation, and is
-removed when that storage is purged.
+A Program owns runtime state managed by the System. This state describes how
+the System should treat the software, rather than what its authored definition
+requested. It is kept with the Program's storage, survives updates and
+ordinary uninstallation, and is removed when that storage is purged.
 
 `program.startup` controls whether the System creates one Process when it
 boots.

@@ -5,12 +5,14 @@ icon: Focus
 ---
 
 A Context is the runtime's first-person view. It belongs to one running
-Endpoint execution context and answers: Which Process am I part of? What launched me? Who
-created that Process? Which messages are addressed to me?
+Endpoint execution context and answers: Which Process am I part of? What
+launched me? Who created that Process? Which messages are addressed to this
+execution?
 
-This is different from retaining an Endpoint handle. The handle is a
-permanent handle. The Context exists only while the current execution context is
-executing.
+This is different from retaining an Endpoint handle. The handle addresses a
+permanent role from the outside. Context represents the current incarnation
+from the inside, so its registrations and boundary-owned work end when that
+incarnation stops.
 
 Client code imports `context` from `@phreshos/client`. Server code imports
 `context` from `@phreshos/server`. Node and the CLI are not an executing

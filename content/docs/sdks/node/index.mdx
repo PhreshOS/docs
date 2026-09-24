@@ -3,10 +3,11 @@ title: Overview
 description: Connect external Node.js code to a System and operate local Program projects.
 ---
 
-`@phreshos/node` exposes the same complete System contract available inside
-Server Endpoints. It adds the lifecycle of an externally owned connection and
-the `Project` authoring API for building, running, installing, and packaging
-local Program projects.
+`@phreshos/node` serves code that is outside every Endpoint. It exposes the
+same complete System contract available inside Server Endpoints, but the
+caller owns an external connection rather than an execution Context. It also
+provides the `Project` authoring API for building, running, installing, and
+packaging local Program projects.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -46,7 +47,9 @@ for await (const event of await project.start(system)) {
 await system.disconnect()
 ```
 
-There is no Context. Node is not an executing Endpoint.
+There is no Context: Node is not an executing Endpoint and therefore has no
+paired role, launch options, or Context-owned registrations. The connection
+itself owns pending work and subscriptions obtained through it.
 
 <Cards>
   <Card title="Connection" description="Connect to a running System and disconnect." href="/sdks/node/connection" />

@@ -47,6 +47,20 @@ import { Button, Surface } from "@phreshos/react-ui"
 choose dimensions, padding, layout, overflow, or semantic content for the
 consumer.
 
+The component families divide responsibility rather than only appearance:
+
+- `Surface` paints a material boundary; `Panel` and `Window` add specific
+  structure to one.
+- `Flex` and `Grid` arrange content without painting a new boundary.
+- fields and selection controls own accessible input behavior and application
+  values.
+- `Dialog`, `Popover`, `Tooltip`, and menu triggers own distinct overlay and
+  dismissal contracts.
+
+Choose the component whose behavior matches the interface role. Styling a
+generic Surface to resemble a Dialog does not provide Dialog focus,
+dismissal, or accessibility behavior.
+
 Without a provider, components use `defaultAppearance` and follow the
 browser's visual preferences. `UIProvider` supplies Appearance, Preferences,
 and direction for a subtree. A complete System Appearance can be passed

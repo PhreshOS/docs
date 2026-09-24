@@ -4,10 +4,15 @@ description: The permanent Server and Client execution addresses inside a Proces
 icon: Unplug
 ---
 
-An Endpoint is one permanent execution role inside a Process. Every Process
-exposes a Server Endpoint handle and a Client Endpoint handle. A declared
-Endpoint remains the same while its execution context starts, stops, and
-starts again.
+An Endpoint is one permanent execution role inside a Process. The handle names
+the role; a running execution context is one temporary incarnation performing
+that role. Keeping those concepts separate lets callers subscribe, wait, and
+address the Endpoint before it starts and across later restarts.
+
+Every Process therefore exposes both Server and Client Endpoint handles. The
+handle itself carries no initial execution data and does not claim that the
+Program declared or started that role. Operations that need a declared or live
+Endpoint validate that condition when they run.
 
 `running()` reports whether the Endpoint currently has an execution context.
 `endpoint.lifecycle` publishes `start` and `stop` whenever that context
@@ -35,9 +40,16 @@ separate under `endpoint.lifecycle`, so application event names cannot collide
 with `start` or `stop`.
 
 `waitReady()` waits for an execution context that can be used. A Client is
-ready when it is running. A Server must also announce readiness. The default deadline
-is ten seconds. Temporary absence remains waitable while the owning Process
-exists.
+ready when it is running. A Server must also announce readiness after its SDK
+can receive IPC traffic; until then there is no Server answer registration to
+retain incoming questions, so sending them would lose work. The default
+deadline is ten seconds. Temporary absence remains waitable while the owning
+Process exists.
+
+Readiness is current state, not a consumed event. Two concurrent
+`waitReady()` calls waiting on the same incarnation resolve together. A later
+call resolves immediately while the Endpoint remains ready and waits again
+after it stops.
 
 `start()` ensures that an execution context is running. If one already exists, the
 call resolves without replacing it or publishing another lifecycle event;
@@ -52,6 +64,11 @@ Process's final live Endpoint. Stopping never exits the Process.
 The Server Endpoint runs host-side code and answers questions.
 `ask(event, payload?)` sends a question to the current Server execution context.
 `timeout(milliseconds)` selects another deadline.
+
+`ask()` first waits for the current Server incarnation to become ready, then
+sends the question. If that incarnation stops first, the operation rejects
+rather than silently moving the question to a later run. The same deadline
+covers readiness and the answer.
 
 ```ts
 const health = await process.server.ask("health.read")
@@ -72,6 +89,11 @@ The Client Endpoint owns a permanent authoritative `window` value. Each
 running execution context presents through a Desktop iframe. The Client
 declaration's `sandbox` value determines how that document executes: omission
 uses a sandboxed iframe, while `false` removes the sandbox attribute.
+
+A Client may be represented by more than one Desktop context. Publications
+and future events can be observed across those contexts, but a question would
+not identify one unambiguous Client answerer. For that reason Clients receive
+publications while the request-and-answer contract belongs to Servers.
 
 Its launch can choose the Service role and the initial title, header
 state, size, position, layer, minimized state, and maximized state.

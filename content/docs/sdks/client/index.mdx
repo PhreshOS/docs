@@ -3,9 +3,10 @@ title: Overview
 description: Use PhreshOS from the Client Endpoint currently running in a Desktop.
 ---
 
-`@phreshos/client` is the adapter for a Program's Client Endpoint. It exposes
-three Core contracts: the global `system`, the current Client `context`, and
-the containing `desktop`.
+`@phreshos/client` is the adapter for code executing as a Program's Client
+Endpoint inside a Desktop. It exposes three roots because three different
+owners meet at that position: the global `system`, the current Client
+`context`, and the containing `desktop`.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -46,9 +47,11 @@ console.log(program instanceof Program)
 Shared classes keep their Core import path. Handles returned by Client
 inherit those Core classes.
 
-The Client SDK is tied to this Endpoint execution context. Context-owned operations
-and registrations end with it. Knowing another entity's identity never
-expands the executing Program's visible scope.
+The Client SDK is tied to this Endpoint execution context. Context-owned
+operations and registrations end with it. Desktop state may outlive this
+Client, and System state is authoritative independently of whether this iframe
+is loaded. Knowing another entity's identity never expands the executing
+Program's visible scope.
 
 <Cards>
   <Card title="Context" description="The current execution, paired Server, and Window." href="/sdks/client/context" />

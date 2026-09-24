@@ -4,12 +4,14 @@ description: The complete visual source owned by the System.
 icon: Palette
 ---
 
-Appearance is the System's complete unresolved visual state. It is one
-document: colors, spacing, radius, shadow, material, transaction, Taskbar
-settings, and wallpapers. The values that vary by theme contain complete light
-and dark branches; Taskbar settings do not.
+Appearance is the System's complete unresolved visual source. Keeping these
+values in one document lets a visual change commit as one coherent snapshot
+instead of exposing a partially updated palette, material, motion, Taskbar, or
+wallpaper. Values that vary by theme contain complete light and dark branches;
+Taskbar settings do not.
 
-Programs and the Desktop derive presentation from this source.
+Programs and the Desktop derive presentation from this source rather than
+mutating it while they render.
 [React UI](/sdks/react-ui) interprets the visual fields it owns; Taskbar
 settings and wallpapers remain System-only.
 
@@ -22,10 +24,12 @@ system.appearance.subscribe("change", next => {
 ```
 
 `snapshot()` returns the complete immutable value. `update(partial)` recursively
-merges the supplied fields into the current Appearance, validates the resolved
-result, and commits it atomically. A complete Appearance is also a valid update.
-A `change` event carries the complete resolved snapshot rather than the partial
-input. The executing Program needs the `appearance` permission.
+merges the supplied fields over the current Appearance, validates the complete
+result, and commits it atomically. Omitted fields retain their current values;
+they are not reset. A complete Appearance is also a valid update. A `change`
+event carries the complete resolved snapshot rather than the partial input, so
+subscribers never have to reconstruct current state from a sequence of patches.
+The executing Program needs the `appearance` permission.
 
 Core exports `defaultAppearance`, `appearanceLimits`,
 `createAppearanceSnapshot()`, and `applyAppearanceUpdate()`. Independent tools

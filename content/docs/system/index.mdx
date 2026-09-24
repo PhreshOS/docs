@@ -4,10 +4,11 @@ description: The authoritative System and the capabilities it provides.
 icon: MonitorCog
 ---
 
-The System is the authority behind PhreshOS. It owns software identity and
-execution, routes communication, persists state, controls access to the host,
-and decides which Program capabilities are visible. A Desktop represents that
-state graphically.
+The System is the authority behind PhreshOS. It turns the runtime contracts
+into one shared environment: it owns software identity and execution, routes
+communication, persists state, controls access to the host, and decides which
+Program capabilities are visible. A Desktop represents that environment
+graphically; it is not a second source of runtime state.
 
 The `system` object is the common entry point in Client, Server, and Node.
 Client and Server Endpoints use the permission state of their Program; an
@@ -21,16 +22,23 @@ const processes = await system.process.list()
 console.log(programs.length, processes.length)
 ```
 
-`system.program` and `system.process` are observable collections.
-`system.authentication` owns the System's public authentication state and the
-observable Connection and Session registries. Each returns only the domain
-objects visible to the caller.
+The capabilities fall into three roles:
 
-`system.storage`, `system.uploads`, `system.appearance`, and `system.network`
-expose persistent and host capabilities. `system.service` discovers available
-Endpoint Services and prepares stable address handles. `system.shell()` runs a command whose lifetime
-is owned by its returned iterator. `system.execute()` is the JSON form of
-selected operations, documented under [Execute](/sdks/core/execute).
+- `system.program`, `system.process`, and `system.service` expose the runtime
+  graph and its communication addresses.
+- `system.authentication` exposes the public authentication state and the
+  observable Connection and Session registries.
+- `system.storage`, `system.uploads`, `system.appearance`, `system.network`,
+  and `system.shell()` mediate persistent or host-owned resources.
+
+Collections expose snapshots for current state and subscriptions for later
+changes. Every read returns only the domain objects visible to the caller;
+having a `system` root does not itself expand that scope.
+
+`system.service` can also prepare a stable address handle before its provider
+is available. `system.shell()` runs a command whose lifetime is owned by its
+returned iterator. `system.execute()` is the JSON form of selected operations,
+documented under [Execute](/sdks/core/execute).
 
 External Node tools and the CLI connect through an owner-local gateway. On
 POSIX it is a Unix-domain socket; on Windows it is an owner-created named

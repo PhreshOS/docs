@@ -4,11 +4,19 @@ description: Reach the same PhreshOS contracts from each execution environment.
 icon: Braces
 ---
 
-PhreshOS has one domain model and several ways to reach it. Core defines
-shared meaning. Client, Server, and Node implement that meaning where they
-run. React adapts live contracts to component state. React UI provides the
-visual language. The CLI presents Project and System operations to a
-terminal.
+PhreshOS has one domain model and several ways to reach it. Choose an SDK by
+where the code runs and what it needs to own; choosing another SDK does not
+create another version of Program, Process, Endpoint, or System state.
+
+| Package | Position |
+| --- | --- |
+| Core | shared contracts, Program configuration, and untyped boundary parsing |
+| Client | one Client Endpoint executing inside a Desktop |
+| Server | one Server Endpoint executing on the host |
+| Node | an external owner tool connected to a running System, or a local Program project |
+| React | React lifecycle and state over explicitly supplied PhreshOS contracts |
+| React UI | the visual component and Appearance language |
+| CLI | Project and System operations through terminal commands |
 
 ```ts
 import { Program } from "@phreshos/core"
@@ -20,9 +28,11 @@ const program = await system.program.find("notes")
 console.log(program instanceof Program)
 ```
 
-Environment packages export the roots they own: `system`, `context`,
-`desktop`, `System.connect`, `Project`. Shared classes and types keep their
-Core import path.
+Environment packages export only the roots meaningful at their position:
+`system`, `context`, `desktop`, `System.connect`, or `Project`. Shared classes
+and types keep their Core import path. For example, a Server has Context but
+no containing Desktop, while Node has a System connection but no Endpoint
+Context.
 
 <Cards>
   <Card title="Core" description="Shared contracts, Program configuration, and Execute." href="/sdks/core" />

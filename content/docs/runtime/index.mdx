@@ -4,9 +4,20 @@ description: The four components that make up a running Program.
 icon: Cpu
 ---
 
-The runtime is four components: **Program**, **Process**, **Endpoint**, and
-**Service**. Together they describe what software exists, what is running,
-where its code executes, and how other software reaches it.
+The runtime separates four questions that ordinary applications often combine:
+
+- **Program** — What software exists, and which durable resources and policy
+  belong to it?
+- **Process** — Which live run of that software are we talking about?
+- **Endpoint** — Which execution role inside that run is being addressed?
+- **Service** — How can other software reach that Endpoint without owning its
+  Process?
+
+These are separate domains because their lifetimes differ. A Program can
+remain installed with no live Processes. A Process can keep running while one
+of its Endpoint execution contexts is stopped. An Endpoint handle remains
+stable across those starts and stops. A Service address can remain known while
+its provider is temporarily unavailable.
 
 A Program is the stable root. It can own multiple live Processes. Every
 Process has one permanent Server Endpoint and one permanent Client Endpoint.
@@ -18,8 +29,10 @@ Program
     └── Client Endpoint
 ```
 
-A Service is a stable address for an Endpoint that chose to be reachable. The
-Process owns the Endpoint; the Service lets other code communicate with it.
+A Service is the discoverable form of a named Process Endpoint, not another
+execution object beside it. The Process still owns the Endpoint and its
+lifecycle; the Service gives callers a stable address without granting them
+control of that Process.
 
 You meet these objects through `system` in Client, Server, Node, and the CLI.
 The environment changes how the call reaches the System. A Program's Client

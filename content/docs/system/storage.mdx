@@ -4,9 +4,19 @@ description: Native files, uploads, and persistence owned by each Program.
 icon: Database
 ---
 
-PhreshOS separates persistence by meaning. `Storage` represents directories
-and files within a filesystem boundary. `uploads` is a flat collection of
-public files. Program store and SQL provide structured persistence.
+PhreshOS separates persistence by meaning rather than forcing every value
+through one storage API:
+
+| Capability | Use it for |
+| --- | --- |
+| `Storage` | directories, files, streams, and native filesystem operations |
+| `uploads` | immutable public files addressed by opaque keys |
+| `program.store` | small structured values addressed by keys, optionally expiring |
+| `program.database` | relational Program data queried with SQLite |
+| `program.logs` | read-only SQL over captured Endpoint output |
+
+Choosing between them is part of the data contract. An upload key, for
+example, is stable public content; it is not a general writable file path.
 
 ## Selecting a location
 

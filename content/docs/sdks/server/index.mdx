@@ -3,8 +3,10 @@ title: Overview
 description: Use PhreshOS from the Server Endpoint currently executing on the host.
 ---
 
-`@phreshos/server` is the adapter for a Program's Server Endpoint. It exposes
-the common Core `system` contract and the current Server `context`.
+`@phreshos/server` is the adapter for code executing as a Program's Server
+Endpoint on the host. It exposes the common Core `system` contract and the
+current Server `context`; those distinguish the shared environment from this
+one execution incarnation.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -40,9 +42,10 @@ const program = await context.program()
 const appearance = await system.appearance.snapshot()
 ```
 
-There is no `desktop` root. A Server is not a Desktop representation. It can
-read and change the paired Client's authoritative Window through
-`context.client.window`.
+There is no `desktop` root because a Server is not contained by a graphical
+representation. It can still read and change the paired Client's authoritative
+Window through `context.client.window`; it cannot control one Desktop's local
+presentation.
 
 <Cards>
   <Card title="Context" description="The current execution, paired Client, and answers." href="/sdks/server/context" />

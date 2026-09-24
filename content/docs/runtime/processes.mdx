@@ -4,14 +4,17 @@ description: One live execution created from a Program and a Launch.
 icon: Workflow
 ---
 
-A Process is one live execution of a Program. It groups the Server and Client
-Endpoints that belong to the same run and preserves the intent that created
-them.
+A Process is one live execution of a Program. It is the shared lifetime and
+launch identity that keeps its Server and Client roles part of the same run.
+Without a Process, those two roles would be unrelated execution contexts with
+no common options, name, parentage, or terminal lifecycle.
 
 Its `identity`, optional Program-local `name`, `startedAt` time, launch
 options, and parent never change. Its Endpoint execution contexts may start and
-stop independently. The Process remains addressable until it exits. The
-final live Endpoint cannot be stopped as an independent operation.
+stop independently. The Process remains addressable until it exits. A Process
+with no live Endpoint would no longer be an execution, so the final live
+Endpoint cannot be stopped as an independent operation; exit the Process
+instead.
 
 ## Launch
 
@@ -63,12 +66,17 @@ await program.createProcess({
 already matches, creates it when absent, and rejects when the name is
 occupied by a different Launch.
 
-## Endpoints are permanent handles
+## Endpoint roles remain addressable
 
 Every Process exposes `server` and `client`, regardless of which Endpoint
-kinds the Program declared or which ones are currently running. These are
-permanent handles whose `running()` state changes as execution contexts start
-and stop.
+kinds the Program declared or which ones are currently running. A handle is
+the Process-owned route to one role; it contains no initial execution state
+that would require the role to be running before the handle can exist.
+
+This lets code address the role directly and let the requested operation
+report whether it is declared, running, or ready, instead of first requesting
+an optional handle and branching on `null`. The handles remain stable while
+their `running()` state changes as execution contexts start and stop.
 
 ```ts
 if (await process.server.running()) {

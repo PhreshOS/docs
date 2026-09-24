@@ -5,9 +5,10 @@ icon: Globe
 ---
 
 `system.network` gives every SDK the same two outbound network capabilities.
-Fetch returns a standard `Response`. WebSocket returns a standard
-`WebSocket`. PhreshOS controls authority and lifetime without inventing
-another request or socket model.
+The boundary exists so the System can apply Program authority and bind
+long-lived work to an owner. It does not replace the web platform's request
+model: fetch returns a standard `Response`, and WebSocket returns a standard
+`WebSocket`.
 
 ## Fetch
 
