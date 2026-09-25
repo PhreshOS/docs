@@ -1,0 +1,59 @@
+---
+title: Spinner
+description: Represent compact activity whose progress cannot be measured.
+---
+
+<SpinnerShowcase />
+
+Use `Spinner` when an operation is active, its remaining progress is unknown,
+and a compact indicator fits the surrounding interface better than a progress
+bar.
+
+```tsx
+<Spinner label="Loading workspace" />
+```
+
+`Spinner` always uses indeterminate progress semantics. Its `label` names the
+operation for assistive technology without adding visible text, so surrounding
+content remains responsible for any visible status message.
+
+## Decorative indicators
+
+When nearby content already exposes the operation state, mark the spinner as
+decorative instead of announcing the same status twice.
+
+```tsx
+<span role="status">
+  <Spinner decorative />
+  Connecting to System
+</span>
+```
+
+A spinner must either have a `label` or be explicitly `decorative`. This keeps
+an unnamed progress indicator from entering the accessibility tree by accident.
+
+## Appearance and motion
+
+`size` derives the diameter from the shared Appearance scale. `color` selects
+the indicator's base color, while the track and moving arc derive their states
+from the same control palette.
+
+```tsx
+<Spinner label="Starting program" size="small" color="primary:base" />
+```
+
+The rotation follows the current animation preference. When animations are
+disabled, `Spinner` keeps a static indeterminate arc so activity remains visible
+without implying measured progress.
+
+Use [`ProgressBar`](./progress-bar) when the interface has room for a linear
+status or can report a numeric value.
+
+## Selected props
+
+| Prop | Default | Use |
+| --- | --- | --- |
+| `label` | required unless decorative | Name the active operation for assistive technology. |
+| `decorative` | `false` | Hide the indicator from assistive technology when surrounding content already communicates progress. |
+| `color` | `default:base` | Select the moving indicator color. |
+| `size` | `medium` | Derive the indicator diameter from Appearance. |

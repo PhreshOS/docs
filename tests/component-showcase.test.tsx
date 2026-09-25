@@ -10,12 +10,15 @@ import {
   DateRangePickerShowcase,
   ListBoxShowcase,
   ProgressBarShowcase,
+  ReadinessShowcase,
   RangeCalendarShowcase,
+  SpinnerShowcase,
   TabsShowcase,
   TimeFieldShowcase,
   TreeShowcase,
   WindowShowcase,
 } from "../components/showcase/examples"
+import { colorOptions } from "../components/showcase/showcase"
 
 const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" as "dark" | "light" | undefined }))
 
@@ -37,6 +40,29 @@ beforeAll(() => {
 
 afterAll(() => {
   Reflect.deleteProperty(Element.prototype, "getAnimations")
+})
+
+test("shared color controls expose every named Appearance source", () => {
+  expect(colorOptions.map(option => option.value)).toEqual([
+    "background:base",
+    "foreground:base",
+    "default:base",
+    "primary:base",
+    "secondary:base",
+    "success:base",
+    "warning:base",
+    "danger:base",
+    "info:base",
+  ])
+})
+
+test("showcases start from each component's own default color", () => {
+  const button = render(<ButtonShowcase />)
+  expect(screen.getByLabelText("Color").textContent).toContain("Default")
+  button.unmount()
+
+  render(<ReadinessShowcase />)
+  expect(screen.getByLabelText("Color").textContent).toContain("Background")
 })
 
 test("the button showcase puts the action in a window and applies controls", () => {
@@ -115,6 +141,34 @@ test("the Progress Bar showcase switches between measured and indeterminate acti
 
   fireEvent.click(screen.getByLabelText("Indeterminate"))
   expect(progress.getAttribute("aria-valuenow")).toBeNull()
+})
+
+test("the Spinner showcase names its indeterminate activity", () => {
+  render(<SpinnerShowcase />)
+
+  const spinner = screen.getByRole("progressbar", { name: "Loading workspace" })
+  expect(spinner.getAttribute("aria-valuenow")).toBeNull()
+})
+
+test("the Readiness showcase presents the default requirement history", () => {
+  render(<ReadinessShowcase />)
+
+  const status = document.querySelector<HTMLElement>("[data-readiness-preview-fallback]")
+  expect(status).toBeTruthy()
+  expect(status?.textContent).toContain("Connecting to System")
+  expect(status?.textContent).toContain("Preparing session")
+  expect(status?.textContent).toContain("Loading programs")
+  expect(document.querySelectorAll("[data-readiness-requirement]")).toHaveLength(3)
+
+  fireEvent.click(screen.getByRole("button", { name: "Add requirement" }))
+  expect(document.querySelectorAll("[data-readiness-requirement]")).toHaveLength(4)
+  expect(status?.textContent).toContain("Loading requirement 4")
+
+  fireEvent.click(screen.getByRole("button", { name: "Complete next" }))
+  expect(document.querySelector('[data-readiness-requirement][data-ready="true"] [data-readiness-ready-indicator]')).toBeTruthy()
+
+  fireEvent.click(screen.getByRole("button", { name: "Restart readiness" }))
+  expect(document.querySelectorAll('[data-readiness-requirement][data-ready="false"]')).toHaveLength(4)
 })
 
 test("the Date Field showcase exposes one locale-aware date value", () => {

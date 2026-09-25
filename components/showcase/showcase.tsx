@@ -101,6 +101,8 @@ export function ControlSwitch({
 }
 
 export const colorOptions = [
+  { value: 'background:base', label: 'Background' },
+  { value: 'foreground:base', label: 'Foreground' },
   { value: 'default:base', label: 'Default' },
   { value: 'primary:base', label: 'Primary' },
   { value: 'secondary:base', label: 'Secondary' },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { parseDate, parseTime } from '@internationalized/date';
 import { useAppearance, type ControlColor, type MaterialMode, type Radius, type ScaleLevel } from '@phreshos/react-ui';
 import {
@@ -25,11 +25,13 @@ import {
   Panel,
   Popover,
   ProgressBar,
+  Readiness,
   RadioGroup,
   RangeCalendar,
   ScrollArea,
   Select,
   Slider,
+  Spinner,
   Surface,
   Switch,
   Table,
@@ -40,6 +42,7 @@ import {
   Toolbar,
   Tree,
   Window,
+  useRequirement,
 } from '../react-ui';
 import { WindowScene } from './frames';
 import {
@@ -53,7 +56,7 @@ import {
 } from './showcase';
 
 export function ButtonShowcase() {
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [size, setSize] = useState<ScaleLevel>('medium');
   const [material, setMaterial] = useState<MaterialMode>('basic');
   const [disabled, setDisabled] = useState(false);
@@ -737,7 +740,7 @@ export function ComboBoxShowcase() {
 
 export function TableShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [headerColor, setHeaderColor] = useState<ControlColor>('default:base');
   const [disabledRow, setDisabledRow] = useState(false);
   const [selected, setSelected] = useState<readonly string[] | 'all'>(['editor']);
@@ -831,7 +834,7 @@ export function TableShowcase() {
 
 export function TreeShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [disabledArchive, setDisabledArchive] = useState(false);
   const [expanded, setExpanded] = useState<readonly string[]>(['source', 'components']);
   const [selected, setSelected] = useState<readonly string[] | 'all'>(['tree']);
@@ -926,7 +929,7 @@ export function TreeShowcase() {
 
 export function SliderShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [disabled, setDisabled] = useState(false);
   const [orientation, setOrientation] = useState<'horizontal' | 'vertical'>('horizontal');
   const [volume, setVolume] = useState(40);
@@ -964,7 +967,7 @@ export function SliderShowcase() {
 
 export function ProgressBarShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [indeterminate, setIndeterminate] = useState(false);
   const [value, setValue] = useState(64);
 
@@ -995,9 +998,169 @@ export function ProgressBarShowcase() {
   );
 }
 
+export function SpinnerShowcase() {
+  const [size, setSize] = useState<ScaleLevel>('medium');
+  const [color, setColor] = useState<ControlColor>('default:base');
+
+  return (
+    <Showcase
+      code={`<Spinner label="Loading workspace" size="${size}" color="${color}" />`}
+      controls={
+        <>
+          <ControlSelect label="Color" value={color} options={colorOptions} onChange={next => setColor(next as ControlColor)} />
+          <ControlSelect label="Size" value={size} options={sizeOptions} onChange={next => setSize(next as ScaleLevel)} />
+        </>
+      }
+    >
+      <WindowScene title="Spinner">
+        <Spinner label="Loading workspace" size={size} color={color} />
+      </WindowScene>
+    </Showcase>
+  );
+}
+
+export function ReadinessShowcase() {
+  const [color, setColor] = useState<ControlColor>('background:base');
+  const [size, setSize] = useState<ScaleLevel>('medium');
+  const [material, setMaterial] = useState<MaterialMode>('basic');
+  const [cycle, setCycle] = useState(0);
+  const [requirements, setRequirements] = useState(() => initialReadinessRequirements());
+  const [completed, setCompleted] = useState<ReadonlySet<number>>(() => new Set());
+  const completions = useRef(new Map<number, () => void>());
+  const nextIdentity = useRef(4);
+  const registerCompletion = useCallback((identity: number, completion: (() => void) | null) => {
+    if (completion == null) completions.current.delete(identity);
+    else completions.current.set(identity, completion);
+  }, []);
+  const add = () => {
+    const identity = nextIdentity.current++;
+    setRequirements(current => [...current, { identity, message: `Loading requirement ${identity}` }]);
+  };
+  const completeNext = () => {
+    const requirement = requirements.find(candidate => !completed.has(candidate.identity));
+    if (requirement == null) return;
+    completions.current.get(requirement.identity)?.();
+    setCompleted(current => new Set(current).add(requirement.identity));
+  };
+  const removeLast = () => {
+    const removed = requirements.at(-1);
+    if (removed == null) return;
+    setRequirements(current => current.slice(0, -1));
+    setCompleted(current => {
+      const next = new Set(current);
+      next.delete(removed.identity);
+      return next;
+    });
+  };
+  const restart = () => {
+    completions.current.clear();
+    setCompleted(new Set());
+    setCycle(current => current + 1);
+  };
+
+  return (
+    <Showcase
+      code={`<Readiness>
+  <Workspace />
+</Readiness>`}
+      controls={
+        <>
+          <ControlSelect label="Color" value={color} options={colorOptions} onChange={value => setColor(value as ControlColor)} />
+          <ControlSelect label="Size" value={size} options={sizeOptions} onChange={value => setSize(value as ScaleLevel)} />
+          <ControlSelect label="Material" value={material} options={materialOptions} onChange={value => setMaterial(value as MaterialMode)} />
+          <Button size="small" onPress={add}>Add requirement</Button>
+          <Button size="small" onPress={completeNext} disabled={requirements.every(requirement => completed.has(requirement.identity))}>Complete next</Button>
+          <Button size="small" onPress={removeLast} disabled={requirements.length === 0}>Remove last</Button>
+          <Button size="small" onPress={restart}>Restart readiness</Button>
+        </>
+      }
+    >
+      <WindowScene title="Readiness">
+        <div style={{ position: 'relative', height: 220 }}>
+          <Readiness
+            key={cycle}
+            fallback={current => <PreviewReadinessFallback
+              requirements={current}
+              color={color}
+              material={material}
+              size={size}
+            />}
+          >
+            {requirements.map(requirement => <PreviewRequirement
+              key={requirement.identity}
+              {...requirement}
+              registerCompletion={registerCompletion}
+            />)}
+            <span>Prepared workspace</span>
+          </Readiness>
+        </div>
+      </WindowScene>
+    </Showcase>
+  );
+}
+
+function PreviewReadinessFallback({ requirements, color, material, size }: Readonly<{
+  requirements: readonly { message: string; readyAt: Date | null }[];
+  color: ControlColor;
+  material: MaterialMode;
+  size: ScaleLevel;
+}>) {
+  return <Surface
+    data-readiness-preview-fallback=""
+    role="status"
+    color={color}
+    material={material}
+    style={{
+      position: 'absolute',
+      inset: 0,
+      zIndex: 1,
+      display: 'grid',
+      placeItems: 'center',
+    }}
+  >
+    <div style={{ display: 'grid', justifyItems: 'start', gap: 8 }}>
+      <Spinner decorative size={size} color="currentColor" />
+      {requirements.slice(-5).map((requirement, index) => <div
+        key={`${requirement.message}:${index}`}
+        data-readiness-requirement=""
+        data-ready={requirement.readyAt == null ? 'false' : 'true'}
+        style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+      >
+        {requirement.readyAt == null
+          ? <Spinner decorative size="small" color="currentColor" />
+          : <span data-readiness-ready-indicator="" aria-hidden="true">✓</span>}
+        <span>{requirement.message}</span>
+      </div>)}
+    </div>
+  </Surface>;
+}
+
+function initialReadinessRequirements() {
+  return [
+    { identity: 1, message: 'Connecting to System' },
+    { identity: 2, message: 'Preparing session' },
+    { identity: 3, message: 'Loading programs' },
+  ];
+}
+
+function PreviewRequirement({ identity, message, registerCompletion }: Readonly<{
+  identity: number;
+  message: string;
+  registerCompletion: (identity: number, completion: (() => void) | null) => void;
+}>) {
+  const ready = useRequirement(message);
+
+  useEffect(() => {
+    registerCompletion(identity, ready);
+    return () => registerCompletion(identity, null);
+  }, [identity, ready, registerCompletion]);
+
+  return null;
+}
+
 export function TabsShowcase() {
   const [size, setSize] = useState<ScaleLevel>('medium');
-  const [color, setColor] = useState<ControlColor>('primary:base');
+  const [color, setColor] = useState<ControlColor>('default:base');
   const [orientation, setOrientation] = useState<'horizontal' | 'vertical'>('horizontal');
   const [view, setView] = useState('overview');
 

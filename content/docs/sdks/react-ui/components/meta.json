@@ -30,6 +30,8 @@
     "tree",
     "slider",
     "progress-bar",
+    "spinner",
+    "readiness",
     "tabs",
     "popover",
     "menu",
