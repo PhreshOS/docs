@@ -93,15 +93,23 @@ export PHRESHOS_HOME=/absolute/path/to/system-state
 phresh system status
 ```
 
-## Desktop port
+## Desktop listener
 
 Production chooses the first available port from `4300–4399`.
 `PHRESHOS_PORT` can select one port, an inclusive range, or an ordered list.
+The listener binds to `localhost` by default. `PHRESHOS_HOST` selects another
+hostname or IP address when the deployment needs to expose the System through a
+container network or reverse proxy.
 
 ```sh
+export PHRESHOS_HOST=0.0.0.0
 export PHRESHOS_PORT=4196,4234,5000-5100
 phresh system start
 ```
+
+`0.0.0.0` accepts connections on every IPv4 interface available to the
+process. Keep the published host port private when a reverse proxy owns public
+access.
 
 Development uses `5300–5399` by default.
 
