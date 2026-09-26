@@ -1,51 +1,54 @@
 ---
-title: Endpoint Execution
-description: Runtime containment for Server and Client Endpoints.
+title: Endpoint execution
+description: How a Server and a Client run, and what each mode can reach on its own.
 ---
 
-An Endpoint's execution mode determines the ambient authority of its runtime.
-It does not change the Endpoint contract or grant authority through the System
-API.
+A Program chooses how its Server and Client run. The choice changes what the
+code can reach **on its own**, outside the System API. It never changes the
+SDK, the Endpoint contract, or what the System allows through
+[permissions](/system/security/permissions).
 
-## Server execution
+## Server modes
 
-A Server declaration chooses exactly one execution mode:
+A Server declares exactly one of three modes in its
+[configuration](/sdks/core/program-configuration):
 
-- `command` runs a supervised operating-system process with that process's
-  host capabilities.
-- `worker` runs an ECMAScript module in a Node.js Worker while retaining host
-  capabilities.
-- `sandbox` runs a bundled module in a capability-contained JavaScript runtime
-  with no ambient host access.
+| Mode | Runs | Can reach on its own |
+| --- | --- | --- |
+| `command` | Any operating-system command, such as a Python or Go program | Everything the user running PhreshOS can |
+| `worker` | A JavaScript module in a Node.js Worker | Everything Node.js can |
+| `sandbox` | A bundled JavaScript module in a contained runtime | Nothing: only the System API |
 
-All three modes expose the same Server SDK and Endpoint contract. A sandbox
-Server reaches the outside environment only through the System capabilities
-available to its Program. A command or worker Server may also use the host
-capabilities provided directly by its runtime.
-
-## Client execution
-
-A Client declaration uses `sandbox` to choose how its browser document runs.
-The default is `true`, which applies an iframe sandbox that permits scripts and
-forms without granting normal same-origin authority.
-
-```ts
-client: {
-  location: "dist/client",
-  sandbox: true,
-}
+```ts title="phresh.config.ts"
+server: { location: "dist/server", worker: "main.js" }
+server: { location: "dist/server", command: "./server" }
+server: { location: "dist/server", sandbox: "main.js" }
 ```
 
-Setting `sandbox: false` removes the iframe's sandbox attribute and gives the
-document the authority of an ordinary same-origin browser frame.
+All three use the same Server SDK. A `sandbox` Server has no file, network,
+or process access of its own, so everything it does goes through the System
+and its permissions. Use it when the owner should be able to see and control
+everything the Program does.
 
-```ts
-client: {
-  location: "dist/client",
-  sandbox: false,
-}
+## Client modes
+
+A Client runs as a page inside the Desktop. By default it runs in a
+sandboxed frame, which allows scripts and forms but gives the page no origin
+of its own:
+
+```ts title="phresh.config.ts"
+client: { location: "dist/client" }                  // sandboxed, the default
+client: { location: "dist/client", sandbox: false }  // an ordinary frame
 ```
 
-In either mode, the Client uses the same Client SDK and Endpoint contract.
-Browser containment determines the document's ambient browser capabilities;
-System API access remains governed by the Program's authority.
+Without an origin, browser storage such as `localStorage`, `IndexedDB`, and
+cookies is not available. Keep data with the System instead, in
+[`program.store` or `program.data`](/system/storage), where every Desktop and
+the Server can reach it.
+
+`sandbox: false` gives the page the rights of a normal page from the Desktop's
+origin. Use it only when the Client needs browser features the sandbox
+blocks.
+
+In both modes, the Client uses the same Client SDK, and its System access is
+decided by the Program's permissions.

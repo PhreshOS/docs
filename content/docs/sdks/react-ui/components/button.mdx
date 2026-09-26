@@ -1,50 +1,66 @@
 ---
 title: Button
-description: An accessible action with React UI interaction and material states.
+description: A raised control that performs an action when pressed.
 ---
 
 <ButtonShowcase />
 
-Use `Button` when pressing a control performs an action, such as saving a form,
-opening a view, or confirming a choice. Pointer, Enter, and Space activation all
-reach the same `onPress` callback.
+Use `Button` when pressing something does something: save, open, confirm.
 
 ```tsx
-<Button color="primary:base" onPress={save}>
-  Save changes
-</Button>
+<Button color="primary" onPress={save}>Save</Button>
 ```
 
-## Pending and disabled actions
+`onPress` fires for a click, a tap, and Enter or Space alike, so you need no
+separate keyboard handling.
 
-`pending` prevents a second activation while leaving the Button focusable. Use
-it while an action is in progress. `disabled` removes the Button from keyboard
-focus and prevents activation entirely.
+## Color
+
+A Button is neutral (`default`) unless you give it a meaning:
 
 ```tsx
-<Button color="primary:base" pending={saving} onPress={save}>
+<Button>Cancel</Button>
+<Button color="primary">Install</Button>
+<Button color="danger">Delete</Button>
+<Button color="danger:soft">Remove</Button>
+```
+
+Use `primary` for the one main action on a screen. The text color, hover,
+press, and focus ring follow from the color. See
+[Color](/sdks/react-ui/color).
+
+## While something runs
+
+`pending` ignores presses but keeps the Button focusable, so focus does not
+jump away mid-action. `disabled` removes it from focus entirely.
+
+```tsx
+<Button color="primary" pending={saving} onPress={save}>
   {saving ? "Saving…" : "Save"}
 </Button>
 
 <Button disabled>Unavailable</Button>
 ```
 
-## Selected props
+## Icons and forms
 
-| Prop | Use |
-| --- | --- |
-| `onPress` | Handle normalized pointer and keyboard activation. |
-| `color` | Select an Appearance color such as `primary:base` or `danger:base`. The default is `default:base`. |
-| `size` | Change the complete control scale. The default is `medium`. |
-| `pending` | Block activation without removing keyboard focus. |
-| `disabled` | Prevent focus and activation. |
-| `material`, `shadow`, `radius` | Change the Button's Surface rendering when the normal defaults are not appropriate. |
+An icon-only Button needs a name for screen readers:
 
-## Guidance
+```tsx
+<Button aria-label="Close" onPress={close}><CloseIcon /></Button>
+```
 
-Use `onPress` rather than implementing separate mouse and keyboard handlers.
-The rendered element is a native button and defaults to `type="button"`, so set
-`type="submit"` explicitly when it submits a form.
+A Button is `type="button"` by default. Set `type="submit"` to submit a form.
 
-Text buttons provide their own accessible name. An icon-only Button must provide
-one with `aria-label`.
+## Props
+
+| Prop | Default | Sets |
+| --- | --- | --- |
+| `onPress` | — | What happens when pressed |
+| `color` | `"default"` | Its color |
+| `size` | `"medium"` | Its size |
+| `radius` | Scaled to its size | Its corners |
+| `material`, `shadow` | `"basic"`, the Appearance shadow | Its Surface |
+| `pending` | `false` | Ignore presses, keep focus |
+| `disabled` | `false` | Off |
+| `type` | `"button"` | The native button type |

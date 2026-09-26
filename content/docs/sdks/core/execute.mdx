@@ -1,89 +1,47 @@
 ---
 title: Execute
-description: One discoverable JSON interface over ordinary System handles.
+description: Call System operations as plain JSON, for agents, scripts, and tools.
 ---
 
-Execute represents selected SDK operations as JSON requests and JSON results.
-It gives agents, command-line tools, and other generic consumers one stable
-interface.
-
-Every request names a domain and operation through reserved fields. The other
-fields belong to that operation:
+Execute lets you call System operations with one JSON object and get JSON
+back. It exists for callers that cannot hold SDK handles: AI agents, shell
+scripts, and generic tools.
 
 ```ts
-const result = await system.execute({
+const notes = await system.execute({
   $domain: "endpoint",
   $operation: "ask",
   program: "notes",
   process: "main",
   endpoint: "server",
-  event: "document.list",
+  event: "notes.list",
   input: null,
 })
 ```
 
-The adapter resolves and invokes the same public handles available to
-ordinary SDK code. Visibility, permissions, not-found behavior, and operation
-errors retain their existing meaning. A failed operation rejects the Promise.
-
-`phresh execute` is the same interface from the terminal:
+The same request works from the terminal:
 
 ```sh
-phresh execute '{"$domain":"operation","$operation":"list"}'
+phresh execute '{"$domain":"process","$operation":"list"}'
 ```
 
-## Static and untyped requests
+## How a request looks
 
-`ExecuteRequest` is inferred from the authoritative operation schemas, so a
-request authored in TypeScript is checked before it runs. Values received
-from an external tool begin as `unknown` and are read through the same
-schema:
+`$domain` and `$operation` choose the operation; the other fields are its
+input. Handles are replaced by plain names, such as `program`, `process`, and
+`endpoint`.
 
-```ts
-import { parseExecuteRequest } from "@phreshos/core"
+Execute calls the same SDK operations you would call directly, with the same
+permissions and the same errors. A failed operation rejects.
 
-const request = parseExecuteRequest(externalValue)
-const result = await system.execute(request)
-```
+## Find operations
 
-Environment SDKs implement `system.execute()`. Execute contracts and parsers
-remain imported from Core.
-
-The catalog itself is local contract data. Generic tooling can inspect it
-without a System connection:
+Execute describes itself, so a caller can discover what it can do:
 
 ```ts
-import {
-  describeExecuteOperation,
-  listExecuteOperations,
-} from "@phreshos/core"
+await system.execute({ $domain: "operation", $operation: "list" })
+await system.execute({ $domain: "operation", $operation: "list", domain: "endpoint" })
 
-const endpointOperations = listExecuteOperations("endpoint")
-const ask = describeExecuteOperation("endpoint", "ask")
-```
-
-`listExecuteOperations()` returns summaries and accepts an optional domain
-filter. `describeExecuteOperation()` returns the operation description and its
-JSON request and result schemas, or `null` for an unknown pair. The equivalent
-`operation.list` and `operation.describe` requests exist so a remote JSON-only
-consumer can discover the same catalog through `execute()`.
-
-## Discovery
-
-The `operation` domain describes the interface itself:
-
-```ts
-await system.execute({
-  $domain: "operation",
-  $operation: "list",
-  domain: "endpoint",
-})
-```
-
-Description returns the meaning and JSON request and result schemas of one
-operation:
-
-```ts
 await system.execute({
   $domain: "operation",
   $operation: "describe",
@@ -92,22 +50,44 @@ await system.execute({
 })
 ```
 
-These descriptions come from the same schemas used to validate execution.
+`describe` returns what the operation does and the JSON Schema of its input
+and result. These schemas are the ones used to check each request.
 
-## Catalog
+The same catalog is available without a System, from Core:
 
-Execute covers Program, Process, Endpoint, Service, and Window operations, plus
-discovery.
+```ts
+import { describeExecuteOperation, listExecuteOperations } from "@phreshos/core"
+
+listExecuteOperations("endpoint")
+describeExecuteOperation("endpoint", "ask")   // or null
+```
+
+## Check a request
+
+In TypeScript, `ExecuteRequest` types every request from its schema. For a
+value from outside, check it first:
+
+```ts
+import { parseExecuteRequest } from "@phreshos/core"
+
+const request = parseExecuteRequest(JSON.parse(input))
+const result = await system.execute(request)
+```
+
+## Operations
 
 | Domain | Operations |
 | --- | --- |
 | `operation` | `list`, `describe` |
+| `system` | `logs` |
 | `program` | `list`, `find`, `agent`, `definition`, `getStartup`, `enableStartup`, `disableStartup`, `pinned`, `pin`, `unpin`, `getPermission`, `listPermissions`, `allowsPermission`, `allowPermission`, `denyPermission`, `logs`, `wait` |
 | `process` | `list`, `find`, `create`, `findOrCreate`, `exit`, `wait` |
 | `endpoint` | `inspect`, `start`, `stop`, `waitReady`, `ask`, `publish`, `wait`, `waitLifecycle` |
 | `service` | `list`, `search`, `inspect`, `waitReady`, `ask`, `publish`, `wait`, `waitLifecycle`, `waitDiscovery` |
 | `window` | `inspect`, `move`, `resize`, `setGeometry`, `minimize`, `maximize`, `setTitle`, `setHeader`, `raise`, `wait` |
 
-Program logs use the Program handle's existing read-only SQL capability.
-The `logs` table has columns `createdAt`, `process`, `source`, `kind`, and
-`content`.
+`system.logs` and `program.logs` take a read-only SQL statement over the `logs`
+table; see [Logs](/system/logs).
+
+Each operation behaves like its SDK counterpart, documented in
+[Runtime](/runtime) and [System](/system).

@@ -1,84 +1,144 @@
 ---
 title: Context
-description: The capabilities belonging to the Endpoint currently executing.
+description: The running Endpoint's view of itself, its Process, and the messages sent to it.
 icon: Focus
 ---
 
-A Context is the runtime's first-person view. It belongs to one running
-Endpoint execution context and answers: Which Process am I part of? What
-launched me? Who created that Process? Which messages are addressed to this
-execution?
-
-This is different from retaining an Endpoint handle. The handle addresses a
-permanent role from the outside. Context represents the current incarnation
-from the inside, so its registrations and boundary-owned work end when that
-incarnation stops.
-
-Client code imports `context` from `@phreshos/client`. Server code imports
-`context` from `@phreshos/server`. Node and the CLI are not an executing
-Endpoint, so they have `system` without a Context.
-
-## Execution identity
-
-Client and Server Contexts expose the same identity and launch information:
+`context` is how code running inside an Endpoint talks about itself. It tells
+the code which Program and Process it belongs to, gives it the options it was
+launched with, receives the messages sent to it, and, in a Server, answers
+questions.
 
 ```ts
-const program = await context.program()
-const process = await context.process()
-const parent = await context.parent()
-const options = await context.options()
+import { context } from "@phreshos/server"   // in a Server
+import { context } from "@phreshos/client"   // in a Client
 
-console.log(program.identity, process.identity, parent?.identity, options)
+const document = await context.options("document")
 ```
 
-`name()` returns the current Process name or `null`. `parent()` returns the
-visible parent Process or `null`. `isService()` reports the role of this
-exact Endpoint execution context. `stop()` ends the execution context and releases the
-boundary operations and registrations it owns.
+Node scripts and the CLI do not run inside an Endpoint, so they have `system`
+but no `context`.
 
-The Context receives messages addressed to its Endpoint and can publish
-destinationless output. Inbound messages contain `{ from, payload }`. `from`
-is `null` when the sender lies outside the Context's visible scope.
+## Context and Endpoint handles
 
-Every Endpoint Context exposes `permissions`, the executing Program's
-Endpoint-owned permission handle. It reads effective authority and can request
-an owner's decision; direct assignment remains on `program.permissions`. See
-[Permissions](/system/security/permissions).
+An [Endpoint handle](/runtime/endpoints), such as `process.server`, addresses
+a role from the outside and stays valid across restarts. `context` is the
+current run seen from the inside.
 
-## Client Context
+Everything you register through `context`, such as subscriptions and answers,
+belongs to the current run and ends when it stops. A restarted Endpoint starts
+with a fresh `context` and registers again.
 
-A Client Context adds the capabilities that exist because it is running
-inside a Desktop:
-
-- `server` is the paired Server Endpoint in the same Process
-- `window` is the Client Endpoint's authoritative Window
-- `presentation` is this Desktop's applied representation of that Window
+## Know where you are
 
 ```ts
-import { context, desktop } from "@phreshos/client"
-
-await context.window.setTitle("Notes")
-const { size } = await desktop.viewport.snapshot()
+const program = await context.program()   // the Program
+const process = await context.process()   // the Process
+const name = await context.name()         // the Process name, or null
+const parent = await context.parent()     // the Process that created yours, or null
+await context.isService()                  // whether this run is a Service
 ```
 
-`desktop` is a separate root, documented under [Desktop](/system/desktop).
+## Read launch options
 
-## Server Context
+`options()` returns the options given when the Process was created. Both
+Endpoints of a Process see the same values:
 
-A Server Context adds the paired Client Endpoint and the ability to answer
-questions:
+```ts
+await context.options()              // { document: "notes/today.md" }
+await context.options("document")    // "notes/today.md"
+```
+
+See [Pass options](/runtime/processes#pass-options).
+
+## Receive messages
+
+`context` receives every message sent to this Endpoint, from its paired
+Endpoint, from other Programs, or through its Service. Each message says who
+sent it:
+
+```ts
+context.subscribe("document.changed", ({ from, payload }) => {
+  console.log(from, payload)
+})
+```
+
+`from` is the sending Endpoint, or `null` when you are not allowed to see it.
+
+`context.publish()` sends a message from this Endpoint without a destination,
+to anyone observing it. See [Communication](/runtime/communication).
+
+## Answer questions (Server)
+
+A Server registers one handler per question:
 
 ```ts
 import { context } from "@phreshos/server"
 
-const cleanup = context.answer("status.read", () => ({ ready: true }))
-
-await context.client.waitReady()
+const cleanup = context.answer("notes.list", async ({ from, payload }) => {
+  return await loadNotes()
+})
 ```
 
-`answer(event, answerer)` registers a handler for questions addressed to this
-Server. It returns a cleanup that removes that handler.
+Whatever the handler returns becomes the answer; if it throws, the question
+rejects with the error's message. `answer()` returns a function that removes
+the handler.
 
-The Server sees the same Program, Process, options, and
-[communication](/runtime/communication) language as the Client. What differs
-is the first-person position: the Server answers, the Client presents.
+A question name has one handler at a time, so every question has exactly one
+answer. Registering a second handler for the same name throws.
+
+## Reach the other Endpoint
+
+Each Endpoint's `context` holds a handle to its partner in the same Process:
+
+```ts
+// In a Client
+const notes = await context.server.ask("notes.list")
+
+// In a Server
+await context.client.start()
+await context.client.window.setTitle("Notes")
+```
+
+## Control the Window (Client)
+
+A Client's `context` gives it two views of its Window:
+
+- `context.window` is the Window itself, shared by every Desktop that shows
+  it: its title, size, position, and state.
+- `context.presentation` is how this Desktop draws it, such as its surface and
+  whether it accepts input.
+
+```ts
+await context.window.setTitle("Notes")
+await context.window.resize({ width: 900, height: 640 })
+```
+
+See [Desktop](/system/desktop) for both.
+
+## Stop this run
+
+`context.stop()` stops the Endpoint that is running this code and releases
+everything its run registered. Like [`stop()`](/runtime/endpoints#start-and-stop)
+on a handle, it cannot stop the last running Endpoint of a Process.
+
+## Permissions
+
+`context.permissions` reads the Program's effective permissions and can ask
+the owner to grant more. See [Permissions](/system/security/permissions).
+
+## Reference
+
+| Member | Available in | Result |
+| --- | --- | --- |
+| `program()`, `process()`, `name()`, `parent()` | Both | Where this run belongs |
+| `options(name?)` | Both | Launch options |
+| `isService()` | Both | Whether this run is a Service |
+| `subscribe`, `wait`, `events` | Both | Messages sent to this Endpoint |
+| `publish(event, payload?)` | Both | A message from this Endpoint |
+| `permissions` | Both | Effective permissions and requests |
+| `stop()` | Both | Stops this run |
+| `server` | Client | The paired Server |
+| `window`, `presentation` | Client | The Window and how this Desktop shows it |
+| `client` | Server | The paired Client |
+| `answer(event, handler)` | Server | Answers a question; returns a cleanup |

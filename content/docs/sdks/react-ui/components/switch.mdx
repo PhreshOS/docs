@@ -1,25 +1,31 @@
 ---
 title: Switch
-description: Turn a setting on or off through a boolean value.
+description: A toggle for a setting that takes effect immediately.
 ---
 
 <SwitchShowcase />
 
-`Switch` represents an immediate on/off setting. Its controlled value uses
-`checked` and `onChange`; `defaultChecked` initializes uncontrolled state.
+`Switch` turns a setting on or off right away. Its value is a boolean.
 
 ```tsx
-<Switch
-  label="Automatic updates"
-  checked={automaticUpdates}
-  onChange={setAutomaticUpdates}
-/>
+<Switch label="Start with the System" checked={startup} onChange={setStartup} />
 ```
 
-Use `readOnly` when the current state should remain focusable but cannot change.
-Use `disabled` when the setting is unavailable. The indicator receives the
-component's `color`, `material`, and `shadow` customization.
+Off, the track is recessed. On, the thumb moves across and the track fills
+with `primary`.
 
-Use [`Checkbox`](./checkbox) instead when the boolean represents a choice rather
-than the immediate state of a setting.
+`readOnly` shows the state but cannot change it; `disabled` turns the Switch
+off.
 
+Use [`Checkbox`](/sdks/react-ui/components/checkbox) for a choice that is
+applied later rather than immediately.
+
+## Props
+
+| Prop | Default | Sets |
+| --- | --- | --- |
+| `checked`, `defaultChecked`, `onChange` | — | Its value |
+| `label`, `description`, `errorMessage` | — | Its text |
+| `invalid`, `required`, `readOnly`, `disabled` | `false` | Its state |
+| `color` | `"primary"` | Its on color |
+| `size`, `material` | — | Its look |

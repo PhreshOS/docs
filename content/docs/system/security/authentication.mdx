@@ -1,92 +1,123 @@
 ---
 title: Authentication
-description: Owner Sessions and the browser Connections they authorize.
+description: The owner account, the browsers connected to the System, and their sign-in Sessions.
 ---
 
-A Connection is one live browser connection to the System. A Session is a
-persistent authentication grant. Each Connection has either no Session or one
-Session. A Session may authorize any number of Connections.
+A PhreshOS System has one owner. The owner signs in to a Desktop with a
+username and password, set on the first visit.
 
-These are first-class domain objects with stable public identities. They
-describe browser authentication. The owner-local Node gateway is an external
-trusted transport and is not a value in either domain.
+Two objects describe who is connected:
 
-## Connection
-
-A Connection exists for as long as the underlying browser connection.
-`connected()` reports whether it remains live. `session()` returns its
-currently attached Session, or `null`.
+- a **Connection** is one browser currently connected to the System, signed
+  in or not;
+- a **Session** is a sign-in. It can be shared by several Connections and
+  outlives each of them.
 
 ```ts
+import { desktop } from "@phreshos/client"
+
 const connection = await desktop.connection()
-const session = await connection.session()
-
-console.log(connection.identity, session?.identity)
+const session = await connection.session()   // null when not signed in
 ```
 
-`signIn()` creates and attaches a new Session. It rejects if the Connection
-is already signed in, or if the Connection no longer exists. A
-`sessionChange` event carries the new Session or `null`. `disconnect` is the
-terminal Connection event.
+Node scripts and the CLI connect directly as the owner. They are not
+Connections and need no Session.
 
-After the Connection ends, `connected()` is `false` and `session()` is
-`null`.
-
-At System scope, `system.authentication.connections()` and `connection()`
-expose live visible Connections. The Authentication handle emits
-`connectionCreate` and `connectionDisconnect`.
-
-## Session
-
-A Session survives individual Connection lifetimes. `valid()` reports whether
-it can authorize a Connection. `connections()` returns its currently attached
-live Connections.
+## Connections
 
 ```ts
-const connections = await session.connections()
+await connection.connected()   // whether the browser is still connected
+await connection.session()     // its Session, or null
 
-session.subscribe("connectionAttach", connection => {
-  console.log("Attached", connection.identity)
-})
+connection.subscribe("sessionChange", session => {})
+connection.subscribe("disconnect", () => {})
 ```
 
-The Session emits `connectionAttach` and `connectionDetach` as its membership
-changes. `signOut()` ends the Session and detaches every Connection using it.
-It rejects if the Session no longer exists. The terminal `end` event contains
-a reason of `"signedOut"` or `"expired"`.
+`signIn()` authorizes a connected browser that is not signed in yet, and
+creates a new Session for it:
 
-After the Session ends, `valid()` is `false` and `connections()` is empty.
+```ts
+const session = await connection.signIn()
+```
 
-`system.authentication.sessions()` and `session()` expose visible valid
-Sessions. The Authentication handle emits `sessionCreate` and `sessionEnd`.
-The end event contains both the Session and its reason.
+It needs no password because credentials prove who is connecting, and the
+caller here is a Program already trusted with authentication, not the
+browser. For example, a Program could watch new Connections and approve
+remote ones without anyone typing a password on them.
+
+It rejects when the Connection is already signed in or no longer connected.
+It requires `authentication`, or `desktopConnection` for the Program's own
+Desktop.
+
+## Sessions
+
+```ts
+await session.valid()          // whether it can still sign Connections in
+await session.connections()    // Connections using it
+await session.signOut()        // end it
+
+session.subscribe("connectionAttach", connection => {})
+session.subscribe("connectionDetach", connection => {})
+session.subscribe("end", ({ reason }) => {})   // "signedOut" or "expired"
+```
+
+A Session stays valid while any Connection uses it. After the last one
+disconnects, it stays valid for 24 hours, so reopening the browser does not
+require signing in again. Signing out ends it immediately.
+
+Signing out does not close the browser connections; they stay connected but
+are no longer signed in.
+
+The browser keeps the Session's secret token. The System stores only a hash of
+it.
+
+## All Connections and Sessions
+
+`system.authentication` lists and follows everything connected to the System:
+
+```ts
+await system.authentication.connections()
+await system.authentication.connection(identity)   // or null
+await system.authentication.sessions()
+await system.authentication.session(identity)      // or null
+
+system.authentication.subscribe("connectionCreate", connection => {})
+system.authentication.subscribe("connectionDisconnect", connection => {})
+system.authentication.subscribe("sessionCreate", session => {})
+system.authentication.subscribe("sessionEnd", ({ session, reason }) => {})
+
+await system.authentication.signOutAllSessions()
+```
 
 ## Owner credentials
 
-`system.authentication.state()` returns the configured public username, or
-`null` before the owner has credentials. `requirements()` returns the username
-and password length bounds enforced by that System.
+```ts
+await system.authentication.state()          // { username }; username is null before setup
+await system.authentication.requirements()   // allowed username and password lengths
 
-`setCredentials()` replaces the complete username and password used for later
-sign-ins. Existing Sessions remain valid. A caller can end one Session with
-`session.signOut()` or explicitly end all Sessions with
-`system.authentication.signOutAllSessions()`.
+await system.authentication.setCredentials({ username: "owner", password: "…" })
+```
 
-## Validity
+Changing credentials affects future sign-ins only. To also sign everyone out,
+call `signOutAllSessions()`.
 
-The raw Session token exists only on the browser Client. The System stores a
-hash together with the Session's public identity.
+## Permissions
 
-A Session remains valid indefinitely while at least one Connection is
-attached. After its final normal disconnection, it remains valid for 24
-hours. If a later authorization attempt finds it older than that limit, the
-Session expires and is removed. Explicit sign-out removes it immediately.
+| Permission | Allows |
+| --- | --- |
+| `desktopConnection` | A Client reading its own Desktop's Connection and Session |
+| `authentication` | Everything on this page, including every Connection and Session and the owner credentials |
 
-Signing out changes attached Connections from authorized to unauthorized. It
-does not close their WebSockets. Connection transport and Connection
-authorization are separate lifecycles.
+See [Permissions](/system/security/permissions).
 
-A Program needs the `authentication` permission to read or change owner
-authentication and to access every Connection and Session. That permission
-also grants `desktopConnection`, which gives a Client access to the containing
-Desktop Connection and its attached Session.
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `desktop.connection()` | This Desktop's Connection |
+| `connection.connected()`, `session()`, `signIn()` | One browser connection |
+| `session.valid()`, `connections()`, `signOut()` | One sign-in |
+| `system.authentication.connections()`, `connection(id)` | Connected browsers |
+| `system.authentication.sessions()`, `session(id)` | Valid Sessions |
+| `system.authentication.state()`, `requirements()`, `setCredentials()` | Owner credentials |
+| `system.authentication.signOutAllSessions()` | End every Session |

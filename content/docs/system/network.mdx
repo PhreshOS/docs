@@ -1,64 +1,85 @@
 ---
 title: Network
-description: Fetch and WebSocket through System authority.
+description: Make HTTP requests and open WebSockets under the Program's network permission.
 icon: Globe
 ---
 
-`system.network` gives every SDK the same two outbound network capabilities.
-The boundary exists so the System can apply Program authority and bind
-long-lived work to an owner. It does not replace the web platform's request
-model: fetch returns a standard `Response`, and WebSocket returns a standard
-`WebSocket`.
+`system.network` lets a Program reach the network with the standard web
+APIs, `fetch` and `WebSocket`, while the System checks each destination
+against the Program's `network` permission.
 
-## Fetch
+It works the same in a Client, a Server, and a Node script, and returns the
+standard `Response` and `WebSocket` objects you already know.
 
 ```ts
-const response = await system.network.fetch("https://api.example.com/items", {
-  headers: { accept: "application/json" },
-})
-
+const response = await system.network.fetch("https://api.example.com/items")
 const items = await response.json()
 ```
 
-The operation accepts `RequestInfo | URL` and an optional `RequestInit`.
-Supplying a `Request` preserves its method, headers, body, and abort signal.
-The returned `Response` retains the standard status, headers, streaming body,
-and body readers. HTTP failures remain ordinary Responses; transport or
-permission failures reject the Promise.
+## Fetch
 
-## WebSocket
+`fetch()` takes the same arguments as the browser's `fetch`:
 
 ```ts
-const socket = await system.network.websocket(
-  "wss://example.com/events",
-  ["events.v1"],
-)
-
-socket.addEventListener("message", event => {
-  console.log(event.data)
+const response = await system.network.fetch("https://api.example.com/items", {
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ name: "Notes" }),
+  signal: AbortSignal.timeout(10_000),
 })
 ```
 
-The returned socket uses the standard lifecycle, methods, properties, and
-events. Acquisition is asynchronous because a Client may need to cross the
-System boundary before receiving that socket. The optional protocol value is
-the same string or string-array subprotocol selection accepted by the browser
-`WebSocket` constructor.
+A `Request` object works too, including its method, headers, body, and abort
+signal. The response body streams as usual.
 
-Server and Node sockets close when their owning execution Context or System
-connection ends. A Client-owned socket follows the browser frame that
-received it.
+An HTTP error, such as `404`, is a normal `Response`. The Promise rejects only
+when the request cannot be made: the network fails, or the destination is not
+allowed.
 
-## Authority
+## WebSocket
 
-A Program needs a `network` scope covering the requested URL, or `all`. HTTP
-and WebSocket schemes are distinct. Permission failure rejects the operation
-before the value is returned.
+`websocket()` resolves with a standard `WebSocket`:
 
-A network scope is a URL without credentials. The hostname may be `*` or a
-single leading `*.label`. A path ending in `/**` is a prefix; an omitted path
-covers every path. Port `*` covers every port.
+```ts
+const socket = await system.network.websocket("wss://example.com/events", ["events.v1"])
 
-This permission governs `system.network.fetch()` and
-`system.network.websocket()`. Once a `Response` or WebSocket has been
-returned, changing the permission does not revoke that value.
+socket.addEventListener("message", event => console.log(event.data))
+socket.send("hello")
+```
+
+The second argument is the optional subprotocol, as in the `WebSocket`
+constructor. The call is asynchronous because the System checks and prepares
+the connection first.
+
+A socket opened by a Server or a Node script closes when that Endpoint stops
+or that connection ends. A Client's socket follows the Client's page.
+
+## Permissions
+
+Every request needs a `network` permission that covers its URL, or the `all`
+permission. A value is a URL pattern:
+
+| Value | Covers |
+| --- | --- |
+| `https://api.example.com` | Any path on that host, default port |
+| `https://api.example.com/v1/**` | Paths starting with `/v1/` |
+| `https://api.example.com/v1/items` | Exactly that path |
+| `https://*.example.com` | Any subdomain of `example.com`, but not `example.com` itself |
+| `https://*` | Any host |
+| `http://localhost:*` | Any port on `localhost` |
+| `wss://example.com` | WebSockets to that host |
+
+`http`, `https`, `ws`, and `wss` are separate: allowing `https://example.com`
+does not allow `wss://example.com`. Patterns cannot contain credentials.
+
+The permission is checked when you call `fetch()` or `websocket()`. A response
+or socket you already have keeps working if the permission later changes.
+
+See [Permissions](/system/security/permissions).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `system.network.fetch(input, init?)` | A standard `Response` |
+| `system.network.websocket(url, protocols?)` | A standard `WebSocket` |

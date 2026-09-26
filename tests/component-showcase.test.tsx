@@ -10,14 +10,13 @@ import {
   DateRangePickerShowcase,
   ListBoxShowcase,
   ProgressBarShowcase,
-  ReadinessShowcase,
   RangeCalendarShowcase,
   SpinnerShowcase,
   TabsShowcase,
   TimeFieldShowcase,
   TreeShowcase,
   WindowShowcase,
-} from "../components/showcase/examples"
+} from "../components/showcase"
 import { colorOptions } from "../components/showcase/showcase"
 
 const docsTheme = vi.hoisted(() => ({ resolvedTheme: "dark" as "dark" | "light" | undefined }))
@@ -42,17 +41,17 @@ afterAll(() => {
   Reflect.deleteProperty(Element.prototype, "getAnimations")
 })
 
-test("shared color controls expose every named Appearance source", () => {
+test("shared color controls offer the component default and every Appearance role", () => {
   expect(colorOptions.map(option => option.value)).toEqual([
-    "background:base",
-    "foreground:base",
-    "default:base",
-    "primary:base",
-    "secondary:base",
-    "success:base",
-    "warning:base",
-    "danger:base",
-    "info:base",
+    "",
+    "default",
+    "background",
+    "primary",
+    "secondary",
+    "success",
+    "warning",
+    "danger",
+    "info",
   ])
 })
 
@@ -61,8 +60,8 @@ test("showcases start from each component's own default color", () => {
   expect(screen.getByLabelText("Color").textContent).toContain("Default")
   button.unmount()
 
-  render(<ReadinessShowcase />)
-  expect(screen.getByLabelText("Color").textContent).toContain("Background")
+  render(<SpinnerShowcase />)
+  expect(screen.getByLabelText("Color").textContent).toContain("Default")
 })
 
 test("the button showcase puts the action in a window and applies controls", () => {
@@ -79,8 +78,8 @@ test("the button showcase puts the action in a window and applies controls", () 
 test("the Window showcase uses the complete Window composition", () => {
   render(<WindowShowcase />)
 
-  const content = screen.getByText("Window provides the Surface, header, and remaining content area.")
-  const window = content.parentElement?.parentElement
+  const content = screen.getByText("Three notes, last edited a minute ago.")
+  const window = content.parentElement
   expect(window?.style.display).toBe("flex")
   expect(window?.style.flexDirection).toBe("column")
   expect(screen.getByRole("button", { name: "Maximize" })).toBeTruthy()
@@ -130,7 +129,7 @@ test("the Tabs showcase connects each tab to its panel", () => {
   render(<TabsShowcase />)
 
   fireEvent.click(screen.getByRole("tab", { name: "Activity" }))
-  expect(screen.getByRole("tabpanel", { name: "Activity" }).textContent).toContain("Recent activity")
+  expect(screen.getByRole("tabpanel", { name: "Activity" }).textContent).toContain("Last synced a minute ago.")
 })
 
 test("the Progress Bar showcase switches between measured and indeterminate activity", () => {
@@ -148,27 +147,6 @@ test("the Spinner showcase names its indeterminate activity", () => {
 
   const spinner = screen.getByRole("progressbar", { name: "Loading workspace" })
   expect(spinner.getAttribute("aria-valuenow")).toBeNull()
-})
-
-test("the Readiness showcase presents the default requirement history", () => {
-  render(<ReadinessShowcase />)
-
-  const status = document.querySelector<HTMLElement>("[data-readiness-preview-fallback]")
-  expect(status).toBeTruthy()
-  expect(status?.textContent).toContain("Connecting to System")
-  expect(status?.textContent).toContain("Preparing session")
-  expect(status?.textContent).toContain("Loading programs")
-  expect(document.querySelectorAll("[data-readiness-requirement]")).toHaveLength(3)
-
-  fireEvent.click(screen.getByRole("button", { name: "Add requirement" }))
-  expect(document.querySelectorAll("[data-readiness-requirement]")).toHaveLength(4)
-  expect(status?.textContent).toContain("Loading requirement 4")
-
-  fireEvent.click(screen.getByRole("button", { name: "Complete next" }))
-  expect(document.querySelector('[data-readiness-requirement][data-ready="true"] [data-readiness-ready-indicator]')).toBeTruthy()
-
-  fireEvent.click(screen.getByRole("button", { name: "Restart readiness" }))
-  expect(document.querySelectorAll('[data-readiness-requirement][data-ready="false"]')).toHaveLength(4)
 })
 
 test("the Date Field showcase exposes one locale-aware date value", () => {
@@ -223,11 +201,9 @@ test("the Tree showcase preserves selection while branches expand and collapse",
   render(<TreeShowcase />)
 
   expect(screen.getByRole("row", { name: "tree.tsx" }).getAttribute("aria-selected")).toBe("true")
-  fireEvent.click(screen.getByRole("button", { name: "Collapse Source" }))
+  fireEvent.click(screen.getByRole("button", { name: "Collapse source" }))
   expect(screen.queryByRole("row", { name: "tree.tsx" })).toBeNull()
-  fireEvent.click(screen.getByRole("button", { name: "Expand Source" }))
+  fireEvent.click(screen.getByRole("button", { name: "Expand source" }))
   expect(screen.getByRole("row", { name: "tree.tsx" }).getAttribute("aria-selected")).toBe("true")
-
-  fireEvent.click(screen.getByLabelText("Disable Archive"))
-  expect(screen.getByRole("row", { name: "Archive" }).getAttribute("aria-disabled")).toBe("true")
+  expect(screen.getByRole("row", { name: "archive" }).getAttribute("aria-disabled")).toBe("true")
 })

@@ -1,197 +1,198 @@
 ---
 title: Permissions
-description: Program authority within the System and its visible scope.
+description: What a Program may do through the System, how it asks, and how the owner decides.
 ---
 
-Permissions describe which System capabilities a Program may access. A Program
-declares requested defaults, the System stores runtime assignments, and the
-effective result applies to every Client and Server Endpoint the Program owns.
+Permissions decide which System capabilities a Program may use, such as
+reaching other Programs, the network, or files on the machine. They belong to
+the Program, so its Server and Client always have the same permissions.
 
-Permissions constrain the System API. They do not remove capabilities granted
-directly by an execution environment: Client code retains browser APIs, while
-`command` and `worker` Servers retain their host capabilities. A `sandbox`
-Server has no ambient host access, so its only outside capabilities are the
-permission-constrained System operations.
-
-A permission also defines which domain handles exist within the Program's
-visible scope. Hidden Programs, Services, Connections, and Sessions stay
-opaque. Collection `list()` operations return only visible handles. `find()`
-returns `null` when an identity is absent or inaccessible. Relationships and
-events apply the same filter.
-
-Without additional authority, an Endpoint can reach its own Program, that
-Program's Processes and resources, and the Services covered by an explicit
-`services` grant. A Client can also read its containing Desktop's viewport and
-effective preferences. Permissions extend that starting scope; they do not
-replace it.
-
-Lookup and direct access have deliberately different failure shapes. A lookup
-cannot reveal whether a hidden identity exists, so it returns `null`. A direct
-capability whose target is already known—such as changing Appearance or asking
-for the containing Desktop Connection—rejects when the caller lacks authority.
-
-## The permission value
-
-Each permission stores one of three states:
-
-- an array is a granted canonical value
-- `false` is an explicit denial
-- `null` or absence provides no exact decision
-
-For a valued permission, an empty array grants its complete domain. A
-non-empty array grants only the selected values. For a value-less permission,
-the empty array is its canonical granted value. `true` is shorthand for the
-permission's default grant when declaring, allowing, or requesting it.
-
-An exact permission assignment takes priority over `all`.
-
-## Catalog
-
-| Permission | What it grants |
-| --- | --- |
-| `services` | Every Service, or every Service using selected Process names |
-| `programs` | Every Program, or selected Programs, including their Processes, Endpoints, Windows, and resources |
-| `layers` | Every restricted Client Window layer, or selected `under`, `over`, `wallpaper`, and `shell` layers |
-| `network` | Every System network target, or selected URL scopes |
-| `storage` | Every native path and operation, or selected operation-and-path scopes |
-| `uploads` | Creation of public uploads |
-| `logs` | Reading and observing System logs |
-| `appearance` | Replacement of System Appearance |
-| `desktopPreferences` | Changes to Desktop preferences |
-| `desktopConnection` | This Desktop's Connection and its attached Session |
-| `authentication` | Owner authentication and every Connection and Session; also grants `desktopConnection` |
-| `all` | Fallback authority for capabilities without an exact assignment, plus unrestricted System capabilities |
-
-`services` is independent from `programs`. A selected value grants every
-Service whose Process uses that name, without revealing its Program or other
-resources. `authentication` includes `desktopConnection`.
-
-Program creation, force-creation, direct permission assignment, and
-`system.shell()` require `all`. Reading another visible Program's permissions
-requires access to that Program, not `all`.
-
-## Declaring and inspecting
-
-A Program declares requested values in `phresh.config.ts`. Creation and
-installation do not write those values into runtime state. For each permission,
-a stored assignment takes precedence; otherwise the declared value is used.
-Declarations accept `true` or a value list. Stored assignments are canonical
-value lists or `false` for explicit denial.
+A Program declares what it needs, asks for more while running, and the owner
+decides.
 
 ```ts
-permissions: {
-  network: ["https://api.example.com"],
-  uploads: true,
-}
-```
-
-`program.permissions` manages one Program's assignments. `get()` and `all()`
-return effective values after stored state is resolved over the declaration,
-while `allows()` tests one requested capability. `allow()` replaces the
-complete stored assignment with `true` or a value list; it does not merge with
-the previous assignment. `deny()` stores `false`. Direct `allow()` and `deny()`
-operations require `all`; reads require access to the Program.
-
-## Requesting from an Endpoint
-
-`context.permissions` is a separate, Endpoint-owned contract. It provides the
-same read operations by convention, then adds `request()` and
-`timeout(milliseconds)`. It cannot directly assign another Program's
-permissions. This keeps the request source exact: every request comes from a
-live Client or Server Endpoint, and always targets that Endpoint's Program.
-
-```ts
-const allowed = await context.permissions.allows("network", ["https://api.example.com"])
-
-if (!allowed) {
+if (!await context.permissions.allows("network", ["https://api.example.com"])) {
   await context.permissions.request("network", ["https://api.example.com"])
 }
 ```
 
-`request()` returns immediately when the effective permission already equals the
-requested canonical value. Otherwise it creates a pending owner decision and replaces the
-stored assignment when approved. A broader or narrower assignment is not an
-exact match and still requires a decision because approval replaces the whole
-assignment.
+## What a Program can do without permissions
 
-`timeout(milliseconds)` selects another deadline for the prompt. The default
-request deadline is two minutes. The System derives the request's creation and
-expiry times from its own clock, so a remote Endpoint's clock does not control
-the lifetime. Approval returns the canonical granted list, denial returns
-`false`, and dismissal or a deadline returns `null`. The System resolves the
-request with `null` if its originating Endpoint stops. Node code has no
-Endpoint Context and therefore cannot create permission requests.
+Every Program can always:
 
-## Pending requests
+- see and manage its own Program, Processes, Endpoints, and Windows;
+- use its own files, store, database, and logs;
+- read the System's Appearance;
+- in a Client, read the Desktop's size and preferences.
 
-`system.permissions` exposes the System-wide request registry to callers with
-`all`. `requests()` returns the requests that are pending now.
-`permissionRequest` announces a new request, while `permissionResolve`
-announces its final value.
+Everything beyond that needs a permission.
+
+## The permissions
+
+| Permission | Allows |
+| --- | --- |
+| `programs` | Seeing and managing all Programs, or selected ones, with their Processes, Windows, and resources |
+| `services` | Reaching all [Services](/runtime/services), or those with selected names |
+| `layers` | Starting a Client in `under`, `over`, `wallpaper`, or `shell`, or in selected ones; see [Layers](/system/desktop#layers) |
+| `network` | Requests to all URLs, or to selected URL patterns; see [Network](/system/network#permissions) |
+| `storage` | Files on the machine, all or selected paths and operations; see [Storage](/system/storage#files-on-the-machine) |
+| `uploads` | Creating [uploads](/system/storage#uploads) |
+| `logs` | Reading the [System log](/system/logs) |
+| `appearance` | Changing [Appearance](/system/appearance) |
+| `desktopPreferences` | Changing [Desktop preferences](/system/desktop#preferences) |
+| `desktopConnection` | Reading the Desktop's [Connection](/system/security/authentication) and its Session |
+| `authentication` | Managing owner credentials, Connections, and Sessions. Includes `desktopConnection` |
+| `all` | Everything, including creating Programs, assigning permissions, and [`system.shell()`](/system/shell) |
+
+`programs` and `services` are independent: reaching a Service does not reveal
+its Program, and seeing a Program does not grant its Services.
+
+## Declare what you need
+
+List the permissions your Program needs in its
+[configuration](/sdks/core/program-configuration):
+
+```ts title="phresh.config.ts"
+permissions: {
+  network: ["https://api.example.com"],
+  services: ["editor"],
+  uploads: true,
+}
+```
+
+`true` asks for the whole permission; a list asks for selected values.
+
+A declaration is a default, not a grant written into the System. When the
+owner has made a decision about a permission, that decision applies instead.
+
+## Check and request at runtime
+
+Inside an Endpoint, `context.permissions` reads the Program's current
+permissions:
 
 ```ts
-const stop = system.permissions.subscribe("permissionRequest", request => {
-  console.log(request.from, request.name, request.scope)
+await context.permissions.get("network")     // its current value
+await context.permissions.all()              // every permission
+await context.permissions.allows("network", ["https://api.example.com"])
+```
+
+`request()` asks the owner and resolves with the decision:
+
+```ts
+const result = await context.permissions.request("services", ["editor"])
+// the granted list, false when denied, or null when dismissed or expired
+```
+
+It resolves at once when the Program already has exactly that value.
+Otherwise the Desktop asks the owner. Approval replaces the whole permission
+with the requested value, so asking for a different value, even a smaller
+one, still needs a decision.
+
+A request waits two minutes by default. Change it with `timeout()`:
+
+```ts
+await context.permissions.timeout(300_000).request("storage", ["read:Documents/**"])
+```
+
+A request ends with `null` if the Endpoint that made it stops. Only a running
+Endpoint can make requests, so a request always comes from a known Program.
+
+## Missing permissions
+
+What happens without a permission depends on what you do:
+
+- **Looking something up** behaves as if it did not exist: `find()` returns
+  `null` and `list()` leaves it out. This way a Program cannot learn that
+  hidden software exists.
+- **Using a capability** you already know about, such as changing Appearance,
+  rejects with an error.
+
+Events follow the same rule: you only hear about what you can see.
+
+## Manage a Program's permissions
+
+`program.permissions` reads and sets any visible Program's permissions:
+
+```ts
+const program = await system.program.find("notes")
+
+await program.permissions.get("network")
+await program.permissions.allows("uploads")
+
+await program.permissions.allow("network", ["https://api.example.com"])
+await program.permissions.allow("uploads")       // the whole permission
+await program.permissions.deny("network")        // an explicit no
+```
+
+`allow()` replaces the permission's value; it does not add to it. Setting
+permissions requires `all`.
+
+A Program emits `permissions` when its permissions change. See
+[Programs](/runtime/programs#observe-changes).
+
+## Decide requests
+
+A Program that replaces the Shell, such as a custom settings or security
+interface, can decide requests through `system.permissions`:
+
+```ts
+system.permissions.subscribe("permissionRequest", async request => {
+  console.log(request.from, request.name, request.scope, request.expiresAt)
+
+  await request.allow()    // grant the requested value
+  // or: request.deny()    // store an explicit no
+  // or: request.cancel()  // end the request, change nothing
 })
+
+await system.permissions.requests()   // requests pending now
 ```
 
-A `PermissionRequest` keeps the request identity, originating Endpoint,
-creation and expiry times, permission name, and requested scope. `pending()`
-checks whether it is still present in the authoritative registry. `allow()`
-stores the requested scope, `deny()` stores `false`, and `cancel()` ends the
-request with `null` without changing the Program's assignment. Once resolved,
-the handle's information remains readable, but these three operations reject
-because the request no longer exists.
+`permissionResolve` reports how each request ended. After a request ends, its
+details stay readable, but `allow()`, `deny()`, and `cancel()` reject.
 
-Access to this registry requires `all`, rather than a separate permission,
-because resolving a request can grant `all` itself. A narrower permission for
-the registry would therefore provide `all` indirectly.
+This requires `all`. Deciding a request can grant any permission, including
+`all` itself, so a narrower permission for it would amount to `all` anyway.
 
-The request contract contains no presentation text or dialog behavior. The
-Shell decides how pending requests are represented and sends only the domain
-decision back to the System.
+The System only records requests and decisions. How a request is shown to the
+owner is up to the Shell.
 
-## Window layer authority
+## How values work
 
-The ordinary `window` layer needs no layer permission. Selecting `under`,
-`over`, `wallpaper`, or `shell` requires `layers` coverage. This applies
-when a Program creates a Process, starts a Client Endpoint, or stores a startup launch
-that explicitly selects one of those layers. Omitting `layer` continues through
-the declaration or existing authoritative Window value.
+Each permission has one of three values:
 
-## Network and Storage values
+| Value | Meaning |
+| --- | --- |
+| A list | Granted. An empty list grants the whole permission; a non-empty list grants only those values |
+| `false` | Explicitly denied |
+| `null` | No decision |
 
-A network value names an explicit HTTP or WebSocket region:
+When a permission has a decision of its own, it is used even if the Program
+has `all`. That lets the owner grant `all` and still deny one thing.
 
-```ts
-permissions: {
-  network: [
-    "https://api.example.com",
-    "https://*.example.com/v1/**",
-    "http://localhost:*",
-    "wss://events.example.com/**",
-  ],
-}
-```
+A broader permission also allows everything it contains. For example,
+`authentication` includes `desktopConnection`, and `all` includes everything
+without a decision of its own.
 
-The scheme is part of the grant. `*.` replaces complete leading host labels,
-`:*` covers every port, and a final `/**` includes a path subtree. Query and
-fragment text do not expand or narrow authority.
+## What permissions do not limit
 
-A Storage value combines operations with a native path:
+Permissions govern what a Program does through the System. They do not take
+away what its environment already allows: a Client still has browser APIs,
+and a `command` or `worker` Server still has host access. A `sandbox` Server
+has no host access of its own, so the System and its permissions are its only
+way out. See [Endpoint execution](/system/security/execution).
 
-```ts
-permissions: {
-  storage: [
-    "Documents/report.json",
-    "read:Documents/**",
-    "read,write:Downloads/**",
-  ],
-}
-```
+Node scripts and the CLI connect as the owner and are not limited by Program
+permissions.
 
-A bare path grants `read`, `write`, and `delete`. A final `/**` includes the
-named path and its descendants. Relative paths begin at `system.storage`; an
-absolute path keeps its native meaning. Deriving a handle with `navigate()` or
-`file()` performs no access. The permission is checked when an operation reads,
-writes, watches, or removes the selected native location.
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `context.permissions.get(name)`, `all()`, `allows(name, value?)` | Read the Program's permissions |
+| `context.permissions.request(name, value?)` | Ask the owner |
+| `context.permissions.timeout(ms)` | Requests with another deadline |
+| `program.permissions.get()`, `all()`, `allows()` | Read a Program's permissions |
+| `program.permissions.allow(name, value?)`, `deny(name)` | Set them; requires `all` |
+| `system.permissions.requests()` | Pending requests; requires `all` |
+| `system.permissions` events | `permissionRequest`, `permissionResolve` |
+| `request.allow()`, `deny()`, `cancel()`, `pending()` | Decide one request |

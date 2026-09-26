@@ -1,69 +1,90 @@
 ---
 title: Services
-description: Discoverable Endpoint communication through stable addresses.
+description: Stable, discoverable addresses through which other Programs reach an Endpoint.
 icon: Waypoints
 ---
 
-A Service is the public communication role of an Endpoint that chose to be
-discoverable while running. It does not create another worker, lifecycle, or
-message contract: communication still reaches the underlying Endpoint. The
-separate Service handle exists so another Program can discover and address
-that capability without gaining the Program and Process authority that owns
-it.
+A Service lets other Programs reach one of your Endpoints by a stable address,
+without owning or even seeing your Program and its Processes. Use it to offer
+a capability, such as an editor, a sync engine, or a search index, to the rest
+of the System.
 
-Every Service address has three coordinates:
+A Service is not a separate thing that runs. It is a named Endpoint that chose
+to be discoverable, and messages sent to the Service reach that Endpoint.
 
 ```ts
-type ServiceAddress = {
-  program: string
-  process: string
-  endpoint: "server" | "client"
-}
+const editor = system.service.prepare({
+  program: "text-studio",
+  process: "editor",
+  endpoint: "server",
+})
+
+const document = await editor.ask("document.open", { path: "welcome.txt" })
 ```
 
-`program` is the stable Program identity. `process` is the Program-local
-Process name and acts as the Service name. `endpoint` identifies the Server or
-Client Endpoint. Together these coordinates already identify the existing
-runtime role, so a Service does not introduce a second independent identity.
-An unnamed Process cannot provide a stable discoverable address.
+## The address
 
-## Discovering Services
+A Service address has three parts:
 
-`system.service.list()` returns every Service currently available to the
-caller. `search(name)` narrows that result to Services whose Process has the
-given name. More than one Program may use the same Process name, so a search
-can return several Services. For example, separate text-editing and
-image-editing Programs may both expose a Process named `editor`.
+| Part | Meaning |
+| --- | --- |
+| `program` | The identity of the Program providing it |
+| `process` | The name of the Process, which is also the Service name |
+| `endpoint` | `"server"` or `"client"` |
 
-```ts
-const editors = await system.service.search("editor")
+The address points at a role, not at one run. If the Endpoint restarts, or the
+named Process is replaced by a new one with the same name, the same address
+reaches it again. Only a named Process can provide a Service, because an
+unnamed Process has no stable address.
 
-for (const editor of editors) {
-  console.log(editor.address())
-}
-```
+## Provide a Service
 
-Only ready Endpoints running in Service mode appear in discovery results.
-Results are also limited by the caller's `services` permission.
-
-The discovery collection itself is observable. Its `available` and
-`unavailable` events carry the Service handle that entered or left the
-caller's visible ready set:
+Name the Process and mark the Endpoint as a Service:
 
 ```ts
-const cleanup = system.service.subscribe("available", service => {
-  console.log("Discovered", service.address())
+await program.createProcess({
+  name: "editor",
+  server: { service: true },
 })
 ```
 
-These are caller-scoped discovery events: a permission change can make a
-Service enter or leave this set even when the provider Endpoint did not start
-or stop at that moment.
+The Program can also make an Endpoint a Service by default in its
+[definition](/sdks/core/program-configuration). A launch or `start()` can
+override that for one run.
 
-## Preparing an exact address
+The Service becomes available once that Endpoint is running and ready, and
+unavailable when it stops. Inside the Endpoint, `context.isService()` reports
+whether the current run is a Service.
 
-When the address is already known, `prepare()` creates its canonical local
-handle without contacting the System:
+## Find Services
+
+When you do not know who provides a capability, search by name:
+
+```ts
+const editors = await system.service.search("editor")
+const all = await system.service.list()
+```
+
+Several Programs can offer a Service with the same name, so `search()` can
+return more than one. Only available Services that you are allowed to reach
+appear.
+
+Follow Services as they appear and disappear:
+
+```ts
+system.service.subscribe("available", service => {
+  console.log(service.address())
+})
+system.service.subscribe("unavailable", service => {})
+```
+
+These events describe what you can reach. A permission change can add or
+remove a Service even when its Endpoint did not start or stop.
+
+## Address a known Service
+
+When you know the address, `prepare()` returns its handle right away, without
+contacting the System:
 
 ```ts
 const editor = system.service.prepare({
@@ -73,90 +94,92 @@ const editor = system.service.prepare({
 })
 ```
 
-The Endpoint discriminant determines whether the result is a `ServerService`
-or `ClientService`. Repeated preparation of the same address in one SDK
-context returns the same handle.
-
-Preparing a handle does not prove that the Service exists, is available, or is
-authorized. Those facts matter when an asynchronous operation is performed.
-`available()` checks the current state, while `waitReady()` waits for an
-available Endpoint at that address.
+Preparing a handle does not mean the Service exists or that you may use it.
+That is checked when you use it:
 
 ```ts
-await editor.waitReady()
-const result = await editor.ask("document.open", { path: "welcome.txt" })
+await editor.available()   // whether it is available now
+await editor.waitReady()   // wait until it is, 10 seconds by default
 ```
 
-The address is stable across execution contexts and even across replacement of
-the named Process. If the matching Endpoint stops, the handle becomes
-unavailable rather than ending. If a Process with the same Program identity
-and Process name later exposes the same Endpoint as a ready Service, that
-handle becomes usable again. This is the essential difference from an
-Endpoint handle, which belongs to one exact Process.
+Preparing the same address again returns the same handle.
 
-## Program metadata
+## Communicate with it
 
-An available Service exposes the current provider Program's name and version.
-Its icon is a separate binary operation:
+A Service handle speaks the same language as an Endpoint: you can publish to
+it, observe its events, and ask a Server Service questions.
 
 ```ts
-const metadata = await editor.programMetadata()
-const icon = await editor.programIcon("small")
+editor.publish("document.focus", { path: "welcome.txt" })
+editor.subscribe("document.changed", change => {})
 
-console.log(metadata.name, metadata.version)
-document.querySelector("img")!.src = URL.createObjectURL(icon)
+const saved = await editor.ask("document.save")
+const slow = await editor.timeout(30_000).ask("document.export")
 ```
 
-`programIcon()` accepts `small`, `medium`, or `large`; omission selects
-`medium`. Both operations use Service authority rather than exposing a Program
-handle. They reject when the Service is unavailable, and their results are not
-retained by the Service after the Endpoint stops.
+Only Server Services answer questions. See
+[Communication](/runtime/communication).
 
-## Availability and communication
+A Service handle cannot start, stop, or exit the Endpoint behind it. Those
+belong to whoever owns the Process.
 
-A Service handle publishes `available` and `unavailable` lifecycle events.
-These events describe whether the addressed Endpoint can currently receive
-communication; application events remain on the Service handle itself.
+## Follow its availability
+
+The handle stays valid while its Endpoint comes and goes. Its `lifecycle`
+reports each change:
 
 ```ts
-editor.lifecycle.subscribe("unavailable", () => {
-  console.log("The editor is temporarily unavailable")
-})
-
-editor.subscribe("document.changed", change => {
-  console.log(change)
-})
+editor.lifecycle.subscribe("available", () => {})
+editor.lifecycle.subscribe("unavailable", () => {})
 ```
 
-Services expose publishing and event observation. Server Services additionally
-support `ask()` and `timeout().ask()`. They do not start or stop their Endpoint;
-those operations remain with the Endpoint and Process owners.
+`system.service` events tell you which Services you can reach overall;
+`lifecycle` follows one address.
 
-The two event positions answer different questions: `system.service` observes
-the complete discovery set visible to the caller, while `service.lifecycle`
-observes repeating availability at one exact stable address.
+## Show who provides it
 
-## Becoming discoverable
-
-An Endpoint declaration can select Service mode by default, and a Launch can
-select it for one execution context:
+While a Service is available, you can read the name, version, and icon of the
+Program behind it, without being able to see that Program itself:
 
 ```ts
-const process = await program.createProcess({
-  name: "editor",
-  server: { service: true },
-  client: false,
-})
+const { name, version } = await editor.programMetadata()
+const icon = await editor.programIcon("small")   // PNG Blob
 ```
 
-A Service is available only while that named Process has a ready Endpoint
-running in Service mode. `endpoint.isService()` and `context.isService()`
-report the resolved role of the current execution context.
+Both reject while the Service is unavailable.
 
-Service authority is independent of Program authority. Granting
-`services: ["editor"]` permits access to every available Service whose Process
-is named `editor`, across Programs and Endpoint kinds. It does not make those
-Programs visible, and the `programs` permission does not grant access to their
-Services. The same rule applies to a Program's own Services: Program ownership
-does not replace the name-based `services` grant. See
-[Permissions](/system/security/permissions).
+## Permissions
+
+Services are reached by name, so access is granted by name. The `services`
+permission lists the Service names a Program may reach, such as
+`services: ["editor"]`. That grant covers every Service with that name, from
+any Program and on either Endpoint.
+
+The `services` and `programs` permissions are independent: reaching a Service
+does not reveal its Program, and seeing a Program does not grant its
+Services.
+
+This also applies to your own Program's Services, for two reasons:
+
+- You do not need them: your own Endpoints are reachable directly through
+  their [Process handles](/runtime/endpoints).
+- A Service name is not tied to one Program. Granting a name automatically
+  would also grant every Service other Programs offer under the same name.
+
+See [Permissions](/system/security/permissions).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `system.service.list()` | Available Services you can reach |
+| `system.service.search(name)` | Available Services with that name |
+| `system.service.prepare(address)` | A handle for that address |
+| `service.address()` | Its address |
+| `service.available()` | Whether it is available now |
+| `service.waitReady(timeout?)` | Resolves when it is available |
+| `service.lifecycle` | `available` and `unavailable` events |
+| `service.publish(event, payload?)` | Sends a message to its Endpoint |
+| `service.subscribe`, `wait`, `events` | What its Endpoint announces; see [Communication](/runtime/communication) |
+| `service.ask(event, payload?)`, `timeout(ms)` | Ask a Server Service |
+| `service.programMetadata()`, `programIcon(size?)` | Name, version, and icon of its provider |

@@ -1,77 +1,74 @@
 ---
 title: Providers
-description: Supply Context, System, and Desktop contracts to a React subtree.
+description: Make system, context, and desktop available to a React tree.
 ---
 
-A provider makes one existing PhreshOS root available to descendants. It may
-resolve initial values and subscribe to changes needed by its hooks. It does
-not own or replace the supplied root.
-
-Every provider accepts `children`, its corresponding contract, and an optional
-`fallback`. The fallback defaults to `null` and remains visible until that
-provider's initial values resolve. A failed read reaches the nearest React
-error boundary.
-
-Providers do not create a transport, mutate the supplied handle, or infer one
-root from another. They start the reads and subscriptions required by their
-own hooks, stop them when replaced or unmounted, and expose the exact supplied
-contract to descendants.
-
-## ContextProvider
-
-`ContextProvider` resolves the Program, Process, and parent belonging to one
-Client Context before rendering its children.
+Providers make one of the three PhreshOS roots available to the components
+below them, and wait for its first values before rendering them.
 
 ```tsx
-<ContextProvider context={context} fallback={<Loading />}>
-  <Application />
-</ContextProvider>
-```
+import { context, desktop, system } from "@phreshos/client"
+import { ContextProvider, DesktopProvider, SystemProvider } from "@phreshos/react"
 
-`useContext()` returns the complete Client Context. `useProgram()`,
-`useProcess()`, and `useParent()` return the resolved execution identities.
-Unlike state hooks, these identity hooks do not return `undefined`: the
-provider keeps rendering its fallback until all three identity reads finish.
-`useParent()` may return `null` because a Process can genuinely have no visible
-parent.
-
-## SystemProvider
-
-`SystemProvider` supplies the System handle. `useSystem()` returns it.
-`useSystemAppearance()` follows `system.appearance`.
-
-```tsx
 <SystemProvider system={system}>
-  <Themed />
+  <DesktopProvider desktop={desktop}>
+    <ContextProvider context={context} fallback={<Loading />}>
+      <App />
+    </ContextProvider>
+  </DesktopProvider>
 </SystemProvider>
 ```
 
-The System may come from Client or from Node. `ContextProvider` and
-`DesktopProvider` require Client Context and Desktop values.
+Use only the providers your components need; they are independent.
 
-`useSystemAppearance()` returns the complete first snapshot and then follows
-complete `change` replacements. Children are withheld behind the provider's
-fallback until the first Appearance read resolves.
+## Loading
 
-The provider subscribes before reading that first snapshot. If Appearance
-changes while the read is in flight, the newer event is applied after the
-snapshot instead of being overwritten by it.
+Each provider shows its `fallback` (nothing by default) until its first values
+are ready, then shows its children. After that, later changes update the
+children in place, without showing the fallback again.
 
-## DesktopProvider
+A failed first read is thrown to the nearest React error boundary.
 
-`DesktopProvider` supplies the Desktop handle. `useDesktop()` returns it.
-`useDesktopViewport()`, `useDesktopPreferences()`, and
-`useDesktopConnection()` follow those Desktop sources.
+## The providers
 
-Viewport and preferences are resolved before children render. The containing
-browser Connection is different: `useDesktopConnection()` begins its read
-only when that hook is used and returns `undefined` until it resolves.
+| Provider | Takes | Waits for |
+| --- | --- | --- |
+| `SystemProvider` | `system`, from the Client SDK or Node | The Appearance |
+| `ContextProvider` | `context`, from the Client SDK | The Program, Process, and parent |
+| `DesktopProvider` | `desktop`, from the Client SDK | The viewport and preferences |
 
-The three providers are independent. Supply only the roots the subtree
-actually uses. Every corresponding hook rejects use outside its provider with
-a descriptive error.
+A provider only passes its value down. It does not connect, change the value,
+or stop anything when it unmounts. Replacing the value it receives starts
+over with the new one.
 
-Changing a provider's supplied root ends the old lifetime, removes its
-subscriptions, and resolves the new source before showing children again.
-Unmounting performs the same cleanup without stopping a Context,
-disconnecting a System, or ending any domain entity.
+## Hooks
+
+These hooks read from the nearest provider, and throw a clear error when used
+outside it.
+
+| Hook | Provider | Returns |
+| --- | --- | --- |
+| `useSystem()` | `SystemProvider` | The `system` |
+| `useSystemAppearance()` | `SystemProvider` | The current Appearance, updated on each change |
+| `useContext()` | `ContextProvider` | The `context` |
+| `useProgram()` | `ContextProvider` | The Program |
+| `useProcess()` | `ContextProvider` | The Process |
+| `useParent()` | `ContextProvider` | The parent Process, or `null` |
+| `useDesktop()` | `DesktopProvider` | The `desktop` |
+| `useDesktopViewport()` | `DesktopProvider` | The current viewport |
+| `useDesktopPreferences()` | `DesktopProvider` | The current preferences |
+| `useDesktopConnection()` | `DesktopProvider` | The browser Connection, or `undefined` while loading |
+
+Because providers wait, these hooks return their value right away, without
+`undefined`. The exception is `useDesktopConnection()`: the Connection is
+only read when a component asks for it, since it needs a
+[permission](/system/security/permissions).
+
+```tsx
+function Title() {
+  const program = useProgram()
+  const appearance = useSystemAppearance()
+
+  return <h1 style={{ color: appearance.colors.light.primary }}>{program.name}</h1>
+}
+```

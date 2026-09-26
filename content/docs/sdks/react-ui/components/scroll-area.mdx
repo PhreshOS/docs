@@ -1,15 +1,15 @@
 ---
 title: Scroll Area
-description: Native scrolling with overlay scrollbars that reserve no layout space.
+description: Scroll content with slim scrollbars that take no space.
 ---
 
 <ScrollAreaShowcase />
 
-`ScrollArea` keeps browser scrolling behavior while drawing React UI scrollbars
-over the viewport. The scrollbars appear while scrolling or interacting and do
-not consume horizontal or vertical layout space.
+`ScrollArea` scrolls its content like the browser does, with slim scrollbars
+drawn over the content. They appear while you scroll or point at them, and
+take no space from the layout.
 
-Give the component a constrained width or height so overflow can occur:
+Give it a fixed height or width so its content can overflow:
 
 ```tsx
 <ScrollArea style={{ height: 240 }}>
@@ -17,45 +17,38 @@ Give the component a constrained width or height so overflow can occur:
 </ScrollArea>
 ```
 
-## Choose the scrolling axes
+## Choose the direction
 
-Vertical scrolling is the default. Use `horizontal` for a single row that may
-overflow, or `both` when the content can exceed the viewport in either
-direction.
+Vertical is the default:
 
 ```tsx
 <ScrollArea axis="horizontal" style={{ width: 480 }}>
-  <Timeline style={{ width: 1200 }} />
+  <Timeline />
 </ScrollArea>
 
 <ScrollArea axis="both" style={{ width: 480, height: 320 }}>
-  <Canvas style={{ width: 1200, height: 900 }} />
+  <Canvas />
 </ScrollArea>
 ```
 
-## Access the viewport
+## Reach the scrolling element
 
-The forwarded ref points to the ScrollArea root. Use `viewportRef` when code
-needs the actual scrolling element, and use `onScroll` to observe its native
-scroll events.
+The ref points at the outer element. To read or set the scroll position, use
+`viewportRef`, the element that actually scrolls:
 
 ```tsx
 const viewport = useRef<HTMLDivElement>(null)
 
-<ScrollArea
-  viewportRef={viewport}
-  onScroll={event => setTop(event.currentTarget.scrollTop)}
->
-  <LogEntries />
+<ScrollArea viewportRef={viewport} onScroll={event => setTop(event.currentTarget.scrollTop)}>
+  <Logs />
 </ScrollArea>
 ```
 
-## Selected props
+## Props
 
-| Prop | Default | Use |
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `axis` | `vertical` | Enable vertical, horizontal, or both axes. |
-| `color` | `foreground:base` | Select the scrollbar base color; hover derives from it. |
-| `viewportRef` | — | Address the native scrolling viewport. |
-| `onScroll` | — | Receive scroll events from that viewport. |
-| `dir` | Resolved UI direction | Override direction for this ScrollArea. |
+| `axis` | `"vertical"` | `vertical`, `horizontal`, or `both` |
+| `color` | `"foreground"` | The scrollbar color |
+| `viewportRef` | — | A ref to the scrolling element |
+| `onScroll` | — | Scroll events from that element |

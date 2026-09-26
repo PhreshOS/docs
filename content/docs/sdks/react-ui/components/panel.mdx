@@ -1,13 +1,12 @@
 ---
 title: Panel
-description: A composed outer Surface with an optional header and inset content.
+description: A frosted frame with an optional header and a solid content area.
 ---
 
 <PanelShowcase />
 
-Use `Panel` for a visually grouped region whose content should sit inside a
-second Surface. The root owns the outer material, while `Panel.Content` can use
-its own color and material settings.
+`Panel` groups related content: a frosted frame, an optional header, and a
+more solid area that holds the content.
 
 ```tsx
 <Panel>
@@ -18,25 +17,14 @@ its own color and material settings.
 </Panel>
 ```
 
-## Configure the two surfaces independently
+`Panel.Content` sits half the Appearance `spacing` inside the frame and pads
+its content by the `spacing`. The padding is a default: a class or
+`style` replaces it, for example `padding: 0` for content that scrolls edge to
+edge.
 
-The outer Panel and its content do not have to use the same rendering mode.
-This is useful when the shell should show full backdrop material but the content
-should remain inexpensive to render.
+## Without a header
 
-```tsx
-<Panel material="full" color="background:base">
-  <Panel.Header>Processes</Panel.Header>
-  <Panel.Content material="basic" color="background:soft">
-    <ProcessList />
-  </Panel.Content>
-</Panel>
-```
-
-## Headerless panels
-
-Omit `Panel.Header` when the content does not need a named leading region. The
-Panel then gives the inset content equal spacing on every side.
+Leave out `Panel.Header` and the content sits evenly inside the frame:
 
 ```tsx
 <Panel>
@@ -46,11 +34,38 @@ Panel then gives the inset content equal spacing on every side.
 </Panel>
 ```
 
-## Selected props
+## Style the frame and the content separately
 
-`Panel` and `Panel.Content` accept the ordinary Surface props: `color`,
-`material`, `shadow`, and `radius`. `Panel.Header` is a plain layout region and
-accepts native `div` properties.
+The frame and the content are two Surfaces, each with its own props:
 
-Use `Panel` when the two-surface composition is meaningful. For a single
-material boundary, use `Surface` directly.
+```tsx
+<Panel material="basic">
+  <Panel.Header>Processes</Panel.Header>
+  <Panel.Content color="background:soft" material="basic">
+    <ProcessList />
+  </Panel.Content>
+</Panel>
+```
+
+By default the frame uses the `full` material and the content takes the
+frame's `color`, raised, with the `extended` material. The content is set apart
+by its material rather than a different color, and fields inside it, which are
+recessed, stand out from it.
+
+The header is the same row as a [Window](/sdks/react-ui/components/window)
+header: 16px plus the Appearance `spacing` above and below, padded by the
+`spacing` at the sides.
+
+The frame and the content both use the Appearance radius, following
+[the radius rules](/sdks/react-ui/size-and-radius#radius).
+
+For a single painted area without this structure, use
+[`Surface`](/sdks/react-ui/components/surface).
+
+## Parts
+
+| Part | Is |
+| --- | --- |
+| `Panel` | The frame, `full` material by default. Accepts Surface props |
+| `Panel.Header` | A row for a title and actions. Accepts `div` props |
+| `Panel.Content` | The content area, in the frame's color with `extended` material. Accepts Surface props |

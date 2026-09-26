@@ -1,81 +1,50 @@
 ---
 title: Range Calendar
-description: Select an inclusive start and end date from one month grid.
+description: Choose a start and end date from a month view.
 ---
 
 <RangeCalendarShowcase />
 
-`RangeCalendar` selects one inclusive date-only range. Its value is a
-`DateRange` containing `start` and `end` `CalendarDate` values. The first
-selection establishes an anchor; the second completes the range.
-
-```tsx
-import { RangeCalendar } from "@phreshos/react-ui"
-import { parseDate } from "@internationalized/date"
-
-<RangeCalendar
-  aria-label="Trip dates"
-  defaultValue={{
-    start: parseDate("2026-09-21"),
-    end: parseDate("2026-09-24")
-  }}
-/>
-```
-
-It shares the layout, navigation, date constraints, and visual contract of
-`Calendar`. Like `Calendar`, it does not add a surrounding Surface.
-
-## Controlled ranges
-
-Use the complete range as one controlled value. `onChange` runs after a range
-has both endpoints rather than exposing the temporary anchor as a second public
-state.
+`RangeCalendar` chooses a range of dates: the first click sets one end, the
+second the other. Its value is `{ start, end }`, two `CalendarDate`s, or
+`null`.
 
 ```tsx
 const [trip, setTrip] = useState<DateRange | null>(null)
 
-<RangeCalendar
-  aria-label="Trip dates"
-  value={trip}
-  onChange={setTrip}
-/>
+<RangeCalendar aria-label="Trip dates" value={trip} onChange={setTrip} />
 ```
 
-## Availability within a range
+`onChange` fires once the range is complete, not after the first click.
 
-The availability callback receives both the date being evaluated and the
-current anchor. This permits rules whose result depends on the first selected
-date.
+It works like [`Calendar`](/sdks/react-ui/components/calendar), with the same
+limits and look.
+
+## Unavailable dates
+
+`isDateUnavailable` also receives the first chosen date, so a rule can depend
+on it:
 
 ```tsx
 <RangeCalendar
-  aria-label="Booking dates"
-  isDateUnavailable={(date, anchor) =>
-    date.day === 7 || (anchor != null && date.compare(anchor.add({ days: 14 })) > 0)
+  aria-label="Booking"
+  isDateUnavailable={(date, start) =>
+    date.day === 7 || (start !== null && date.compare(start.add({ days: 14 })) > 0)
   }
 />
 ```
 
-By default, an unavailable date prevents selecting a range that crosses it.
-Set `allowsNonContiguousRanges` when the application intentionally permits a
-range to contain unavailable dates.
+A range cannot cross an unavailable date, unless `nonContiguous`
+is set.
 
-## Selected props
+## Props
 
-| Prop | Default | Use |
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `value` | uncontrolled | Supply a controlled `DateRange` or `null`. |
-| `defaultValue` | empty | Set the initial uncontrolled range. |
-| `onChange` | — | Receive a complete start and end range. |
-| `minValue` / `maxValue` | unbounded | Restrict selectable dates. |
-| `isDateUnavailable` | — | Evaluate availability with the current anchor. |
-| `allowsNonContiguousRanges` | `false` | Permit a range to cross unavailable dates. |
-| `firstDayOfWeek` | locale | Override the first weekday. |
-| `readOnly` | `false` | Permit navigation without changing the range. |
-| `disabled` | `false` | Disable calendar interaction. |
-| `color` | `default:base` | Select navigation and range color. |
-| `size` | `medium` | Derive day, navigation, spacing, and typography dimensions. |
-| `radius` | `medium` | Select day-cell corner radius. |
-
-Provide `aria-label` or `aria-labelledby` when no visible label is associated
-with the calendar.
+| `value`, `defaultValue`, `onChange` | — | A `DateRange` or `null` |
+| `minValue`, `maxValue` | — | Allowed dates |
+| `isDateUnavailable(date, start)` | — | Dates to refuse |
+| `nonContiguous` | `false` | Allow ranges across unavailable dates |
+| `readOnly`, `disabled` | `false` | Its state |
+| `color` | `"primary"` | The selected range |
+| `size`, `radius` | — | Its look |

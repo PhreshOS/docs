@@ -4,9 +4,6 @@
   "icon": "Server",
   "pages": [
     "index",
-    "context",
-    "system-access",
-    "permissions",
     "execution"
   ]
 }

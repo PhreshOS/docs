@@ -1,226 +1,263 @@
 ---
 title: Desktop
-description: The graphical System environment, its state, and Client presentation.
+description: The System's graphical interface, the Windows it shows, and how Programs control them.
 icon: PanelsTopLeft
 ---
 
-A Desktop is one complete graphical representation of the System. It provides
-the workspace through which a person reaches Programs, combines System
-Appearance with Desktop preferences, reports the available viewport, and
-belongs to the browser Connection carrying it.
+The Desktop is the System's graphical interface. You open it in a browser, and
+it shows each running Client as a Window, alongside the Taskbar and Start
+Menu.
 
-Its visible environment consists of five coextensive layers ordered from back
-to front: `wallpaper`, `under`, `window`, `over`, and `shell`. These are
-semantic roles, not arbitrary numeric depths. `wallpaper` is the single fixed
-background, `under` and `over` let Programs own representations on either side
-of standard windows, `window` is managed by the Desktop, and `shell` is the
-replaceable System interface above them all.
+The Desktop is a view, not the place where Programs live. The System keeps
+running Programs and their Window state; a Desktop displays them. You can open
+the same System in several browsers at once, and each one is a separate
+Desktop showing the same Windows.
 
-Every layer uses the complete Desktop bounds. The built-in Taskbar, Start
-Menu, and dialog presentation belong to `shell`, so they appear above the
-other layers without reserving layout space inside them.
+```ts
+import { context, desktop } from "@phreshos/client"
 
-Appearance selects the Taskbar's edge and cross-axis size. The built-in Start
-Menu is anchored to its Taskbar button and opens from that edge toward the
-standard-window area. Dialogs chosen by the built-in Shell are centered
-independently within that layer.
+await context.window.setTitle("Notes")        // this Client's Window
+const { size } = await desktop.viewport.snapshot()  // the Desktop around it
+```
 
-Within the standard `window` layer, Appearance spacing defines the ordinary
-surface inset and the visible gap between adjacent tiled windows. The edge
-occupied by a non-overlay Taskbar instead reserves the outer spacing, the
-configured Taskbar size, and one more spacing value before standard windows
-begin. An overlay Taskbar leaves the ordinary inset on every edge, remains
-hidden beyond its configured edge, and appears with the Appearance transaction
-while the pointer occupies that edge or the Taskbar itself.
+## Windows
 
-## Desktop state
+Every running [Client Endpoint](/runtime/endpoints#the-client) is shown as a
+Window. A person can move, resize, snap, minimize, and maximize it through the
+Desktop.
 
-Client code uses the separate `desktop` root for state belonging to the
-containing Desktop:
+Closing a Window exits its Process, including its Server. To keep work running
+without a Window, stop only the Client:
+
+```ts
+await process.client.stop()
+```
+
+## Control your Window
+
+A Client reaches its own Window through `context.window`. Other code reaches
+it through `process.client.window`.
+
+```ts
+await context.window.setTitle("Notes")
+await context.window.resize({ width: 900, height: 640 })
+await context.window.move({ x: 120, y: 80 })
+await context.window.setGeometry({ x: 120, y: 80, width: 900, height: 640 })
+await context.window.maximize()
+await context.window.minimize()
+await context.window.setHeader(false)   // hide the Desktop's title bar
+await context.window.raise()            // bring it to the front
+```
+
+Sizes and positions accept pixels or relative values. A number is always
+pixels; strings express a share of the available space:
+
+```ts
+await context.window.resize({ width: "1/2", height: "100%" })
+await context.window.move({ x: "50% - 200", y: 40 })
+```
+
+`setGeometry()` changes position and size in one step. Minimizing and
+maximizing keep the stored geometry, so restoring returns the Window where it
+was.
+
+Read the current state, or follow its changes:
+
+```ts
+await context.window.size()      // also title, header, position,
+await context.window.maximized() // minimized, front, and layer
+
+context.window.subscribe("resize", size => {})
+context.window.subscribe("move", position => {})
+```
+
+| Event | When |
+| --- | --- |
+| `move`, `resize` | Position or size changed |
+| `minimize`, `maximize` | Minimized or maximized state changed |
+| `changeTitle`, `changeHeader` | Title or header visibility changed |
+| `front` | The Window became, or stopped being, the front one in its layer |
+
+The Window belongs to the current run of the Client. Each time the Client
+starts, the Window starts fresh from the Program's declaration and the start
+settings. Changing a Window while its Client is stopped rejects.
+
+The Desktop never shows a standard Window smaller than 260 × 160 pixels, as
+far as the screen allows. It does not change the size you stored.
+
+## Draw your own title bar
+
+With `setHeader(false)`, the Program draws its own title bar. To let people
+drag the Window by it, hand the drag to the Desktop once the pointer starts
+moving:
+
+```ts
+const move = context.presentation.beginMoveGesture({
+  origin: { x: pressedX, y: pressedY },  // where the pointer went down
+  point: { x: currentX, y: currentY },   // where it is now
+})
+
+await move.ready     // the Desktop now follows the pointer
+await move.finished  // the drag ended
+```
+
+After `ready`, release your own pointer capture. `move.cancel()` ends the drag
+early.
+
+## Layers
+
+The Desktop stacks five layers, from back to front:
+
+| Layer | What goes there | Who draws and places it |
+| --- | --- | --- |
+| `wallpaper` | One full-screen background | The Desktop |
+| `under` | Content behind the Windows, such as desktop widgets | The Program |
+| `window` | Standard Windows. This is the default | The Desktop |
+| `over` | Content above the Windows, such as overlays and notifications | The Program |
+| `shell` | The System interface: Taskbar, Start Menu, dialogs | The Program |
+
+Choose a layer when starting the Client:
+
+```ts
+await program.createProcess({ client: { layer: "over" } })
+```
+
+Every layer covers the whole Desktop. Raising a Window only reorders it within
+its own layer. Any layer other than `window` requires the `layers`
+[permission](/system/security/permissions).
+
+**Wallpaper** holds one Client. Starting another wallpaper Client exits the
+Process of the current one.
+
+**Shell** belongs to one Program at a time, which may show any number of
+Clients there. When another Program claims the shell, the System exits every
+Process of the previous one. While no Program occupies it, the Desktop shows
+its built-in Taskbar, Start Menu, and dialogs. Replacing the shell changes
+only the interface: the System keeps owning Programs, Processes, and
+permissions.
+
+## Present outside standard Windows
+
+In `under`, `over`, and `shell`, the Desktop does not manage the Client as a
+Window. The Client starts at zero size, and the Program places it itself
+through `context.presentation`:
+
+```ts
+await context.presentation.setGeometry({ x: 24, y: 24, width: 720, height: 480 })
+await context.presentation.raise()
+```
+
+Animate a change with the Appearance timing, or your own:
+
+```ts
+await context.presentation.transaction().resize({ width: 360, height: 240 })
+await context.presentation.transactionAndWait(300).move({ x: 0, y: 0 })
+await context.presentation
+  .transaction({ duration: 200, easing: "ease-out" })
+  .setGeometry({ x: 24, y: 24, width: 720, height: 480 })
+```
+
+`transaction()` resolves once the Desktop accepts the change;
+`transactionAndWait()` resolves when the animation ends.
+
+The Desktop can paint a surface behind the Client, using the System's
+Appearance:
+
+```ts
+await context.presentation.setSurface(true)
+await context.presentation.setSurface({ radius: 16, color: "background" })
+await context.presentation.setSurface(false)   // no surface
+```
+
+To let clicks pass through to what is behind it:
+
+```ts
+await context.presentation.setInteractive(false)
+```
+
+`context.window` still holds the Window's values in these layers, and the
+Program decides how to use them. The presentation belongs to this Desktop
+only, so each Desktop showing the Client applies it separately.
+
+| Presentation operation | `window` | `under`, `over`, `shell` | `wallpaper` |
+| --- | --- | --- | --- |
+| `layer()` | Yes | Yes | Yes |
+| `beginMoveGesture()` | Yes | No | No |
+| `move`, `resize`, `setGeometry`, `setSurface`, `transaction` | No | Yes | No |
+| `raise`, `setInteractive` | No | Yes | No |
+
+Unavailable operations reject.
+
+## Read the Desktop around you
+
+A Client can read the Desktop that contains it through the `desktop` import:
 
 ```ts
 import { desktop } from "@phreshos/client"
 
-const { size } = await desktop.viewport.snapshot()
-const preferences = await desktop.preferences.snapshot()
-const connection = await desktop.connection()
+const { size } = await desktop.viewport.snapshot()   // { width, height } in CSS pixels
+desktop.viewport.subscribe("resize", ({ size }) => {})
 ```
 
-`desktop.viewport` exposes the current workspace size in CSS pixels and emits
-a complete `{ size }` snapshot when it changes.
+### Preferences
 
-`desktop.preferences` exposes the effective theme, animation choice, and scale
-for this Desktop. Scale is a multiplier between `0.5` and `2`, defaulting to
-`1`. A preference update may set `theme`, `animations`, or `scale` to
-`"default"` to restore its native or System default.
+Each Desktop has its own preferences, stored in its browser:
+
+| Preference | Values |
+| --- | --- |
+| `theme` | `"light"` or `"dark"` |
+| `animations` | `true` or `false` |
+| `scale` | `0.5` to `2`, `1` by default |
 
 ```ts
+const { theme } = await desktop.preferences.snapshot()
+desktop.preferences.subscribe("change", preferences => {})
+
 await desktop.preferences.update({ theme: "dark" })
+await desktop.preferences.update({ scale: "default" })   // back to the default
 ```
 
-`desktop.connection()` returns the browser Connection carrying this Desktop.
-The executing Program needs `desktopConnection` or `authentication` to access it.
+`"default"` follows the operating system for theme and animations. Reading
+preferences is always allowed; changing them requires the
+`desktopPreferences` permission.
 
-## Client Windows
+Preferences choose between light and dark and how things move. What light and
+dark look like is set System-wide by [Appearance](/system/appearance).
 
-The System owns each running Client Endpoint's authoritative Window state. The
-Desktop owns the execution document and its local representation on one
-screen.
+### Connection
 
-This creates two related capabilities:
+`desktop.connection()` returns the browser
+[Connection](/system/security/authentication) showing this Desktop. It
+requires the `desktopConnection` or `authentication` permission.
 
-- `window` is the authoritative state of the current Client execution.
-- `presentation` controls or cooperates with that execution's local Desktop
-  representation.
-
-The Window and presentation always report the same layer. They do not otherwise
-represent the same kind of state.
-
-Client code reaches both Window capabilities through its Context:
-
-```ts
-import { context } from "@phreshos/client"
-```
-
-### Authoritative Window
-
-The Window handle belongs to the Client Endpoint, but its readable and mutable
-state exists only while that Endpoint is running. Reads and mutations reject
-while it is stopped.
-
-```ts
-await context.window.setGeometry({
-  x: 120,
-  y: 80,
-  width: 900,
-  height: 640,
-})
-
-await context.window.maximize()
-await context.window.setHeader(false)
-```
-
-Stopping the Client discards that execution's Window state. The next start
-creates fresh state from the Client declaration plus the new start override;
-it does not inherit mutations from an earlier execution. Existing event
-subscriptions remain registered, stay silent while stopped, and observe the
-new execution after it starts.
-
-The Window exposes title, header, position, size, minimized and maximized
-states, front state, and layer. Position and size
-accept finite pixels or relative expressions such as `"1/2"`. A bare numeric
-value is always a pixel count: `1` means one pixel, while `"1/1"` and `"100%"`
-mean the complete available span.
-`setGeometry()` accepts `{ x, y, width, height }` and commits position and size
-atomically. Minimized and maximized are independent, and neither discards the
-stored geometry. `raise()` brings a Window to the front of its own layer.
-
-Window events are `move`, `resize`, `minimize`, `maximize`, `changeTitle`,
-`changeHeader`, and `front`. An atomic
-geometry change emits `move` and `resize` only for the parts that changed,
-after the complete geometry has been committed.
-
-### Presentation
-
-`context.presentation` is a command handle for the executing Client's local
-representation. It has no state snapshot or events. `layer()` is its only read
-and always returns the same value as `context.window.layer()`.
-
-In the standard `window` layer, the Desktop interprets authoritative Window
-state and owns movement, resizing, snapping, minimizing, maximizing, and the
-header. A custom header can hand an intentional pointer drag to that existing
-Desktop behavior:
-
-```ts
-const move = context.presentation.beginMoveGesture({
-  origin: { x: pressedX, y: pressedY },
-  point: { x: draggedX, y: draggedY },
-})
-
-await move.ready
-// The initiating document may now release its pointer capture.
-await move.finished
-```
-
-`ready` resolves only after the Desktop has installed its capture surface.
-`finished` resolves when the move ends or is cancelled, and `cancel()` ends an
-unfinished handoff.
-
-In `under`, `over`, and `shell`, no universal window behavior exists for the
-Desktop to impose. The Desktop therefore starts the Client document at
-`{ x: 0, y: 0, width: 0, height: 0 }` and does not interpret authoritative
-Window values. The Program reads its Window and chooses how to represent those
-values through the raw operations `move()`, `resize()`, `setGeometry()`,
-`setSurface()`, `setInteractive()`, and `raise()`.
-
-```ts
-await context.presentation
-  .transactionAndWait()
-  .setGeometry({
-    x: 24,
-    y: 24,
-    width: 720,
-    height: 480,
-  })
-```
-
-Calling a raw operation directly applies it without a transaction.
-`transaction()` resolves when the Desktop accepts a transacted operation, and
-`transactionAndWait()` resolves after its visual transition finishes. Omission
-uses the effective Appearance transaction, a number supplies a duration in
-milliseconds with Appearance easing, and an object supplies both duration and
-easing. `raise()` and `setInteractive()` are immediate and are not transacted
-operations.
-
-`setSurface(false)` removes the optional Desktop-painted backing behind the
-Client document. A surface does not resize or clip the document; the Program
-owns the content rendered above it.
-
-`setInteractive(false)` removes the raw presentation from focus and pointer
-hit testing, allowing pointer input to reach presentations behind it.
-`setInteractive(true)` restores interaction. A new presentation starts
-interactive.
-
-Every operation exists on the shared presentation handle. An operation rejects
-when its meaning is unavailable in the current layer: standard Windows reject
-raw mutations, raw layers reject `beginMoveGesture()`, and wallpaper rejects
-both.
-
-### Layers
-
-A layer selects both ordering and the owner of representation behavior. It
-does not create another kind of Window state.
-
-| Layer | Representation owner | Presentation capabilities |
-| --- | --- | --- |
-| `window` | Desktop, interpreting authoritative Window state | `layer()`, `beginMoveGesture()` |
-| `under` | Program | `layer()`, raw operations and transactions |
-| `over` | Program | `layer()`, raw operations and transactions |
-| `wallpaper` | Desktop, using its fixed wallpaper role | `layer()` |
-| `shell` | Program | `layer()`, raw operations and transactions |
-
-The Desktop enforces a minimum presented size of 260 by 160 logical pixels for
-standard windows, limited by the available workspace, without rewriting
-smaller authoritative geometry.
-
-`wallpaper` is a fixed role whose presentation exposes only its layer. It is
-separate from `under` because the Desktop must always know which one occupant
-is its full-background representation. Starting another wallpaper Client ends
-the existing occupant's Process before presenting the replacement.
-
-The `shell` layer has one Program owner at a time. Any number of Processes from
-that Program may present Clients there. This makes the operating interface
-replaceable without moving System authority into that Program: the Client
-draws the shell, while the System continues to own runtime state and enforce
-its contracts. Before a different Program claims the layer, the System
-terminates every Process currently occupying it. With no Program-owned shell
-Client, the Desktop presents its built-in Taskbar, Start Menu, and dialogs.
-
-Layers are isolated for ordering. Raising a Window changes its depth only
-within its own layer. The standard `window` layer uses the complete Desktop
-bounds; Shell UI overlays it rather than reducing its geometry.
-A Program needs the `layers` permission to launch outside the standard layer.
+## From the CLI
 
 ```sh
 phresh window inspect --process main --program notes
 ```
+
+## Permissions
+
+| Permission | Allows |
+| --- | --- |
+| `layers` | Starting a Client in `wallpaper`, `under`, `over`, or `shell` |
+| `desktopPreferences` | Changing Desktop preferences |
+| `desktopConnection` | Reading this Desktop's Connection |
+
+See [Permissions](/system/security/permissions).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `window.title()`, `header()`, `position()`, `size()` | Current values |
+| `window.minimized()`, `maximized()`, `front()`, `layer()` | Current state |
+| `window.setTitle()`, `setHeader()`, `move()`, `resize()`, `setGeometry()` | Change the Window |
+| `window.minimize(state?)`, `maximize(state?)`, `raise()` | Change its state |
+| `presentation.beginMoveGesture(start)` | Hand a drag to the Desktop |
+| `presentation.move()`, `resize()`, `setGeometry()`, `setSurface()` | Place a Client outside standard Windows |
+| `presentation.transaction(timing?)`, `transactionAndWait(timing?)` | Animate those changes |
+| `presentation.raise()`, `setInteractive()` | Order and hit-testing |
+| `desktop.viewport` | Desktop size and resizes |
+| `desktop.preferences` | Theme, animations, and scale |
+| `desktop.connection()` | The browser Connection |

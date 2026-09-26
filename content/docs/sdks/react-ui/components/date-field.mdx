@@ -1,49 +1,30 @@
 ---
 title: Date Field
-description: Enter a calendar date through locale-aware editable segments.
+description: Type a date as day, month, and year, in the order of the person's locale.
 ---
 
 <DateFieldShowcase />
 
-`DateField` represents a date without a time or time zone. The browser locale
-determines the visible segment order and separators, while the value remains a
-`CalendarDate` containing a year, month, and day.
+`DateField` enters a date without a time or time zone. Its parts follow the
+person's locale, and its value is a `CalendarDate` from
+`@internationalized/date`, or `null` when empty.
 
 ```tsx
-import { DateField } from "@phreshos/react-ui"
 import { parseDate } from "@internationalized/date"
 
-<DateField
-  label="Due date"
-  defaultValue={parseDate("2026-09-21")}
-/>
+<DateField label="Due date" defaultValue={parseDate("2026-09-21")} />
 ```
-
-## Controlled dates
-
-Use `value` and `onChange` when another part of the application owns the date.
-An empty field reports `null`; it does not substitute the current date or a
-JavaScript `Date`.
 
 ```tsx
-const [dueDate, setDueDate] = useState<CalendarDate | null>(null)
+const [due, setDue] = useState<CalendarDate | null>(null)
 
-<DateField
-  label="Due date"
-  value={dueDate}
-  onChange={setDueDate}
-/>
+<DateField label="Due date" value={due} onChange={setDue} />
 ```
 
-Each segment supports direct numeric entry and arrow-key adjustment. Focus,
-selection, locale rules, and segment boundaries are owned by the component, so
-consumers should treat the resulting `CalendarDate` as one value rather than
-managing the individual segments.
+Each part accepts typing and the arrow keys. You always receive one complete
+date, never the separate parts.
 
-## Bounds and unavailable dates
-
-`minValue` and `maxValue` define an inclusive date range.
-`isDateUnavailable` can reject dates according to application rules.
+## Limit the dates
 
 ```tsx
 <DateField
@@ -54,25 +35,19 @@ managing the individual segments.
 />
 ```
 
-These constraints participate in validation. Use `invalid` when invalidity is
-owned externally, and `errorMessage` to explain the problem.
+Dates outside the range or marked unavailable make the field invalid.
 
-## Selected props
+To pick from a calendar as well, use
+[`DatePicker`](/sdks/react-ui/components/date-picker).
 
-| Prop | Default | Use |
+## Props
+
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `value` | uncontrolled | Supply a controlled `CalendarDate` or `null`. |
-| `defaultValue` | empty | Set the initial uncontrolled date. |
-| `onChange` | — | Receive the complete date or `null`. |
-| `minValue` / `maxValue` | unbounded | Restrict the accepted calendar range. |
-| `isDateUnavailable` | — | Mark application-specific dates unavailable. |
-| `readOnly` | `false` | Keep the value focusable without allowing edits. |
-| `disabled` | `false` | Remove interaction and keyboard focus. |
-| `required` | `false` | Require a value during validation. |
-| `color` | `default:base` | Select the field fill. |
-| `size` | `medium` | Derive field height and typography. |
-| `radius` | `medium` | Select the field corner radius. |
-| `material` | `basic` | Select the Surface material rendering level. |
-
-Provide `label`, `aria-label`, or `aria-labelledby` so the segmented field has
-an accessible name. Use `description` for associated guidance.
+| `value`, `defaultValue`, `onChange` | — | A `CalendarDate` or `null` |
+| `minValue`, `maxValue` | — | The allowed range, inclusive |
+| `isDateUnavailable` | — | Dates to refuse |
+| `leadingZeros` | `false` | Always show two-digit days and months |
+| Field props | — | `label`, `description`, `errorMessage`, `invalid`, `required`, `readOnly`, `disabled` |
+| `color` | `"background"` | Its color |
+| `size`, `radius`, `material` | — | Its Surface |

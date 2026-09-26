@@ -1,28 +1,38 @@
 ---
 title: Context Menu
-description: Open a Menu from the platform context-menu gesture.
+description: A menu that opens with a right-click on an element.
 ---
 
 <ContextMenuShowcase />
 
-Wrap the target in `ContextMenu.Trigger` and place the shared [`Menu`](./menu)
-contract inside `ContextMenu.Content`.
+`ContextMenu` opens a [`Menu`](/sdks/react-ui/components/menu) where someone
+right-clicks, or long-presses on touch:
 
 ```tsx
 <ContextMenu>
   <ContextMenu.Trigger>
-    <ProcessItem />
+    <NoteRow note={note} />
   </ContextMenu.Trigger>
   <ContextMenu.Content>
-    <Menu aria-label="Process actions">
-      <Menu.Item id="show">Show</Menu.Item>
-      <Menu.Item id="close">Close</Menu.Item>
+    <Menu aria-label="Note" onAction={run}>
+      <Menu.Item id="open">Open</Menu.Item>
+      <Menu.Item id="delete" color="danger">Delete</Menu.Item>
     </Menu>
   </ContextMenu.Content>
 </ContextMenu>
 ```
 
-The component owns dismissal and reopening behavior while leaving the trigger's
-content intact. Use [`DropdownMenu`](./dropdown-menu) when a visible Button
-should open the commands.
+The trigger keeps its content as it is. Right-clicking again moves the menu
+to the new spot.
 
+Use [`DropdownMenu`](/sdks/react-ui/components/dropdown-menu) when a visible
+button should open the menu.
+
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `ContextMenu` | `open`, `defaultOpen`, `onOpenChange` |
+| `ContextMenu.Trigger` | The element to right-click; `disabled` |
+| `ContextMenu.Content` | `portalContainer`, Surface props |
+| `ContextMenu.Menu` | The same as `Menu` |

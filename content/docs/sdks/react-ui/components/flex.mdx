@@ -1,13 +1,12 @@
 ---
 title: Flex
-description: Arrange content along one primary axis without adding presentation.
+description: Arrange children in a row or a column, with gaps from the Appearance.
 ---
 
 <FlexShowcase />
 
-`Flex` expresses layout without adding material, color, padding, border, or
-shadow. Use it when the parent-child relationship owns arrangement and the
-children own their presentation.
+`Flex` lays out its children in a row or a column. It only arranges: it paints
+nothing and adds no padding.
 
 ```tsx
 <Flex align="center" justify="between" gap="medium">
@@ -16,18 +15,38 @@ children own their presentation.
 </Flex>
 ```
 
-Use `direction="column"` for vertical composition and `wrap` when items may move
-onto additional lines.
+## Direction and wrapping
 
 ```tsx
 <Flex direction="column" gap="small">
   <Input label="Name" />
   <Input label="Email" />
 </Flex>
+
+<Flex wrap gap="small">{tags}</Flex>
 ```
 
-`gap` accepts an Appearance spacing scale, a pixel number, or a CSS value.
-`align` and `justify` use semantic `start` and `end` values so layout remains
-direction-neutral. Use [`Grid`](./grid) when rows and columns both define the
-relationship.
+## Alignment
 
+`align` places children across the direction, `justify` along it. Both use
+`start` and `end` rather than left and right, so a layout flips correctly in
+right-to-left interfaces.
+
+| Prop | Values |
+| --- | --- |
+| `align` | `start`, `center`, `end`, `stretch`, `baseline` |
+| `justify` | `start`, `center`, `end`, `between`, `around`, `evenly` |
+
+Use [`Grid`](/sdks/react-ui/components/grid) when both rows and columns matter.
+
+## Props
+
+| Prop | Default | Sets |
+| --- | --- | --- |
+| `direction` | `"row"` | `row`, `column`, `row-reverse`, `column-reverse` |
+| `gap` | — | A size level, pixels, or CSS; see [Spacing](/sdks/react-ui/size-and-radius#spacing) |
+| `align`, `justify` | — | Alignment |
+| `wrap` | `false` | `true` or `"reverse"` |
+| `inline` | `false` | Lay out inline with text |
+
+`Flex` also accepts every `div` prop.

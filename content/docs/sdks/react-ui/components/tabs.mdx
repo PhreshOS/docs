@@ -1,34 +1,34 @@
 ---
 title: Tabs
-description: Present related peer views through one active selection.
+description: Switch between sections of one interface.
 ---
 
 <TabsShowcase />
 
-Tabs presents related sections of one interface without turning them into
-separate navigation destinations. The selected Tab and its Panel share one
-string identity.
+`Tabs` shows one section at a time. Each tab and its panel share an `id`.
 
 ```tsx
 <Tabs value={view} onChange={setView}>
-  <Tabs.List aria-label="Project views">
+  <Tabs.List aria-label="Program">
     <Tabs.Tab id="overview">Overview</Tabs.Tab>
     <Tabs.Tab id="activity">Activity</Tabs.Tab>
   </Tabs.List>
-  <Tabs.Panel id="overview">Project overview</Tabs.Panel>
-  <Tabs.Panel id="activity">Recent activity</Tabs.Panel>
+  <Tabs.Panel id="overview">…</Tabs.Panel>
+  <Tabs.Panel id="activity">…</Tabs.Panel>
 </Tabs>
 ```
 
-Every `Tabs.Tab` identity must match a `Tabs.Panel`. Horizontal Tabs divide the
-List width equally and move one continuous indicator between selections using
-the active Appearance transaction. Vertical Tabs arrange the same parts along
-the block axis.
+## Look
 
-## Dynamic panels
+The tab list is a recessed track. The selected tab rises out of it and slides
+between tabs with the Appearance timing. Horizontal tabs share the width
+equally.
 
-When panels come from a collection, group them with `Tabs.Panels` so React Aria
-can manage the dynamic collection as one unit.
+`orientation="vertical"` stacks the tabs, for a sidebar.
+
+## Tabs from data
+
+Wrap panels in `Tabs.Panels` when they come from a list:
 
 ```tsx
 <Tabs defaultValue={views[0].id}>
@@ -41,3 +41,12 @@ can manage the dynamic collection as one unit.
 </Tabs>
 ```
 
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `Tabs` | `value`, `defaultValue`, `onChange`, `orientation` (`"horizontal"`), `disabled`, `color` (`"default"`), `size`, `radius`, `material` |
+| `Tabs.List` | `aria-label`, `items` |
+| `Tabs.Tab` | `id`, `disabled` |
+| `Tabs.Panels` | `items` |
+| `Tabs.Panel` | `id`, `forceMount` |

@@ -1,105 +1,83 @@
 ---
 title: Overview
-description: Build interfaces from the same Appearance and component language as PhreshOS.
+description: The components and visual language of PhreshOS, for any React application.
 ---
 
-`@phreshos/react-ui` provides the material, layout, and accessible controls
-used by PhreshOS interfaces. Its visual contracts accept the corresponding
-System values directly. The package does not depend on a Client or Server
-runtime and does not own application state.
+`@phreshos/react-ui` is the component library PhreshOS itself is built with.
+Programs use it to look and behave like the rest of the System, and it works
+just as well in any React application outside PhreshOS.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
     ```sh
-    npm install @phreshos/react-ui
+    npm install @phreshos/react-ui react react-dom
     ```
   </Tab>
   <Tab value="pnpm">
     ```sh
-    pnpm add @phreshos/react-ui
+    pnpm add @phreshos/react-ui react react-dom
     ```
   </Tab>
   <Tab value="Bun">
     ```sh
-    bun add @phreshos/react-ui
+    bun add @phreshos/react-ui react react-dom
     ```
   </Tab>
   <Tab value="Yarn Classic">
     ```sh
-    yarn add @phreshos/react-ui
+    yarn add @phreshos/react-ui react react-dom
     ```
   </Tab>
 </Tabs>
 
-React and React DOM are peer dependencies because the application and React
-UI must share one React runtime. The current package supports React and React
-DOM `19.2` within their current major versions.
-
 ```tsx
-import { Button, Surface } from "@phreshos/react-ui"
+import { Button, Input, Select } from "@phreshos/react-ui"
 
-<Surface>
-  <Button>Continue</Button>
-</Surface>
+<Input label="Name" value={name} onChange={setName} />
+
+<Select label="Program" value={program} onChange={setProgram}>
+  <Select.Item id="notes">Notes</Select.Item>
+  <Select.Item id="tilo">Tilo</Select.Item>
+</Select>
+
+<Button color="primary" onPress={save}>Save</Button>
 ```
 
-`Surface` supplies paint, material, edge, radius, and shadow. It does not
-choose dimensions, padding, layout, overflow, or semantic content for the
-consumer.
+Components work without any setup. They use the default Appearance and follow
+the browser's light or dark setting.
 
-The component families divide responsibility rather than only appearance:
+## Six ideas behind every component
 
-- `Surface` paints a material boundary; `Panel` and `Window` add specific
-  structure to one.
-- `Flex` and `Grid` arrange content without painting a new boundary.
-- fields and selection controls own accessible input behavior and application
-  values.
-- `Dialog`, `Popover`, `Tooltip`, and menu triggers own distinct overlay and
-  dismissal contracts.
+1. **Appearance** is one set of values, colors, spacing, radius, shadow,
+   material, and timing, that every component derives from. Change it once and
+   everything follows. See [Appearance](/sdks/react-ui/appearance).
+2. **Surface** is the one visual building block. Every component that paints
+   something is a Surface: raised when it stands on its own or you act on it,
+   recessed when it holds a value you enter. See [Surface](/sdks/react-ui/components/surface).
+3. **Color** is a role and a level, such as `primary` or `danger:soft`. Text
+   color and hover, press, and focus states are derived for you. See
+   [Color](/sdks/react-ui/color).
+4. **Size and radius** come from five levels, and corners follow rules instead
+   of fixed values. See [Size and radius](/sdks/react-ui/size-and-radius).
+5. **Three rules** give every component the same props: anything painted,
+   anything that holds a value, and any collection. Learn `Button`, `Input`,
+   and `Select`, and you know the rest. See
+   [Shared props](/sdks/react-ui/shared-props).
+6. **Families** keep related parts together: `Dialog.Title`, `Select.Item`,
+   `Window.Header`.
 
-Choose the component whose behavior matches the interface role. Styling a
-generic Surface to resemble a Dialog does not provide Dialog focus,
-dismissal, or accessibility behavior.
+## Built for any interface
 
-Without a provider, components use `defaultAppearance` and follow the
-browser's visual preferences. `UIProvider` supplies Appearance, Preferences,
-and direction for a subtree. A complete System Appearance can be passed
-directly; React UI uses the visual fields it owns.
-
-Color and material are independent. `color` accepts an Appearance color and
-resting level such as `background:base` or `primary:soft`, or a direct CSS
-color. `size` accepts `xsmall`, `small`, `medium`, `large`, or `xlarge`.
-`disabled` prevents activation and focus; `pending` prevents activation while
-retaining focus.
-
-Controls use the shared contracts that fit their role. Most accept `size` and
-`color`; Surface-based controls also accept material options. Individual
-component pages state the exact capabilities they expose. A component's
-hover, pressed, focused, selected, and inactive paints derive from its base
-`color`; they are not separate customization values.
-
-## Direction
-
-React UI is direction-neutral. Native HTML inheritance handles direction when
-that is sufficient. Supplying `direction="ltr"` or `direction="rtl"` to
-`UIProvider` additionally establishes the guaranteed React UI direction for
-JavaScript behavior and portalled content:
-
-```tsx
-<UIProvider direction="rtl">
-  <Application />
-</UIProvider>
-```
-
-An omitted direction creates no DOM boundary and continues through a higher
-provider or the document. See [Appearance](/sdks/react-ui/appearance) for the
-provider, preference, and direction resolution contracts.
+- **Accessible:** keyboard, focus, and screen-reader behavior come from React
+  Aria.
+- **Left-to-right and right-to-left:** every component follows the text
+  direction.
+- **Light and dark:** every value derives from the actual colors, not from a
+  theme name.
+- **Reduced motion:** animations stop when the user asks for less motion.
 
 <Cards>
-  <Card title="Appearance" description="Supply and resolve the visual source." href="/sdks/react-ui/appearance" />
-  <Card title="Components" description="Surface, layout, controls, and overlays." href="/sdks/react-ui/components/surface" />
+  <Card title="Appearance" description="Provide values, preferences, and direction." href="/sdks/react-ui/appearance" />
+  <Card title="Shared props" description="The three rules every component follows." href="/sdks/react-ui/shared-props" />
+  <Card title="Components" description="Every component, with live examples." href="/sdks/react-ui/components/surface" />
 </Cards>
-
-React UI and the [React SDK](/sdks/react) are independent. React UI renders the
-visual component language; React adapts live PhreshOS domain values to React
-state. An application may use either package alone or compose them.

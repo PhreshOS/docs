@@ -1,11 +1,11 @@
 ---
 title: Program configuration
-description: Describe a Program project, its Endpoints, and its installation behavior.
+description: Every field of phresh.config.ts, the file that describes a Program project.
 ---
 
-`phresh.config.ts` describes how a Program project becomes a runtime Program.
-`defineConfig()` gives that file contextual typing and returns the supplied
-value unchanged. It does not create, build, or install anything by itself.
+`phresh.config.ts` describes a Program: its name, its Server and Client, and
+what it needs. `phresh dev`, `phresh install`, and
+[`Project`](/sdks/node/project) read it to run and install the Program.
 
 ```ts title="phresh.config.ts"
 import { defineConfig } from "@phreshos/core"
@@ -14,132 +14,144 @@ export default defineConfig({
   identity: "notes",
   name: "Notes",
   version: "1.0.0",
-  permissions: {
-    network: ["https://api.example.com"],
-  },
   server: {
     location: "dist/server",
     worker: "main.js",
+    devCommand: "vite-node server/main.ts",
   },
   client: {
     location: "dist/client",
     title: "Notes",
+    devCommand: "vite --config vite.client.ts",
   },
 })
 ```
 
-Node Project reads this file and derives a development or production
-[Program](/runtime/programs) definition. See [Node Project](/sdks/node/project).
+`defineConfig()` only adds type checking; it returns the object unchanged.
 
-## Identity and resources
+A Program declares a Server, a Client, or both.
 
-`identity` is the required stable kebab-case name used by the System. `name`,
-`version`, and `description` describe the Program to people. `icon`, `agent`,
-`categories`, `keywords`, and `website` describe its public resources and
-catalog presence. When `version` is omitted, the resolved Program version is
-`0.0.0`.
+## Describe the Program
 
-An icon is a Program-relative PNG between 128 and 2,048 pixels per side and
-no larger than 5 MiB. `agent` names a Program-relative Markdown document
-explaining the Program's own identity and tool contract to agents.
+| Field | Meaning |
+| --- | --- |
+| `identity` | Required. The Program's permanent name: lowercase words joined by hyphens |
+| `name` | The name people see. Defaults to `identity` |
+| `version` | Defaults to `0.0.0` |
+| `description` | A short explanation of what it does |
+| `icon` | A PNG in the project, 128 to 2048 pixels per side, at most 5 MiB |
+| `agent` | A Markdown file in the project explaining the Program to AI agents |
+| `categories`, `keywords`, `website` | Catalog information |
+| `buildCommand` | Runs before a production start, install, or package |
+| `permissions` | What the Program asks for; see [Permissions](/system/security/permissions#declare-what-you-need) |
+| `installLaunch` | A Process to start after installing; see [below](#start-after-installing) |
 
-`buildCommand` runs before a production start, installation, or package is
-created.
-
-`permissions` declares the System capabilities the Program requests. Runtime
-permission state may override each declared assignment. See
-[Permissions](/system/security/permissions).
-
-## Endpoint declarations
-
-A Program must declare a Server, a Client, or both. Each declaration names
-its production location and the defaults used when a Launch does not make
-another choice. `start` defaults to `true`; `service` defaults to `false`.
-At least one declared Endpoint must start in the default Process.
-
-A Server chooses exactly one execution mechanism:
+## The Server
 
 ```ts
 server: {
-  location: "dist/server",
-  worker: "main.js",
-  devCommand: "vite-node server/main.ts",
+  location: "dist/server",                 // built Server files
+  worker: "main.js",                       // or command, or sandbox
+  devCommand: "vite-node server/main.ts",  // how phresh dev runs it
 }
 ```
 
-`command` starts a supervised operating-system process, `worker` loads an
-ECMAScript module in a Node.js Worker, and `sandbox` loads a bundled
-ECMAScript module in a capability-contained JavaScript runtime. A production
-Server chooses exactly one. Development remains separate and uses
-`devCommand` when declared. Optional `installCommand` and
-`uninstallCommand` prepare and clean the production Server location.
+| Field | Meaning |
+| --- | --- |
+| `location` | The folder with the built Server |
+| `command` / `worker` / `sandbox` | Exactly one: how it runs. See [Execution](/sdks/server/execution) |
+| `devCommand` | The command `phresh dev` runs instead |
+| `start` | Whether a new Process starts it by default. Defaults to `true` |
+| `service` | Whether it is a [Service](/runtime/services) by default. Defaults to `false` |
+| `installCommand`, `uninstallCommand` | Run in `location` when installing and uninstalling |
 
-A Client location contains its production `index.html`. `sandbox` defaults to
-`true`, which runs that document in an iframe sandbox allowing scripts and
-forms. Setting it to `false` removes the iframe's `sandbox` attribute entirely.
+`worker` and `sandbox` are module paths inside `location`. `command`,
+`installCommand`, and `uninstallCommand` run from `location`.
 
-The Client declaration can also choose the initial Window title, header state,
-size, position, layer, minimized state, and maximized state:
+## The Client
 
 ```ts
 client: {
-  location: "dist/client",
-  sandbox: true,
-  layer: "over",
-  size: { width: 800, height: 600 },
+  location: "dist/client",                     // built files, with index.html
+  devCommand: "vite --config vite.client.ts",  // or devUrl
+  title: "Notes",
+  size: { width: 900, height: 640 },
 }
 ```
 
-The values initialize each Client execution's authoritative Window. See
-[Desktop](/system/desktop) for layer ownership and local presentation control.
-
-When neither a Launch nor the Client declaration supplies a value, the System
-uses these initial defaults:
-
-| Window value | Default |
+| Field | Meaning |
 | --- | --- |
-| `title` | Program name |
-| `layer` | `window` |
-| `position` | `{ x: 120, y: 80 }`, offset for concurrently open Windows |
+| `location` | The folder with the built Client and its `index.html` |
+| `devCommand` | Starts a development server; it receives `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE` |
+| `devUrl` | Or: an already running development server |
+| `sandbox` | Run in a sandboxed frame. Defaults to `true`; see [Endpoint execution](/system/security/execution#client-modes) |
+| `start`, `service` | As for the Server |
+
+### The Window
+
+The Client can set how its Window starts. Anything left out uses the System
+default:
+
+| Field | Default |
+| --- | --- |
+| `title` | The Program name |
 | `size` | `{ width: 520, height: 340 }` |
+| `position` | `{ x: 120, y: 80 }`, shifted for each open Window |
+| `layer` | `"window"`; see [Layers](/system/desktop#layers) |
+| `header` | `true` in the `window` layer, `false` elsewhere |
 | `minimize`, `maximize` | `false` |
-| `header` | `true` in `window`; `false` in other layers |
 
-The Desktop owns the standard Window surface. Raw layers start their local
-presentation at zero geometry and without a surface until the Program issues
-presentation commands.
+A launch can override each of these for one Process.
 
-`devUrl` selects an existing HTTP or HTTPS server. When a Client
-`devCommand` is supplied without `devUrl`, Node Project selects an
-available port and provides `PHRESHOS_CLIENT_PORT` and `PHRESHOS_CLIENT_BASE`.
+## Paths and commands
 
-Server and Client `location` values are resolved from the project directory.
-`worker` and `sandbox` are module paths contained within the Server location.
-Production Server `command`, `installCommand`, and `uninstallCommand` execute
-from that Server location. `buildCommand`, `server.devCommand`, and
-`client.devCommand` execute from the project directory so they can use the
-project's development tooling.
+- `location` values are relative to the project folder.
+- `buildCommand` and both `devCommand`s run in the project folder, so they can
+  use its development tools.
+- The Program's storage folder is not configured here; the System assigns it.
 
-The authoring Config does not contain the runtime `storage` field: Node Project
-derives that absolute directory when it creates the concrete
-`ProgramDefinition`.
+## Start after installing
 
-## Installation launch
-
-`installLaunch` asks the System to create one Process after installation
-succeeds. It is an installation default, not stored runtime state and not the
-meaning of opening a Program in a particular interface.
+`installLaunch` starts one Process after a successful install:
 
 ```ts
-export default defineConfig({
-  identity: "notes",
-  installLaunch: { name: "main", client: true },
-  client: { location: "dist/client" },
-})
+installLaunch: { name: "main", client: true }   // this launch
+installLaunch: true                             // the Endpoint defaults
 ```
 
-`true` uses an empty Launch and therefore the Endpoint declaration defaults.
-Omission means installation does not launch a Process unless the installation
-operation supplies its own `launch` option. That option can also override the
-definition with a specific Launch or disable it with `false`. See
-[Programs](/runtime/programs).
+Leave it out to start nothing. The install itself can override it; see
+[Install and uninstall](/runtime/programs#install-and-uninstall). To start a
+Process each time the System starts, use
+[`program.startup`](/runtime/processes#start-a-process-with-the-system)
+instead.
+
+## A complete example
+
+```ts title="phresh.config.ts"
+import { defineConfig } from "@phreshos/core"
+
+export default defineConfig({
+  identity: "notes",
+  name: "Notes",
+  version: "1.0.0",
+  description: "Quick notes, synced across your Desktops.",
+  icon: "icon.png",
+  buildCommand: "vite-node scripts/build.ts",
+  permissions: {
+    network: ["https://api.example.com"],
+  },
+  installLaunch: { name: "main", client: true },
+  server: {
+    location: "dist/server",
+    sandbox: "main.js",
+    service: true,
+    devCommand: "vite-node server/main.ts",
+  },
+  client: {
+    location: "dist/client",
+    title: "Notes",
+    size: { width: 900, height: 640 },
+    devCommand: "vite --config vite.client.ts",
+  },
+})
+```

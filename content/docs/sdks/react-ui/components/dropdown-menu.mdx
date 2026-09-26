@@ -1,25 +1,34 @@
 ---
 title: Dropdown Menu
-description: Open a Menu from a button trigger.
+description: A menu that opens from a button.
 ---
 
 <DropdownMenuShowcase />
 
-`DropdownMenu` owns the button-triggered open state and positioned overlay.
-`Menu` remains the semantic command collection inside it.
+`DropdownMenu` opens a [`Menu`](/sdks/react-ui/components/menu) from a button:
 
 ```tsx
 <DropdownMenu>
   <DropdownMenu.Trigger>Actions</DropdownMenu.Trigger>
   <DropdownMenu.Content>
-    <Menu aria-label="Document actions">
+    <Menu aria-label="Note" onAction={run}>
       <Menu.Item id="rename">Rename</Menu.Item>
-      <Menu.Item id="delete" color="danger:base">Delete</Menu.Item>
+      <Menu.Item id="delete" color="danger">Delete</Menu.Item>
     </Menu>
   </DropdownMenu.Content>
 </DropdownMenu>
 ```
 
-Use [`ContextMenu`](./context-menu) when the platform context-menu gesture is
-the intended trigger.
+Choosing an item closes the menu.
 
+Use [`ContextMenu`](/sdks/react-ui/components/context-menu) to open the same
+Menu with a right-click.
+
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `DropdownMenu` | `open`, `defaultOpen`, `onOpenChange` |
+| `DropdownMenu.Trigger` | Button props |
+| `DropdownMenu.Content` | `placement`, `portalContainer`, Surface props |
+| `DropdownMenu.Menu` | The same as `Menu` |

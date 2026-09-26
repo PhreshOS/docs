@@ -5,6 +5,10 @@
   "pages": [
     "index",
     "appearance",
+    "color",
+    "size-and-radius",
+    "icons",
+    "shared-props",
     "components"
   ]
 }

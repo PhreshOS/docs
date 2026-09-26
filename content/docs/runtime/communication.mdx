@@ -1,141 +1,235 @@
 ---
 title: Communication
-description: Publications, questions, observation, and values crossing Endpoint boundaries.
+description: Send messages, ask questions, and observe what Endpoints exchange.
 icon: MessagesSquare
 ---
 
-PhreshOS communication lets Endpoints exchange application values without
-making browser frames, worker channels, processes, or network transports part
-of the application contract. The operation is chosen by intent; the handle is
-chosen by position:
+Endpoints communicate in two ways:
 
-| Position | Meaning |
-| --- | --- |
-| `context` | the Endpoint incarnation currently executing |
-| `endpoint` | one exact Process role across its starts and stops |
-| `service` | whichever ready Endpoint currently occupies a stable public address |
+- **Publish** a message when you announce something and expect no reply.
+- **Ask** a question when you need exactly one answer.
 
-All three expose the same publication and observation language where that
-meaning is available.
-
-## Publishing a value
-
-`publish(event, payload?)` is synchronous and fire-and-forget. Use it for a
-fact or signal whose sender does not require one correlated result. It reports
-no delivery result. If its destination is unavailable, the publication is not
-delivered.
+The same few operations work everywhere: between the Server and Client of one
+Process, across Processes, and through Services to other Programs. You never
+deal with iframes, workers, or network connections.
 
 ```ts
-context.subscribe("document.changed", message => {
-  console.log(message.from, message.payload)
-})
+// Client: announce something
+context.publish("document.opened", { path: "welcome.txt" })
 
+// Client: ask the Server
+const notes = await context.server.ask("notes.list")
+
+// Server: answer
+context.answer("notes.list", () => loadNotes())
+```
+
+## Choose where a message goes
+
+The handle you call decides who receives the message:
+
+| Handle | Reaches |
+| --- | --- |
+| `context` | Nobody in particular: a message from this Endpoint, seen by anyone observing it |
+| `process.server`, `process.client` | That exact Endpoint of that Process |
+| a Service | Whichever Endpoint currently provides that [Service](/runtime/services) |
+
+All three offer the same operations where they make sense.
+
+## Publish a message
+
+`publish(event, payload?)` sends a message and returns immediately. It does
+not report whether anyone received it; if the destination is not running, the
+message is dropped.
+
+```ts
+process.client.publish("theme.changed", { dark: true })
+service.publish("index.refresh")
 context.publish("client.ready")
 ```
 
-Context receives messages as `{ from, payload }`. Traffic originating from an
-Endpoint is observed as `{ to, payload }`. An identity outside the observer's
-authority is `null`.
+Use it for facts and signals, such as "something changed" or "I am ready".
+When the sender needs to know the outcome, ask instead.
 
-`context.publish()` produces output from the executing Endpoint without a
-destination. `endpoint.publish()` targets that exact Endpoint.
-`service.publish()` targets the Endpoint currently occupying a Service
-address.
+## Receive messages
 
-Importing an SDK does not publish, subscribe, or begin application traffic.
-The Endpoint boundary only routes registrations and values requested by SDK
-operations. A Server runtime emits one boundary-owned readiness signal; all
-application communication begins with an explicit publish, ask, answer,
-subscription, wait, or event iterator.
-
-## Observing future events
-
-Every `Subscribable` offers three ways to observe the same future event
-stream:
+An Endpoint receives the messages sent to it through its `context`. Each one
+carries its sender:
 
 ```ts
-const cleanup = target.subscribe("changed", value => console.log(value))
-const next = await target.wait("changed")
-
-for await (const value of target.events("changed")) {
-  console.log(value)
-}
+context.subscribe("theme.changed", ({ from, payload }) => {
+  applyTheme(payload)
+})
 ```
 
-`subscribe()` creates a persistent registration and returns its cleanup.
-`wait()` resolves once with the next matching message and uses a ten-second
-deadline by default. `events()` returns a long-lived async iterator; its
-optional `signal` cancels iteration, while `capacity` controls its queued
-messages and defaults to `64`.
+`from` is the sending Endpoint, or `null` when you are not allowed to see it.
 
-These operations observe future messages. They do not read or replay current
-state because an application event is an occurrence, not a state snapshot.
-When a consumer needs current state, it should first use the domain's read
-operation and then follow its change events. Calling `subscribe(subscriber)`
-or `events()` without an event name preserves each event as a correlated
-`{ event, message }` capture.
-
-A persistent subscription may remain registered while an Endpoint or Service
-is temporarily unavailable. It ends when its cleanup is called or when the
-owning boundary can prove that future delivery is impossible. An async event
-iterator follows the same rule and also ends when iteration is closed or its
-abort signal fires.
-
-## Asking a Server
-
-Questions are directed to Server Endpoints and Server Services. Unlike a
-publication, `ask()` represents one correlated request whose caller requires
-one success or failure answer:
+From the outside, you listen to an Endpoint or a Service to hear what it
+announces with `context.publish()`. The payload arrives directly:
 
 ```ts
-const status = await server.ask("status.read")
-const report = await server.timeout(30_000).ask("report.create", {
+// Server
+context.publish("progress", 40)
+
+// Anywhere holding the handle
+process.server.subscribe("progress", percent => render(percent))
+```
+
+So `context.publish()` is how an Endpoint broadcasts, and `endpoint.publish()`
+is how you send something to one Endpoint.
+
+## Three ways to listen
+
+Every source of events offers the same three operations:
+
+```ts
+// Keep listening until you stop
+const stop = target.subscribe("changed", value => {})
+stop()
+
+// Wait for the next one (10 seconds by default)
+const value = await target.wait("changed")
+const later = await target.wait("changed", 60_000)
+
+// Loop over them
+for await (const value of target.events("changed")) {}
+```
+
+`events()` accepts `{ signal }` to stop the loop, and `{ capacity }` to limit
+how many unread messages it keeps (64 by default).
+
+Leave out the event name to receive every event, each as
+`{ event, message }`:
+
+```ts
+target.subscribe(({ event, message }) => {})
+```
+
+The same three operations appear on every other event source in PhreshOS,
+such as Programs, Processes, and Windows.
+
+Listening only sees messages sent from now on. An event is something that
+happened, not the current state, so to know the current state, read it first
+and then follow its changes.
+
+A subscription survives while its target is temporarily stopped or
+unavailable. It ends when you stop it, or when no message can ever arrive
+again, such as when its Process has exited.
+
+## Ask a Server
+
+A question gets exactly one answer, or fails. Only Servers answer, so you can
+ask a Server Endpoint or a Server Service:
+
+```ts
+const status = await process.server.ask("status.read")
+const doc = await service.ask("document.open", { path: "welcome.txt" })
+```
+
+The default deadline is ten seconds. `timeout()` returns a handle with
+another deadline:
+
+```ts
+const report = await process.server.timeout(60_000).ask("report.create", {
   format: "pdf",
 })
 ```
 
-The executing Server registers an answerer through its Context:
+The deadline includes waiting for the Server to be ready. A question fails
+when:
+
+- the Server is not available, or stops before answering;
+- the answer handler throws;
+- no answer arrives before the deadline.
+
+Why only Servers: a Client can be open on several Desktops at once, so a
+question to it would have no single answerer.
+
+## Answer questions
+
+A Server answers through its `context`. The handler receives the payload and
+the asker, and its return value becomes the answer:
 
 ```ts
-const cleanup = context.answer("status.read", () => ({ ready: true }))
-```
-
-The answerer receives the question payload and the asking Endpoint when that
-identity is visible:
-
-```ts
-const cleanup = context.answer<
-  { path: string },
-  { opened: boolean }
->("document.open", async ({ payload, from }) => {
-  console.log("Requester is visible", from !== null)
+context.answer("document.open", async ({ payload, from }) => {
   return { opened: await openDocument(payload.path) }
 })
 ```
 
-Returning resolves the ask. Throwing or rejecting sends a failed answer, and
-the asker's Promise rejects with that failure. The returned cleanup removes
-only this answer registration.
+Throwing makes the question fail with the error's message. Each question
+name has one handler at a time. See
+[Answer questions](/runtime/context#answer-questions-server).
 
-An ask rejects when its destination is unavailable or disappears before
-answering. Once delivered, an unanswered question waits until its deadline.
+## Type your messages
 
-The default deadline is ten seconds and is shared with any readiness wait for
-that target.
+Operations accept type parameters, so payloads and answers are typed where
+you use them:
 
-`endpoint.traffic` observes directed communication originating from one
-Endpoint. Ordinary publications retain their event name and carry
-`{ to, payload }`. `subscribeAsks()` and `asks()` expose questions as
-`{ event, questionId, message: { to, payload } }`. A Server traffic surface
-also exposes `subscribeAnswers()` and `answers()`, whose message contains the
-correlated success or failure outcome. Traffic observation does not consume or
-alter delivery.
+```ts
+const notes = await process.server.ask<Note[]>("notes.list")
 
-## Values across the boundary
+context.answer<{ path: string }, { opened: boolean }>(
+  "document.open",
+  async ({ payload }) => ({ opened: await openDocument(payload.path) }),
+)
+```
 
-Payloads are not restricted to JSON. Communication preserves `undefined`,
-`bigint`, `Date`, `Map`, `Set`, `RegExp`, `URL`, `Error`, and binary data
-alongside JSON-compatible values. An `ArrayBuffer` or typed-array view
-arrives as a `Uint8Array`. Functions and symbols arrive as `null`.
+A Service handle can carry its complete event contract:
 
-This value contract is the same across Client, Server, and Node.
+```ts
+type EditorEvents = { "document.changed": { path: string } }
+
+const editor = system.service.prepare<EditorEvents>({
+  program: "text-studio",
+  process: "editor",
+  endpoint: "server",
+})
+
+editor.subscribe("document.changed", ({ path }) => {})
+```
+
+## Send more than JSON
+
+Payloads and answers can hold more than JSON:
+
+- `undefined`, `bigint`, `Date`, `Map`, `Set`, `RegExp`, `URL`, and `Error`
+  arrive as themselves;
+- binary data arrives as a `Uint8Array`, including any `ArrayBuffer` or typed
+  array you send;
+- functions and symbols arrive as `null`.
+
+This is the same between Client, Server, and Node.
+
+## Observe traffic
+
+`traffic` on an Endpoint shows what it sends, without affecting delivery.
+Use it to debug, log, or build tools that watch other Programs.
+
+```ts
+// Messages it publishes
+process.client.traffic.subscribe("theme.changed", ({ to, payload }) => {})
+
+// Questions it asks
+process.client.traffic.subscribeAsks(({ event, questionId, message }) => {})
+
+// Answers a Server sends
+process.server.traffic.subscribeAnswers(({ event, questionId, message }) => {
+  message.outcome   // { success: true, result } or { success: false, error }
+})
+```
+
+`questionId` links a question to its answer. `asks()` and `answers()` offer the
+same as loops. A destination you are not allowed to see appears as `null`.
+
+## Reference
+
+| Operation | On | Result |
+| --- | --- | --- |
+| `publish(event, payload?)` | `context`, Endpoints, Services | Sends a message; no reply |
+| `subscribe(event?, handler)` | Every event source | Keeps listening; returns a stop function |
+| `wait(event, timeout?)` | Every event source | The next message |
+| `events(event?, { signal, capacity }?)` | Every event source | A loop over messages |
+| `ask(event, payload?)` | Server Endpoints, Server Services | The answer |
+| `timeout(ms)` | Server Endpoints, Server Services | A handle with another deadline |
+| `answer(event, handler)` | Server `context` | Registers an answer; returns a cleanup |
+| `traffic` | Endpoints | What the Endpoint sends |

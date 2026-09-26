@@ -1,42 +1,52 @@
 ---
 title: List Box
-description: Select one or more values from a collection that remains visible.
+description: A visible list to choose one or several items from.
 ---
 
 <ListBoxShowcase />
 
-`ListBox` presents a selectable collection without collapsing it into a popup.
-Single selection is the default; set `selectionMode="multiple"` for independent
-selection.
+`ListBox` shows a list people can choose from without opening anything.
 
 ```tsx
-const [tools, setTools] = useState<readonly string[]>(["editor"])
-
-<ListBox
-  aria-label="Tools"
-  selectionMode="multiple"
-  value={tools}
-  onChange={value => {
-    if (value !== "all") setTools(value)
-  }}
->
-  <ListBox.Section id="work">
-    <ListBox.Header>Work</ListBox.Header>
-    <ListBox.Item id="editor">Editor</ListBox.Item>
-    <ListBox.Item id="terminal">Terminal</ListBox.Item>
-  </ListBox.Section>
+<ListBox aria-label="Tool" value={tool} onChange={setTool}>
+  <ListBox.Item id="editor">Editor</ListBox.Item>
+  <ListBox.Item id="terminal">Terminal</ListBox.Item>
   <ListBox.Item id="archive" disabled>Archive</ListBox.Item>
 </ListBox>
 ```
 
-Every Item has a string identity. Single-selection values are a string or
-`null`; multiple-selection values are a string array or `"all"`.
-`disabledValues` disables known identities at the collection level.
+## One or several
 
-Sections and Headers group choices without introducing hierarchy. Use
-[`Tree`](./tree) when parent and child items need expansion. For data-backed
-collections, pass `items` and render Items from their stable identities.
+A ListBox selects one item by default; its value is an `id` or `null`. With
+`selectionMode="multiple"`, its value is a list of `id`s, or `"all"`:
 
-ListBox owns focus, keyboard navigation, typeahead, and selection presentation.
-It does not add a Surface or scrolling boundary; compose those explicitly.
+```tsx
+const [tools, setTools] = useState<readonly string[] | "all">(["editor"])
 
+<ListBox aria-label="Tools" selectionMode="multiple" value={tools} onChange={setTools}>
+  …
+</ListBox>
+```
+
+## Groups and data
+
+`ListBox.Section` with a `ListBox.Header` groups items. For data, map items
+yourself, or pass `items` with a render function.
+
+Use [`Tree`](/sdks/react-ui/components/tree) when items have children.
+
+## Look
+
+A selected item shows the `subtle` level of its `color`, `primary` by default.
+
+ListBox has no background or scrolling of its own; put it in a Surface or a
+ScrollArea when needed.
+
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `ListBox` | `selectionMode`, `value`, `defaultValue`, `onChange`, `items`, `aria-label`, `focusOnHover`, `focusWrap`, `selectOnPressUp`, `color` (`"primary"`), `size`, `radius` |
+| `ListBox.Item` | `id`, `disabled`, `color` |
+| `ListBox.Section` | `id` |
+| `ListBox.Header` | Its text |

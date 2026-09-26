@@ -1,62 +1,143 @@
 ---
 title: Overview
-description: Use PhreshOS from the Client Endpoint currently running in a Desktop.
+description: Use PhreshOS from a Program's Client, the interface running in a Desktop Window.
 ---
 
-`@phreshos/client` is the adapter for code executing as a Program's Client
-Endpoint inside a Desktop. It exposes three roots because three different
-owners meet at that position: the global `system`, the current Client
-`context`, and the containing `desktop`.
+`@phreshos/client` is the SDK for a Program's
+[Client Endpoint](/runtime/endpoints#the-client): the web page shown in a
+Desktop Window. It gives that page access to its Program, its Server, its
+Window, the Desktop around it, and the System.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
     ```sh
-    npm install @phreshos/client
+    npm install @phreshos/client @phreshos/core
     ```
   </Tab>
   <Tab value="pnpm">
     ```sh
-    pnpm add @phreshos/client
+    pnpm add @phreshos/client @phreshos/core
     ```
   </Tab>
   <Tab value="Bun">
     ```sh
-    bun add @phreshos/client
+    bun add @phreshos/client @phreshos/core
     ```
   </Tab>
   <Tab value="Yarn Classic">
     ```sh
-    yarn add @phreshos/client
+    yarn add @phreshos/client @phreshos/core
     ```
   </Tab>
 </Tabs>
 
-`@phreshos/core` is a peer dependency.
+`@phreshos/core` is a peer dependency, so your app and the SDK share the same
+Program, Process, and other classes.
+
+## Three entry points
 
 ```ts
 import { context, desktop, system } from "@phreshos/client"
-import { Program, Process } from "@phreshos/core"
-
-const program = await context.program()
-const preferences = await desktop.preferences.snapshot()
-const appearance = await system.appearance.snapshot()
-
-console.log(program instanceof Program)
 ```
 
-Shared classes keep their Core import path. Handles returned by Client
-inherit those Core classes.
+| Import | Is | Use it for |
+| --- | --- | --- |
+| `context` | This Client, seen from the inside | Its Program, Process, options, messages, Server, and Window |
+| `desktop` | The Desktop showing this Client | Its size, preferences, and browser Connection |
+| `system` | The whole System | Everything else: Programs, Processes, storage, network, and more |
 
-The Client SDK is tied to this Endpoint execution context. Context-owned
-operations and registrations end with it. Desktop state may outlive this
-Client, and System state is authoritative independently of whether this iframe
-is loaded. Knowing another entity's identity never expands the executing
-Program's visible scope.
+They are separate because they belong to different owners: the Client belongs
+to its Program, the Desktop to the browser showing it, and the System to
+everyone.
 
-<Cards>
-  <Card title="Context" description="The current execution, paired Server, and Window." href="/sdks/client/context" />
-  <Card title="Desktop" description="Viewport, preferences, and Connection of the containing Desktop." href="/sdks/client/desktop" />
-  <Card title="System access" description="Shared System capabilities from a Client Endpoint." href="/sdks/client/system-access" />
-  <Card title="Permissions" description="Use the Program authority shared by both Endpoint kinds." href="/sdks/client/permissions" />
-  <Card title="Execution" description="Run the Client document in a sandboxed or ordinary iframe." href="/sdks/client/execution" />
-</Cards>
+## Talk to your Server
+
+`context.server` is the Server of the same Process:
+
+```ts
+const notes = await context.server.ask("notes.list")
+context.server.publish("notes.refresh")
+context.server.subscribe("notes.changed", notes => render(notes))
+```
+
+See [Communication](/runtime/communication). With React, use
+[`useSubscribe`](/sdks/react) to follow events in a component.
+
+## Know where you are
+
+```ts
+const program = await context.program()
+const process = await context.process()
+const document = await context.options("document")
+```
+
+Messages sent to this Client arrive through `context.subscribe()`.
+`context.publish()` announces something to anyone listening to this Client.
+See [Context](/runtime/context).
+
+## Control your Window
+
+```ts
+await context.window.setTitle("Notes")
+await context.window.resize({ width: 900, height: 640 })
+```
+
+`context.window` is the Window itself; `context.presentation` is how this
+Desktop shows it, for custom title bars and Clients outside standard Windows.
+See [Desktop](/system/desktop).
+
+## Read the Desktop
+
+```ts
+const { size } = await desktop.viewport.snapshot()
+desktop.viewport.subscribe("resize", ({ size }) => layout(size))
+
+const { theme, animations, scale } = await desktop.preferences.snapshot()
+desktop.preferences.subscribe("change", preferences => apply(preferences))
+```
+
+By default, `theme` follows the browser's light or dark setting, `animations`
+turns off when the browser asks for reduced motion, and `scale` is `1`.
+Changing the scale also changes the viewport size the Client sees. See
+[Preferences](/system/desktop#preferences).
+
+## Use the System
+
+`system` is the same in a Client as everywhere else:
+
+```ts
+const programs = await system.program.list()
+const response = await system.network.fetch("https://api.example.com/items")
+```
+
+What it can see and do follows the Program's
+[permissions](/system/security/permissions), which the Client and Server
+share. A Client can check and request them:
+
+```ts
+if (!await context.permissions.allows("uploads")) {
+  await context.permissions.request("uploads")
+}
+```
+
+A request ends with `null` if this Client stops before the owner decides.
+
+## The browser sandbox
+
+By default the Client runs in a sandboxed frame without an origin of its own,
+so `localStorage`, `IndexedDB`, and cookies are not available. Store data with
+[`program.store` or `program.data`](/system/storage) instead. See
+[Endpoint execution](/system/security/execution#client-modes).
+
+## Reference
+
+| Member | See |
+| --- | --- |
+| `context.program()`, `process()`, `name()`, `parent()`, `options()`, `isService()` | [Context](/runtime/context) |
+| `context.subscribe`, `wait`, `events`, `publish` | [Communication](/runtime/communication) |
+| `context.server` | [Endpoints](/runtime/endpoints) |
+| `context.window`, `context.presentation` | [Desktop](/system/desktop) |
+| `context.permissions` | [Permissions](/system/security/permissions) |
+| `context.stop()` | [Context](/runtime/context#stop-this-run) |
+| `desktop.viewport`, `desktop.preferences`, `desktop.connection()` | [Desktop](/system/desktop#read-the-desktop-around-you) |
+| `system` | [System](/system) |

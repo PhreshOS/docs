@@ -1,80 +1,101 @@
 ---
 title: Runtime commands
-description: Operate Programs, Processes, Endpoints, Services, and Windows through Execute.
+description: Inspect and control Programs, Processes, Endpoints, Services, and Windows from the terminal.
 ---
 
-Runtime commands are the [Execute](/sdks/core/execute) catalog as human-facing
-commands. They connect through Node to a running System and invoke the same
-public handles as SDK code. The domain meaning lives under [Runtime](/runtime)
-and [Desktop](/system/desktop).
+Runtime commands work on the running System, the same way the SDK does. Each
+one is an [Execute](/sdks/core/execute) operation with terminal options.
 
 ```sh
 phresh program list
-phresh program inspect --program notes
-phresh process create --program notes --client
-phresh endpoint ask --program notes --process main --endpoint server --event status.read
-phresh service search --name editor
+phresh process create --program notes --name main --client
+phresh endpoint ask --program notes --process main --endpoint server --event notes.list
 phresh window inspect --program notes --process main
 ```
 
-Add `--json` for the complete result as one JSON value.
+Add `--json` to any of them for the full result as JSON.
 
-| Command | Execute operation |
+## Commands
+
+| Command | Subcommands |
 | --- | --- |
-| `system logs` | `system.logs` |
-| `program list \| inspect \| agent \| definition \| getStartup \| enableStartup \| disableStartup \| pinned \| pin \| unpin \| getPermission \| listPermissions \| allowsPermission \| allowPermission \| denyPermission \| logs \| wait` | `program.*` |
-| `process list \| inspect \| create \| findOrCreate \| exit \| wait` | `process.*` |
-| `endpoint inspect \| start \| stop \| waitReady \| ask \| publish \| wait \| waitLifecycle` | `endpoint.*` |
-| `service list \| search \| inspect \| waitReady \| ask \| publish \| wait \| waitLifecycle \| waitDiscovery` | `service.*` |
-| `window inspect \| move \| resize \| setGeometry \| minimize \| maximize \| setTitle \| setHeader \| raise \| wait` | `window.*` |
-| `operation list \| describe` | `operation.*` |
-| `execute` | raw JSON request |
+| `program` | `list`, `inspect`, `agent`, `definition`, `get-startup`, `enable-startup`, `disable-startup`, `pinned`, `pin`, `unpin`, `get-permission`, `list-permissions`, `allows-permission`, `allow-permission`, `deny-permission`, `logs`, `wait` |
+| `process` | `list`, `inspect`, `create`, `find-or-create`, `exit`, `wait` |
+| `endpoint` | `inspect`, `start`, `stop`, `wait-ready`, `ask`, `publish`, `wait`, `wait-lifecycle` |
+| `service` | `list`, `search`, `inspect`, `wait-ready`, `ask`, `publish`, `wait`, `wait-lifecycle`, `wait-discovery` |
+| `window` | `inspect`, `move`, `resize`, `set-geometry`, `minimize`, `maximize`, `set-title`, `set-header`, `raise`, `wait` |
+| `operation` | `list`, `describe` |
+| `system logs` | Query the System log |
+| `execute` | Run any operation as raw JSON |
+
+The camelCase names, such as `setGeometry`, work as well.
+
+## Programs
 
 ```sh
-phresh execute '{"$domain":"program","$operation":"list"}'
-phresh operation describe --domain endpoint --operation ask
+phresh program list --installed-only --search notes --limit 10
+phresh program inspect --program notes
+phresh program logs --program notes --statement 'select * from logs order by createdAt desc limit 20'
 ```
 
-`program list` also accepts `--installed-only`, `--search`, `--limit`, and
-`--offset` as presentation filters around the Execute result.
+See [Programs](/runtime/programs).
 
-## Processes and Endpoints
+## Processes
 
-A Process name is local to its Program, so commands that use a name also need
-`--program`. Endpoint creation flags translate into the same Launch fields as
-the SDK. Service flags select the role of that execution context; `--no-server`
-and `--no-client` keep the corresponding Endpoint stopped.
+A Process name is unique only within its Program, so commands that use a name
+also need `--program`.
 
 ```sh
 phresh process create \
   --program notes \
   --name main \
   --server \
-  --client-service \
+  --client --client-width 900 --client-height 640 \
   --option document=welcome.txt
+
+phresh process find-or-create --program notes --name main
+phresh process exit --program notes --process main
+phresh process wait --event exit --program notes --process main
 ```
 
-Endpoint `wait` observes application publications, while `waitLifecycle`
-observes `start` and `stop`. CLI payloads use JSON even though direct SDK
-communication can preserve additional JavaScript and binary values.
+`--server` and `--client` start an Endpoint; `--no-server` and `--no-client`
+keep it stopped. `--server-service` and `--client-service` make it a Service.
+`--replace` replaces a Process with the same name. See
+[Processes](/runtime/processes).
+
+## Endpoints and Services
+
+```sh
+phresh endpoint start --program notes --process main --endpoint client
+phresh endpoint ask --program notes --process main --endpoint server --event notes.list
+phresh endpoint publish --program notes --process main --endpoint client --event theme.changed
+phresh endpoint wait-lifecycle --program notes --process main --endpoint server
+
+phresh service search --name editor
+```
+
+`wait` waits for an event the Endpoint announces; `wait-lifecycle` waits for
+it to start or stop.
+
+Payloads on the command line are JSON, so values such as `Date`, `Map`, or
+binary data that the SDK can send are not available here. See
+[Communication](/runtime/communication).
 
 ## Windows
 
-Window commands mutate the authoritative Window. Geometry accepts finite
-pixels or the same workspace-relative expressions accepted by Core, and
-`setGeometry` commits position and size together. Bare numeric arguments are
-pixel counts, even when quoted by the shell: `--height 1` means one pixel. Use
-`--height 1/1` or `--height 100%` for the complete workspace height.
-
 ```sh
-phresh window set-geometry \
-  --program notes \
-  --process main \
-  --x 0 \
-  --y 0 \
-  --width 100% \
-  --height 100%
+phresh window set-geometry --program notes --process main \
+  --x 0 --y 0 --width 100% --height 100%
+
+phresh window set-title --program notes --process main --title "Notes"
 ```
 
-The camel-case operation names and the kebab-case terminal aliases are both
-shown by `phresh describe`.
+A number is always pixels, even in quotes: `--height 1` means one pixel. Use
+`100%` or `1/1` for the full height. See [Desktop](/system/desktop).
+
+## Raw JSON
+
+```sh
+phresh execute '{"$domain":"program","$operation":"list"}'
+phresh operation describe --domain endpoint --operation ask
+```

@@ -1,65 +1,74 @@
 ---
 title: Overview
-description: Adapt live PhreshOS contracts to React without owning transport or visuals.
+description: Follow PhreshOS state and events in React components.
 ---
 
-`@phreshos/react` adapts explicitly supplied Core contracts and live sources
-to React providers and hooks. Its job is to translate SDK reads,
-subscriptions, unresolved values, and cleanup into React lifecycle. It does
-not initialize a transport, import the Client SDK, access the browser, define
-domain state, or render visual language.
+`@phreshos/react` connects PhreshOS to React. It turns reads and events into
+component state, and cleans up subscriptions when components unmount.
 
-`SystemProvider`, `ContextProvider`, and `DesktopProvider` preserve the
-separation between the global System, current Client Context, and containing
-Desktop. State and subscription hooks preserve unresolved state and own only
-their React lifecycle.
+It does not connect to anything by itself: you give it the `system`,
+`context`, or handles you already have, from the Client SDK, Node, or tests.
+It does not use the DOM either, so it also works with React renderers other
+than React DOM.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
     ```sh
-    npm install @phreshos/react
+    npm install @phreshos/react @phreshos/core react
     ```
   </Tab>
   <Tab value="pnpm">
     ```sh
-    pnpm add @phreshos/react
+    pnpm add @phreshos/react @phreshos/core react
     ```
   </Tab>
   <Tab value="Bun">
     ```sh
-    bun add @phreshos/react
+    bun add @phreshos/react @phreshos/core react
     ```
   </Tab>
   <Tab value="Yarn Classic">
     ```sh
-    yarn add @phreshos/react
+    yarn add @phreshos/react @phreshos/core react
     ```
   </Tab>
 </Tabs>
 
-`@phreshos/core` and `react` are peer dependencies.
-
 ```tsx
-import { context, desktop, system } from "@phreshos/client"
-import {
-  ContextProvider,
-  DesktopProvider,
-  SystemProvider,
-} from "@phreshos/react"
+import { context } from "@phreshos/client"
+import { useSubscribe, useWindowState } from "@phreshos/react"
 
-<SystemProvider system={system}>
-  <DesktopProvider desktop={desktop}>
-    <ContextProvider context={context}>{children}</ContextProvider>
-  </DesktopProvider>
-</SystemProvider>
+function Counter() {
+  const count = useSubscribe(context.server, "changed")
+  const windowState = useWindowState(context.window)
+
+  return <p>{count ?? "…"} in a {windowState?.size.width ?? "…"}px Window</p>
+}
 ```
 
-The values come from Client, Node, or tests. React does not create them. This
-also keeps the package usable with non-DOM React renderers: environment access
-belongs to the value's adapter, not to the hooks.
+## What it provides
+
+| Kind | Use it for | Needs a provider |
+| --- | --- | --- |
+| [Providers](/sdks/react/providers) | Make `system`, `context`, and `desktop` available to a component tree, and wait for their first values | — |
+| [State hooks](/sdks/react/hooks#state-hooks) | The current state of a Program, Process, Endpoint, Window, and more | No |
+| [Event hooks](/sdks/react/hooks#event-hooks) | The latest event, question, or answer from a source | No |
+| [Provider hooks](/sdks/react/providers#hooks) | `useSystem()`, `useContext()`, `useProgram()`, `useDesktopViewport()`, and others | Yes |
+
+## Undefined means "not yet"
+
+State and event hooks return `undefined` until their first value arrives. That
+is not an empty result: an unresolved list of Processes is different from an
+empty one. Render a loading state for it:
+
+```tsx
+const state = useProgramState(program)
+if (!state) return <Loading />
+```
+
+A failed first read is thrown to the nearest React error boundary.
 
 <Cards>
-  <Card title="Providers" description="Supply System, Context, and Desktop to a React subtree." href="/sdks/react/providers" />
-  <Card title="Domain hooks" description="Follow Program, Process, Endpoint, Window, and related state." href="/sdks/react/domain-hooks" />
-  <Card title="Subscription hooks" description="Observe future events, questions, and answers." href="/sdks/react/subscription-hooks" />
+  <Card title="Providers" description="System, Context, and Desktop for a component tree." href="/sdks/react/providers" />
+  <Card title="Hooks" description="State and event hooks." href="/sdks/react/hooks" />
 </Cards>

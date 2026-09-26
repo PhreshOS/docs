@@ -1,30 +1,39 @@
 ---
 title: Radio Group
-description: Choose one visible option from a small set.
+description: Choose exactly one option from a short, visible list.
 ---
 
 <RadioGroupShowcase />
 
-`RadioGroup` owns the selected string, label, feedback, and shared presentation.
-Each `RadioGroup.Item` contributes one identified option and is meaningful only
-inside its group.
+`RadioGroup` shows every option and lets people choose one. Its value is the
+chosen option's `value`.
 
 ```tsx
-<RadioGroup
-  label="Release channel"
-  value={channel}
-  onChange={setChannel}
->
+<RadioGroup label="Release channel" value={channel} onChange={setChannel}>
   <RadioGroup.Item value="stable" label="Stable" />
-  <RadioGroup.Item value="preview" label="Preview" />
+  <RadioGroup.Item value="preview" label="Preview" description="New features first" />
 </RadioGroup>
 ```
 
-The group is vertical by default. Set `orientation="horizontal"` when the
-available width and option labels make a row clearer. Arrow-key navigation
-follows the resolved direction.
+Items use `value`, not `id` as in other collections, because it is what a form
+submits.
 
-Selection and validation belong to the group. An Item may override inherited
-visual properties or be disabled individually, but it does not own a separate
-selected value.
+## Layout
 
+The options stack vertically. Use `orientation="horizontal"` for a row. The
+arrow keys move between options, following the text direction.
+
+## Items
+
+An item can be disabled on its own, and can override the group's look. The
+selection, label, and validation belong to the group.
+
+Use [`Select`](/sdks/react-ui/components/select) when there are many options
+or little room.
+
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `RadioGroup` | `value`, `defaultValue`, `onChange`, `orientation` (`"vertical"`), field props, `color` (`"primary"`), `size`, `material` |
+| `RadioGroup.Item` | `value`, `label`, `description`, `disabled` |

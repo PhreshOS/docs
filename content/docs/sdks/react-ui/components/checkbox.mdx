@@ -1,33 +1,49 @@
 ---
 title: Checkbox
-description: Represent an independent boolean choice or a partially selected group.
+description: A box that turns a choice on or off.
 ---
 
 <CheckboxShowcase />
 
-`Checkbox` reports a boolean directly through `onChange`. Use `checked` for
-controlled state or `defaultChecked` for uncontrolled state.
+`Checkbox` is a choice that is on or off. Its value is a boolean.
 
 ```tsx
-<Checkbox
-  label="Include completed Processes"
-  checked={includeCompleted}
-  onChange={setIncludeCompleted}
-/>
+<Checkbox label="Include finished Processes" checked={include} onChange={setInclude} />
 ```
 
-`indeterminate` represents a mixed group state. It changes the presentation but
-does not introduce a third value; the checked contract remains boolean.
+Use `checked` to own the value, or `defaultChecked` to let the Checkbox keep
+it.
+
+## Some selected
+
+`indeterminate` shows a mixed state, for a "select all" box when only some
+items are selected. The value stays a boolean.
 
 ```tsx
 <Checkbox
   label="Select all"
-  checked={allSelected}
-  indeterminate={someSelected && !allSelected}
-  onChange={setAllSelected}
+  checked={all}
+  indeterminate={some && !all}
+  onChange={selectAll}
 />
 ```
 
-Use a [`Switch`](./switch) when changing the value immediately enables or
-disables a setting. Use Checkbox when the value represents a choice.
+## Look
 
+Unchecked, the box is recessed. Checked, it rises in `primary`. Change it
+with `color`, `size`, and `material`.
+
+Use [`Switch`](/sdks/react-ui/components/switch) for a setting that takes
+effect immediately. Use Checkbox for a choice that is applied later, such as
+in a form.
+
+## Props
+
+| Prop | Default | Sets |
+| --- | --- | --- |
+| `checked`, `defaultChecked`, `onChange` | — | Its value |
+| `indeterminate` | `false` | Show a mixed state |
+| `label`, `description`, `errorMessage` | — | Its text |
+| `invalid`, `required`, `readOnly`, `disabled` | `false` | Its state |
+| `color` | `"primary"` | Its checked color |
+| `size`, `radius`, `material` | — | Its look |

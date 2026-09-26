@@ -1,44 +1,35 @@
 ---
 title: Overview
-description: How authentication, permissions, and execution containment form the PhreshOS security model.
+description: Who can use the System, what Programs may do through it, and what their code can reach on its own.
 ---
 
-PhreshOS security is divided into three independent boundaries:
-authentication identifies the System owner, permissions govern a Program's
-authority through the System API, and Endpoint execution determines the
-ambient capabilities of the runtime in which code runs.
+PhreshOS security answers three separate questions:
 
-These boundaries answer different questions. None substitutes for another.
+| Question | Answered by |
+| --- | --- |
+| Who is using the Desktop? | [Authentication](/system/security/authentication): the owner signs in, and Sessions keep browsers signed in |
+| What may a Program do through the System? | [Permissions](/system/security/permissions): declared by the Program, decided by the owner |
+| What can a Program's code reach without the System? | [Endpoint execution](/system/security/execution): the mode each Server and Client runs in |
 
-## Authentication
+Each one covers something the others do not:
 
-[Authentication](/system/security/authentication) determines whether a browser
-Connection belongs to the System owner. Sessions carry that authorization
-across Connections and govern sign-in, sign-out, and expiration.
+- Signing in gives a person the Desktop, not any authority to Programs.
+- Permissions limit what a Program does **through the System**. They cannot
+  take away what its runtime already allows, such as a `worker` Server
+  reading files with Node.js.
+- An execution mode limits what code can reach **on its own**. It never grants
+  anything through the System.
 
-Authentication gives a person access to the Desktop. It does not grant a
-Program authority or decide how an Endpoint's code is contained.
+To keep a Program fully under the owner's control, run its Server in
+`sandbox` mode and its Client in the default sandboxed frame. Then everything
+it does outside its own code goes through permissions.
 
-## Permissions
+Node scripts and the CLI connect directly as the owner of the machine, through
+a local socket (a named pipe on Windows). They are fully trusted and need
+neither a Session nor permissions.
 
-[Permissions](/system/security/permissions) determine what a Program may see
-and do through the System API. Permission state belongs to the Program and
-applies to every Client and Server Endpoint it owns.
-
-Permissions govern System capabilities and visible domain scope. They do not
-remove capabilities supplied directly by an Endpoint's runtime.
-
-## Endpoint execution
-
-[Endpoint Execution](/system/security/execution) determines the environment in
-which an Endpoint runs and the ambient authority that environment provides.
-Servers choose among command, worker, and sandbox execution. Clients choose
-whether their browser document uses iframe sandboxing.
-
-Execution containment does not change the Endpoint's SDK contract. Calls into
-the System remain governed by the Program's permissions in every execution
-mode.
-
-Together, the three boundaries establish who is operating the Desktop, what a
-Program may request from the System, and what its code can do independently in
-its own runtime.
+<Cards>
+  <Card title="Authentication" description="The owner, Connections, and Sessions." href="/system/security/authentication" />
+  <Card title="Permissions" description="Declare, request, and decide what Programs may do." href="/system/security/permissions" />
+  <Card title="Endpoint execution" description="Server and Client modes and what they can reach." href="/system/security/execution" />
+</Cards>

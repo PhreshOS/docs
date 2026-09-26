@@ -1,173 +1,132 @@
 ---
 title: Appearance
-description: Supply and resolve the visual source used by React UI components.
+description: Give components their visual values, preferences, and text direction.
 ---
 
-React UI owns the visual `Appearance` its components consume: colors,
-spacing, radius, shadow, material, and transaction. The System's Appearance
-has the same visual shape and can be passed directly. Wallpapers remain
-outside the React UI contract. React UI also accepts environment preferences
-and one concrete direction.
+Every React UI component reads three things from its surroundings:
 
-See [Appearance](/system/appearance) for the System document.
+| | Is | Default |
+| --- | --- | --- |
+| **Appearance** | The visual values: colors, spacing, radius, shadow, material, timing | `defaultAppearance` |
+| **Preferences** | `theme` (`"light"` or `"dark"`) and `animations` | The browser's settings |
+| **Direction** | `"ltr"` or `"rtl"` | The document's `<html dir>` |
 
-## Resolution
-
-Without a provider, `useAppearance()` returns `defaultAppearance`,
-`usePreferences()` follows the browser's effective theme and reduced-motion
-choice, and `useDirection()` follows the document. `UIProvider` supplies
-these inputs independently to one subtree. Each supplied property establishes
-only its own boundary. An omitted property continues through the nearest
-higher provider or its own fallback. A provider with no properties changes
-nothing.
+With no setup, components use the defaults. `UIProvider` changes any of them
+for everything inside it:
 
 ```tsx
+import { UIProvider } from "@phreshos/react-ui"
+
 <UIProvider
-  appearance={appearance}
-  preferences={{ theme: "dark", animations: true }}
+  appearance={{ radius: 14 }}
+  preferences={{ theme: "dark" }}
+  direction="rtl"
 >
-  <Application />
+  <App />
 </UIProvider>
 ```
 
-An `appearance` or `preferences` value is a partial update over the nearest
-provider. Omitted leaves continue to inherit, including leaves inside themed
-colors, shadows, and materials. At the outermost provider, omitted values come
-from React UI's defaults and browser preferences.
+## Change the Appearance
+
+`appearance` takes only the values you want to change; everything else comes
+from the nearest outer provider, or the default:
 
 ```tsx
-<UIProvider
-  appearance={{ colors: { dark: { primary: "#5aa7ff" } } }}
-  preferences={{ animations: false }}
->
-  <Application />
+<UIProvider appearance={{ spacing: 14, colors: { light: { primary: "#3f7de0" } } }}>
+  <App />
 </UIProvider>
 ```
 
-A complete Appearance or Preferences snapshot remains valid input. A System
-Desktop preferences snapshot can be passed directly; Desktop-only values such
-as `scale` remain outside the React UI contract.
-
-`useBrowserPreferences()` exposes the browser fallback.
-`useThemedValue(value)` selects the light or dark branch using the effective
-preferences.
+Inside PhreshOS, pass the System's Appearance so the Program matches the
+Desktop. React UI uses the visual values and ignores the rest:
 
 ```tsx
-function Foreground() {
-  const appearance = useAppearance()
-  const colors = useThemedValue(appearance.colors)
+import { system } from "@phreshos/client"
+import { SystemProvider, useSystemAppearance } from "@phreshos/react"
 
-  return <span style={{ color: colors.foreground }}>Current foreground</span>
+function Themed({ children }) {
+  return <UIProvider appearance={useSystemAppearance()}>{children}</UIProvider>
 }
+
+<SystemProvider system={system}>
+  <Themed><App /></Themed>
+</SystemProvider>
 ```
 
-## Direction
+`useSystemAppearance()` follows every change, so the Program updates with the
+Desktop. See [React providers](/sdks/react/providers).
 
-Direction is separate from Appearance. Supplying `direction="ltr"` or
-`direction="rtl"` makes `UIProvider` create a DOM direction boundary using
-`display: contents`. When direction is omitted, no boundary is created.
+What the Appearance contains and its limits are described in
+[System Appearance](/system/appearance#what-it-contains).
 
-`useDocumentDirection()` observes `<html dir>` and returns `"ltr"` or
-`"rtl"`. A missing value, `auto`, or any unsupported value resolves to
-`"ltr"`. `useDirection()` returns the nearest explicitly supplied provider
-value, or the document direction when there is none.
+## Choose light or dark
+
+```tsx
+<UIProvider preferences={{ theme: "dark" }}>…</UIProvider>
+<UIProvider preferences={{ animations: false }}>…</UIProvider>
+```
+
+Leave `preferences` out to follow the browser: `theme` follows its light or
+dark setting, and `animations` turns off when it asks for reduced motion.
+
+The theme picks the `light` or `dark` branch of each Appearance value.
+Everything else, such as which way a recessed Surface darkens, is derived from
+the colors themselves, so a dark palette in the `light` branch still looks
+right.
+
+With `animations: false`, every change happens immediately. The Appearance is
+unchanged.
+
+## Set the text direction
 
 ```tsx
 <UIProvider direction="rtl">
-  <Application />
+  <App />
 </UIProvider>
 ```
 
-The DOM continues to own ordinary inheritance. Components call
-`useDirection()` only when behavior itself needs a concrete direction—for
-example logical overlay placement, direction-sensitive keyboard movement,
-scrolling, or content rendered through a portal.
+With a direction, components lay out, place popovers, and handle arrow keys
+for that direction. Without one, they follow `<html dir>`. The provider adds
+no layout box of its own.
 
-## Derived levels
+## Nesting
 
-Appearance provides one concrete spacing value, one radius value, and named
-colors. React UI derives levels around those values:
-
-| Level | Numeric factor |
-| --- | ---: |
-| `xsmall` | `0.25` |
-| `small` | `0.5` |
-| `medium` | `1` |
-| `large` | `1.5` |
-| `xlarge` | `2` |
-
-`useScale(value)` returns this complete numeric scale for any concrete
-number. `resolveSpacing()` and `resolveRadius()` resolve one semantic level,
-number, or CSS value against an Appearance. When these resolver functions are
-called directly, a semantic spacing or radius needs a concrete Appearance
-argument. `resolveRadius("full")` is a fully rounded corner.
-
-Colors use `subtle`, `soft`, `base`, `strong`, and `intense`. `base`
-preserves the source. The other levels derive lighter or darker treatments
-from the same color.
+Providers nest, and each property is inherited separately. A provider with no
+props changes nothing.
 
 ```tsx
-function BrandScale() {
-  const blue = useColor("#4c9cff")
-  return <span style={{ background: blue.soft }}>Soft blue</span>
-}
+<UIProvider preferences={{ theme: "dark" }}>
+  <Sidebar />
+  <UIProvider appearance={{ spacing: 8 }}>
+    <DenseTable />   {/* dark, with tighter spacing */}
+  </UIProvider>
+</UIProvider>
 ```
 
-`useColor()` and `useScale()` each accept one concrete value and return its
-memoized derived scale.
+## Read the values
 
-A semantic color combines an Appearance color with a level, such as
-`"primary:soft"`. A direct CSS color can be supplied when the caller already
-owns the concrete value.
+For your own components, read what React UI uses:
 
-<ComponentPreview
-  previewStyle={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8 }}
-  code={`<Surface color="primary:subtle">subtle</Surface>
-<Surface color="primary:soft">soft</Surface>
-<Surface color="primary:base">base</Surface>
-<Surface color="primary:strong">strong</Surface>
-<Surface color="primary:intense">intense</Surface>`}
->
-  <Surface color="primary:subtle" style={{ padding: 12 }}>subtle</Surface>
-  <Surface color="primary:soft" style={{ padding: 12 }}>soft</Surface>
-  <Surface color="primary:base" style={{ padding: 12 }}>base</Surface>
-  <Surface color="primary:strong" style={{ padding: 12 }}>strong</Surface>
-  <Surface color="primary:intense" style={{ padding: 12 }}>intense</Surface>
-</ComponentPreview>
+```tsx
+import { useAppearance, usePreferences, useThemedValue, useDirection } from "@phreshos/react-ui"
 
-The named sources are `background`, `foreground`, `default`, `primary`,
-`secondary`, `success`, `warning`, `danger`, and `info`. Theme names select
-the source palette. Components that need luminance or contrast inspect the
-resolved colors.
+const appearance = useAppearance()                    // the complete Appearance
+const { theme, animations } = usePreferences()
+const colors = useThemedValue(appearance.colors)      // the branch for the current theme
+const direction = useDirection()
+```
 
-## Color ownership
+`useBrowserPreferences()` returns the browser's own settings, whatever any
+provider says.
 
-Every React UI component that owns a base paint exposes a `color` prop for
-that paint. Omit it to use the component's Appearance-derived default, or pass
-a semantic color or direct CSS color to replace that base. Compound parts with
-an independently meaningful paint, such as `Table.Header`, expose their own
-`color` prop.
+## Reference
 
-The omitted color follows the component's meaning. A component without an
-inherent color meaning uses `default:base`; a component with a specific role
-may select the corresponding Appearance color. For example,
-`Window.Header.Close` defaults to `danger:base`. These defaults never prevent
-an explicit `color` override.
-
-Hover, pressed, focused, selected, inactive, and similar interaction states
-are derived from the owning component's base color. They are not separate
-palette inputs. This keeps one customization coherent through the complete
-interaction lifecycle. Semantic validation remains semantic: an invalid
-control uses Appearance's `danger` color.
-
-## Material and motion
-
-`appearance.material` supplies opacity, backdrop, grain, grain amount,
-distortion, and saturation independently for each theme. A component can
-override only the material values it needs through its `material` prop. Color
-selects paint; material selects substance. Each override may be a scale level
-or a number; numbers are clamped to the Appearance material limits.
-
-`appearance.transaction` provides the duration and easing used for material,
-control-state, and overlay changes. When preferences disable animations,
-React UI uses a duration of zero without modifying Appearance.
+| Export | Result |
+| --- | --- |
+| `UIProvider` | Sets `appearance`, `preferences`, and `direction` for its children |
+| `defaultAppearance`, `appearanceLimits` | The default values and their ranges |
+| `useAppearance()` | The Appearance in effect |
+| `usePreferences()` | The preferences in effect |
+| `useBrowserPreferences()` | The browser's preferences |
+| `useThemedValue(value)` | The branch of a themed value for the current theme |
+| `useDirection()`, `useDocumentDirection()` | The direction in effect, and the document's |

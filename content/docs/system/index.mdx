@@ -1,57 +1,71 @@
 ---
 title: Overview
-description: The authoritative System and the capabilities it provides.
+description: What the System provides to Programs, and how to reach it.
 icon: MonitorCog
 ---
 
-The System is the authority behind PhreshOS. It turns the runtime contracts
-into one shared environment: it owns software identity and execution, routes
-communication, persists state, controls access to the host, and decides which
-Program capabilities are visible. A Desktop represents that environment
-graphically; it is not a second source of runtime state.
+The System is PhreshOS itself: the service running on your machine. It keeps
+Programs running, carries their messages, stores their data, controls what they
+may access, and serves the Desktop.
 
-The `system` object is the common entry point in Client, Server, and Node.
-Client and Server Endpoints use the permission state of their Program; an
-owner-local Node connection is trusted. The capability names and returned
-domain handles remain the same.
+Everything it offers is reached through one object, `system`. It is the same
+in a Client, a Server, and a Node script; only the permissions that apply
+differ.
 
 ```ts
-const programs = await system.program.list()
-const processes = await system.process.list()
+import { system } from "@phreshos/server"   // or @phreshos/client, or System.connect() in Node
 
-console.log(programs.length, processes.length)
+const programs = await system.program.list()
+const appearance = await system.appearance.snapshot()
 ```
 
-The capabilities fall into three roles:
+## What it provides
 
-- `system.program`, `system.process`, and `system.service` expose the runtime
-  graph and its communication addresses.
-- `system.authentication` exposes the public authentication state and the
-  observable Connection and Session registries.
-- `system.storage`, `system.uploads`, `system.logs`, `system.appearance`,
-  `system.network`, and `system.shell()` mediate persistent or host-owned
-  resources.
+| Capability | For |
+| --- | --- |
+| `system.program`, `system.process`, `system.service` | Programs, their running Processes, and Services; see [Runtime](/runtime) |
+| [`system.appearance`](/system/appearance) | The shared visual settings |
+| [`system.storage`, `system.uploads`](/system/storage) | Files on the machine, and uploaded files |
+| [`system.logs`](/system/logs) | The System log |
+| [`system.network`](/system/network) | HTTP requests and WebSockets |
+| [`system.shell()`](/system/shell) | Operating-system commands |
+| [`system.authentication`](/system/security/authentication) | The owner, Connections, and Sessions |
+| [`system.permissions`](/system/security/permissions#decide-requests) | Pending permission requests |
+| [`system.execute()`](/sdks/core/execute) | The same operations as JSON, for tools and agents |
 
-Collections expose snapshots for current state and subscriptions for later
-changes. Every read returns only the domain objects visible to the caller;
-having a `system` root does not itself expand that scope.
+## What you see depends on who you are
 
-`system.service` can also prepare a stable address handle before its provider
-is available. `system.shell()` runs a command whose lifetime is owned by its
-returned iterator. `system.execute()` is the JSON form of selected operations,
-documented under [Execute](/sdks/core/execute).
+A Program sees only what its [permissions](/system/security/permissions)
+allow. Lists leave out what it cannot see, and lookups return `null`, so
+having `system` does not by itself reveal anything.
 
-External Node tools and the CLI connect through an owner-local gateway. On
-POSIX it is a Unix-domain socket; on Windows it is an owner-created named
-pipe. This gateway is an external trusted transport, not a browser Connection
-or an authentication Session.
+Node scripts and the CLI connect as the owner and see everything.
+
+## Current state and changes
+
+Each capability lets you read the current state, and subscribe to what
+changes next:
+
+```ts
+const processes = await system.process.list()
+system.process.subscribe("create", process => {})
+```
+
+Subscriptions only report changes from now on, so read first, then subscribe.
+
+## The Desktop
+
+The [Desktop](/system/desktop) is the System's interface in the browser. It
+shows what the System holds, but the state lives in the System: the browser
+does not own the lifecycle of Programs or Processes, and several Desktops can
+show the same System at once.
 
 <Cards>
-  <Card title="Desktop" description="The graphical System environment, its state, and Client presentation." href="/system/desktop" />
-  <Card title="Appearance" description="The complete visual source and its resolution." href="/system/appearance" />
-  <Card title="Storage" description="Native files, uploads, and Program-owned persistence." href="/system/storage" />
-  <Card title="Logs" description="Durable System and Program records with live observation." href="/system/logs" />
-  <Card title="Network" description="Fetch and WebSocket through System authority." href="/system/network" />
-  <Card title="Shell" description="Owned operating-system command execution." href="/system/shell" />
-  <Card title="Security" description="Authentication, Program authority, and execution isolation." href="/system/security" />
+  <Card title="Desktop" description="Windows, layers, and Desktop preferences." href="/system/desktop" />
+  <Card title="Appearance" description="Colors, spacing, material, Taskbar, wallpapers." href="/system/appearance" />
+  <Card title="Storage" description="Files, uploads, key-value store, SQLite." href="/system/storage" />
+  <Card title="Network" description="Fetch and WebSocket under permissions." href="/system/network" />
+  <Card title="Shell" description="Run operating-system commands." href="/system/shell" />
+  <Card title="Logs" description="System and Program records." href="/system/logs" />
+  <Card title="Security" description="Authentication, permissions, execution modes." href="/system/security" />
 </Cards>

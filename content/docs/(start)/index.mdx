@@ -1,16 +1,16 @@
 ---
 title: Quick start
-description: Install PhreshOS, start the System, and create a Program.
+description: Install PhreshOS and run your first Program in four steps.
 icon: Rocket
 ---
-
-You need Node.js `24.15.0` or newer on macOS, Linux, or Windows.
 
 <Steps>
 
 <Step>
 
-### Install the CLI
+### Install PhreshOS
+
+You need Node.js `24.15.0` or newer.
 
 <Tabs items={["npm", "pnpm", "Bun", "Yarn Classic"]} groupId="package-manager" persist>
   <Tab value="npm">
@@ -35,19 +35,20 @@ You need Node.js `24.15.0` or newer on macOS, Linux, or Windows.
   </Tab>
 </Tabs>
 
-</Step>
-
-<Step>
-
-### Install the System
-
 ```sh
 phresh system install
 ```
 
-This installs the official release, registers a per-user native service, and
-starts it. It prints the Desktop address. The first visit to that address
-creates the owner account.
+This installs the System, starts it, and prints the Desktop address.
+
+</Step>
+
+<Step>
+
+### Open the Desktop
+
+Open the printed address in your browser, usually `http://localhost:4300`,
+and create your owner account.
 
 </Step>
 
@@ -56,19 +57,31 @@ creates the owner account.
 ### Create a Program
 
 ```sh
-phresh create
+phresh create my-program
 ```
 
-The terminal guides you through the available choices and prints the remaining
-instructions.
+The folder name becomes the Program's identity. Answer the remaining
+questions, or press Enter to accept the defaults.
+
+</Step>
+
+<Step>
+
+### Run it
+
+```sh
+cd my-program
+phresh dev
+```
+
+Your Program's Window opens in the Desktop. Press `Ctrl+C` in the terminal to
+stop it.
 
 </Step>
 
 </Steps>
 
 <Cards>
-  <Card title="What is PhreshOS?" description="The System, the Desktop, and the four runtime components." href="/what-is-phreshos" />
-  <Card title="Runtime" description="Programs, Processes, Endpoints, Services, and communication." href="/runtime" />
-  <Card title="System" description="Authority, Desktop, Appearance, storage, and permissions." href="/system" />
-  <Card title="SDKs" description="Client, Server, Node, CLI, and React." href="/sdks" />
+  <Card title="Your first Program" description="Understand what you just ran, change it, and install it." href="/first-program" />
+  <Card title="What is PhreshOS?" description="The idea behind the System and the Desktop." href="/what-is-phreshos" />
 </Cards>

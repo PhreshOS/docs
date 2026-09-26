@@ -1,62 +1,47 @@
 ---
 title: Progress Bar
-description: Communicate determinate progress or ongoing activity.
+description: Show how far an operation has come, or that it is still running.
 ---
 
 <ProgressBarShowcase />
 
-Use `ProgressBar` to communicate how an operation is advancing. It reports
-status but does not let the user change the value.
+`ProgressBar` shows progress. It only reports; people cannot change it.
 
 ```tsx
 <ProgressBar label="Uploading archive" value={64} />
 ```
 
-## Determinate progress
+## Measured progress
 
-`value` is interpreted within `minValue` and `maxValue`. Their defaults are
-`0` and `100`. Values outside the range are constrained by the underlying
-progress contract, and the rendered fill represents the resulting percentage.
-
-```tsx
-<ProgressBar
-  label="Files copied"
-  value={3}
-  minValue={0}
-  maxValue={8}
-  valueLabel="3 of 8"
-/>
-```
-
-Use `formatOptions` when the generated value should follow a different
-`Intl.NumberFormat` representation. Use `valueLabel` when the operation has a
-more useful domain-specific description.
-
-## Indeterminate progress
-
-Use `indeterminate` when an operation is active but its remaining work cannot
-be measured. In this state the progress bar does not expose a current numeric
-value.
+`value` sits between `minValue` and `maxValue`, `0` and `100` by default. The
+bar fills with `primary` in a recessed track.
 
 ```tsx
-<ProgressBar aria-label="Connecting to System" indeterminate />
+<ProgressBar label="Files copied" value={3} maxValue={8} valueLabel="3 of 8" />
 ```
 
-The moving indicator follows animation preferences. When animations are
-disabled, the component retains a static indeterminate indicator without
-inventing a numeric value.
+The shown value is a percentage by default. `valueLabel` replaces it with your
+own text, and `formatOptions` changes its number format.
 
-## Selected props
+## Unknown progress
 
-| Prop | Default | Use |
+When work is running but you cannot measure it, use `indeterminate`:
+
+```tsx
+<ProgressBar aria-label="Connecting to the System" indeterminate />
+```
+
+It moves continuously, and stays still when animations are off.
+
+Use [`Spinner`](/sdks/react-ui/components/spinner) where there is little room.
+
+## Props
+
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `value` | `0` | Set determinate progress. |
-| `minValue` | `0` | Set the beginning of the range. |
-| `maxValue` | `100` | Set the end of the range. |
-| `indeterminate` | `false` | Represent activity whose progress is unknown. |
-| `valueLabel` | generated percentage | Provide explicit visible and accessible value text. |
-| `formatOptions` | percent | Format generated value text. |
-| `color` | `default:base` | Select the indicator color. |
-| `size` | `medium` | Derive typography and track thickness. |
-
-Provide `aria-label` or `aria-labelledby` when there is no visible `label`.
+| `value`, `minValue`, `maxValue` | `0`, `0`, `100` | Progress |
+| `indeterminate` | `false` | Running, but unmeasured |
+| `label` | — | The visible label; or use `aria-label` |
+| `valueLabel`, `formatOptions` | A percentage | The shown value |
+| `color` | `"primary"` | The fill |
+| `size`, `material` | `"medium"`, `"basic"` | Its size and track material |

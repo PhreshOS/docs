@@ -1,37 +1,40 @@
 ---
 title: Contract discovery
-description: Read the CLI command contract as data.
+description: Read every phresh command's definition as structured data.
 ---
 
-`phresh describe` returns the CLI's own command contract. It does not contact
-the System. Use it when a tool needs command names, aliases, options, examples,
-or output shape without parsing `--help` text.
+`phresh describe` returns the definition of a command as data: its name,
+aliases, arguments, options, examples, and output. Tools and agents use it to
+learn the CLI without parsing `--help` text.
 
 ```sh
-phresh describe
-phresh describe process create
-phresh describe --all --json
+phresh describe                        # the top-level commands
+phresh describe process create         # one command
+phresh describe --all --json           # every command, as JSON
 ```
 
-Omit the path to start at the CLI root. Add `--all` to retrieve the complete
-selected contract tree. Add `--json` to receive the structured value rather
-than its terminal presentation.
+It works without a running System.
 
-Each description states the selected path, aliases, arguments, options,
-guidance, examples, whether the command requires a running System, its output
-contract, and its child commands. Option descriptions retain whether a value is
-required or repeatable together with any allowed choices and default.
+## What a description contains
+
+- the command path and its aliases, such as `set-geometry` for `setGeometry`;
+- its arguments and options, with whether each is required, repeatable, its
+  allowed choices, and its default;
+- guidance and examples;
+- whether it needs a running System;
+- the shape of its output, and its subcommands.
+
+`--help` is generated from the same definitions, so both always agree.
+
+## CLI commands and System operations
+
+`phresh describe` covers the commands of the CLI. The operations of the System
+itself are described by [Execute](/sdks/core/execute):
 
 ```sh
-phresh describe endpoint ask --json
+phresh operation list
+phresh operation describe --domain endpoint --operation ask
 ```
 
-Human `--help` and structured `describe` output are generated from the same
-command declarations. Invalid command paths and options therefore lead back to
-the same contract rather than a separate handwritten help system.
-
-This is the CLI's command catalog. The System's operation catalog is
-[Execute](/sdks/core/execute), discovered with `phresh operation list` and
-`phresh operation describe`. Runtime commands reuse those operation
-descriptions, while project and native System-management commands remain part
-of the broader CLI catalog.
+The runtime commands are built from those operations, so their descriptions
+match.

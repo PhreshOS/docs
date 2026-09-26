@@ -1,127 +1,169 @@
 ---
 title: Endpoints
-description: The permanent Server and Client execution addresses inside a Process.
+description: The Server and Client of a Process, which can start, stop, and restart independently.
 icon: Unplug
 ---
 
-An Endpoint is one permanent execution role inside a Process. The handle names
-the role; a running execution context is one temporary incarnation performing
-that role. Keeping those concepts separate lets callers subscribe, wait, and
-address the Endpoint before it starts and across later restarts.
+An Endpoint is one of the two roles inside a [Process](/runtime/processes):
 
-Every Process therefore exposes both Server and Client Endpoint handles. The
-handle itself carries no initial execution data and does not claim that the
-Program declared or started that role. Operations that need a declared or live
-Endpoint validate that condition when they run.
+- the **Server** runs on the host, keeps working without a browser, and
+  answers questions;
+- the **Client** is the Program's interface, shown in a Desktop Window.
 
-`running()` reports whether the Endpoint currently has an execution context.
-`endpoint.lifecycle` publishes `start` and `stop` whenever that context
-changes.
-
-## Shared behavior
-
-Both Endpoint kinds can publish application events, observe messages, inspect
-their outgoing traffic, find their owning Process, and report whether their
-current execution context is a Service.
+Each role can be started and stopped on its own while the Process keeps
+running. The handle you hold, `process.server` or `process.client`, stays the
+same across those starts and stops.
 
 ```ts
-const client = process.client
-
-client.lifecycle.subscribe("start", () => console.log("Client started"))
-
-await client.start()
-await client.waitReady()
+await process.client.start()
+await process.server.ask("status")
 ```
 
-`process()` returns the owning Process. `subscribe()`, `wait()`, and
-`events()` observe application publications addressed to this Endpoint;
-`publish()` sends a publication to it. Lifecycle observation is intentionally
-separate under `endpoint.lifecycle`, so application event names cannot collide
-with `start` or `stop`.
+## One handle, many runs
 
-`waitReady()` waits for an execution context that can be used. A Client is
-ready when it is running. A Server must also announce readiness after its SDK
-can receive IPC traffic; until then there is no Server answer registration to
-retain incoming questions, so sending them would lose work. The default
-deadline is ten seconds. Temporary absence remains waitable while the owning
-Process exists.
+`process.server` and `process.client` always exist, even when that Endpoint
+is stopped or the Program does not declare it. Each time an Endpoint starts,
+a new run of its code begins behind the same handle.
 
-Readiness is current state, not a consumed event. Two concurrent
-`waitReady()` calls waiting on the same incarnation resolve together. A later
-call resolves immediately while the Endpoint remains ready and waits again
-after it stops.
-
-`start()` ensures that an execution context is running. If one already exists, the
-call resolves without replacing it or publishing another lifecycle event;
-launch values configure a context only when one must be created.
-`stop()` resolves when the execution context is already absent. Every
-Promise-based operation through the Endpoint handle rejects when the Process
-has ended or the Program never declared that Endpoint kind. Stopping rejects if it would remove the
-Process's final live Endpoint. Stopping never exits the Process.
-
-## Server Endpoint
-
-The Server Endpoint runs host-side code and answers questions.
-`ask(event, payload?)` sends a question to the current Server execution context.
-`timeout(milliseconds)` selects another deadline.
-
-`ask()` first waits for the current Server incarnation to become ready, then
-sends the question. If that incarnation stops first, the operation rejects
-rather than silently moving the question to a later run. The same deadline
-covers readiness and the answer.
+This lets you subscribe to an Endpoint, or wait for it, before it starts and
+across restarts, without replacing the handle each time.
 
 ```ts
-const health = await process.server.ask("health.read")
+await process.client.running()   // whether it runs now
+await process.client.isService() // whether the current run is a Service
+await process.client.process()   // the owning Process
 ```
 
-A Server declaration chooses one execution mechanism: a supervised operating
-system command, an ECMAScript module loaded in a Node.js Worker, or a bundled
-module loaded in a capability-contained Sandbox. These mechanisms have the
-same Server SDK and Endpoint contract. They differ in the host authority
-available outside the System API. See [Endpoint Execution](/system/security/execution).
+Operations on the handle reject when the Process has exited or when the
+Program never declared that Endpoint.
 
-`server.start({ service: true })` may override the Service role for that new
-execution context.
+## Start and stop
 
-## Client Endpoint
-
-The Client Endpoint owns a permanent authoritative `window` value. Each
-running execution context presents through a Desktop iframe. The Client
-declaration's `sandbox` value determines how that document executes: omission
-uses a sandboxed iframe, while `false` removes the sandbox attribute.
-
-A Client may be represented by more than one Desktop context. Publications
-and future events can be observed across those contexts, but a question would
-not identify one unambiguous Client answerer. For that reason Clients receive
-publications while the request-and-answer contract belongs to Servers.
-
-Its launch can choose the Service role and the initial title, header
-state, size, position, layer, minimized state, and maximized state.
+`start()` makes sure the Endpoint runs. If it already runs, nothing changes.
 
 ```ts
-await process.client.start({
-  title: "Inspector",
-  layer: "over",
-  size: { width: 520, height: 420 },
-})
+await process.server.start()
+await process.client.start({ title: "Inspector", size: { width: 520, height: 420 } })
 ```
 
-The iframe loads `/program/<assetId>/assets/`. In production, that address
-serves installed Client files. During development, the System proxies the
-declared Client development server through the same address, including its
-WebSocket traffic.
+The settings you pass apply only when a new run has to be created. They use
+the same fields as the [launch](/runtime/processes#create-a-process) of a
+Process.
+
+`stop()` makes sure the Endpoint does not run, and releases what its run
+held. If it already stopped, nothing changes.
+
+```ts
+await process.client.stop()
+```
+
+Stopping one Endpoint never exits the Process. For the same reason, you
+cannot stop the last running Endpoint: exit the Process instead.
+
+## Wait until it is ready
+
+Starting is not the same as being ready to use. `waitReady()` resolves when
+the Endpoint can be used:
+
+- a Client is ready as soon as it runs;
+- a Server is ready once its code has started and connected to the System.
+  Questions sent before that moment would have nowhere to go.
+
+```ts
+await process.server.start()
+await process.server.waitReady()
+```
+
+The default deadline is ten seconds; pass milliseconds to change it. While the
+Process exists, `waitReady()` keeps waiting through a temporary stop. Several
+callers waiting at once resolve together, and a call made while the Endpoint
+is already ready resolves immediately.
+
+## Observe starts and stops
+
+`lifecycle` reports each time a run starts or stops:
+
+```ts
+process.client.lifecycle.subscribe("start", () => {})
+process.client.lifecycle.subscribe("stop", () => {})
+```
+
+Lifecycle events are kept apart from the Endpoint's own events, so an
+application event named `start` or `stop` never collides with them.
+
+## The Server
+
+The Server runs host-side code: background work, file access, network access,
+and anything that must continue when no Window is open.
+
+It is the Endpoint you can ask questions. `ask()` waits for the Server to be
+ready, sends the question, and resolves with its answer:
+
+```ts
+const notes = await process.server.ask("notes.list")
+const saved = await process.server.timeout(30_000).ask("notes.save", note)
+```
+
+If the Server run stops before answering, the question rejects rather than
+moving to a later run. One deadline covers both waiting and answering. See
+[Ask a Server](/runtime/communication#ask-a-server).
+
+The Program chooses how its Server runs: as an operating-system command, as a
+module in a Node.js Worker, or as a module in a Sandbox with limited host
+access. The code and the API are the same in all three. See
+[Endpoint execution](/system/security/execution).
+
+If a Server stops unexpectedly, its whole Process ends. See
+[Exit a Process](/runtime/processes#exit-a-process).
+
+## The Client
+
+The Client is the Program's interface. Each run is a web page shown in a
+Desktop Window, in a sandboxed iframe unless the Program declares
+`sandbox: false`.
+
+`process.client.window` is a permanent handle, like the Endpoint handle
+itself. Its values are not: each run starts with a fresh Window, set from the
+Program's declaration and the settings passed to `start()`. A restarted Client
+does not keep the previous run's position or size.
+
+```ts
+const window = process.client.window
+await process.client.start({ size: { width: 900, height: 640 } })
+```
 
 See [Desktop](/system/desktop) for Windows.
 
-## Traffic
+A Client receives messages but does not answer questions. The same Client can
+be open on several Desktops at once, so a question would have no single
+Client to answer it. Ask the Server instead.
 
-`endpoint.traffic` observes communication originating from that Endpoint.
-Publications appear as `{ to, payload }`. Questions appear through
-`subscribeAsks()` and `asks()`. A Server's traffic can additionally observe
-answers through `subscribeAnswers()` and `answers()`. An identity outside the
-observer's authority is `null`.
+## Becoming a Service
 
-Ask and answer captures contain the application event and a `questionId` that
-correlates the pair. An answer outcome is either a successful `result` or a
-failed error string. Traffic subscriptions are observation only: they neither
-consume the value nor affect delivery to the destination.
+An Endpoint run marked as a Service can be discovered and reached by other
+Programs:
+
+```ts
+await program.createProcess({ name: "sync", server: { service: true } })
+```
+
+The Service setting applies to one run. It comes from the Program's
+declaration unless a launch or `start()` overrides it. See
+[Services](/runtime/services).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `start(launch?)` | Ensures the Endpoint runs |
+| `stop()` | Ensures the Endpoint does not run |
+| `running()` | Whether it runs now |
+| `waitReady(timeout?)` | Resolves when it can be used |
+| `isService()` | Whether the current run is a Service |
+| `process()` | The owning Process |
+| `lifecycle` | `start` and `stop` events |
+| `publish(event, payload?)` | Sends a message to the Endpoint; see [Communication](/runtime/communication) |
+| `subscribe`, `wait`, `events` | What the Endpoint announces with `context.publish()` |
+| `traffic` | What the Endpoint sends; see [Communication](/runtime/communication#observe-traffic) |
+| `server.ask(event, payload?)`, `server.timeout(ms)` | Ask the Server a question |
+| `client.window` | The Client's Window |

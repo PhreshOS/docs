@@ -1,54 +1,51 @@
 ---
 title: Disclosure
-description: Reveal and hide one region of supporting content.
+description: Show and hide one section of content with a trigger.
 ---
 
 <DisclosureShowcase />
 
-Disclosure connects one trigger to one collapsible content region. It is useful
-when supporting information should remain available without occupying permanent
-space.
+`Disclosure` hides content behind a trigger, for details that should be
+available without taking space all the time.
 
 ```tsx
-<Disclosure defaultExpanded>
+<Disclosure>
   <Disclosure.Trigger>Connection details</Disclosure.Trigger>
-  <Disclosure.Content>
-    Connected through the encrypted System transport.
-  </Disclosure.Content>
+  <Disclosure.Content>Connected to the System on this machine.</Disclosure.Content>
 </Disclosure>
 ```
 
-The trigger owns pointer and keyboard activation and communicates its expanded
-state to assistive technology. The content is unavailable to focus while it is
-collapsed.
+The trigger works with the mouse and the keyboard, and tells screen readers
+whether the content is shown. Hidden content cannot receive focus.
 
-## Controlled state
-
-Use `expanded` with `onChange` when application state owns whether the content
-is visible. Use `defaultExpanded` for an initially open uncontrolled
-Disclosure.
+## Open state
 
 ```tsx
-const [expanded, setExpanded] = useState(false)
+<Disclosure defaultExpanded>…</Disclosure>
 
-<Disclosure expanded={expanded} onChange={setExpanded}>
-  <Disclosure.Trigger>Advanced options</Disclosure.Trigger>
-  <Disclosure.Content>...</Disclosure.Content>
-</Disclosure>
+const [expanded, setExpanded] = useState(false)
+<Disclosure expanded={expanded} onExpandedChange={setExpanded}>…</Disclosure>
 ```
 
-`disabled` prevents the trigger from changing state. The current expanded state
-is preserved.
+`disabled` stops the trigger from changing it, keeping its current state.
 
-## Appearance and layout
+## Look
 
-`color`, `size`, and `radius` configure the shared trigger presentation using
-the active Appearance. `Disclosure.Content` accepts `padding`, using the same
-semantic spacing levels as the layout components.
+The trigger is transparent by default and shows a veil on hover. `color`,
+`size`, and `radius` style it. `Disclosure.Content` takes a `padding`.
 
-Expansion uses the Appearance transaction and respects the animation
-preference. React UI animates the content's actual measured height, so content
-does not need a fixed height and the duration is not used as a timing guess.
+Opening animates the content's real height with the Appearance timing, and is
+immediate when animations are off.
 
-Disclosure does not add a Surface around the revealed content. Compose a
-Surface inside the content when that content itself owns a material boundary.
+The content has no background. Put a Surface inside it if it needs one.
+
+For several sections where one opens at a time, use
+[`Accordion`](/sdks/react-ui/components/accordion).
+
+## Parts
+
+| Part | Props |
+| --- | --- |
+| `Disclosure` | `expanded`, `defaultExpanded`, `onExpandedChange`, `disabled`, `color` (`"transparent"`), `size`, `radius` |
+| `Disclosure.Trigger` | Its label |
+| `Disclosure.Content` | `padding` |

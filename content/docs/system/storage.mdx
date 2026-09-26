@@ -1,134 +1,209 @@
 ---
 title: Storage
-description: Native files, uploads, and persistence owned by each Program.
-icon: Database
+description: Files, uploads, key-value state, and SQLite for Programs and the System.
+icon: HardDrive
 ---
 
-PhreshOS separates persistence by meaning rather than forcing every value
-through one storage API:
+PhreshOS gives each kind of data its own place:
 
-| Capability | Use it for |
+| Use | For |
 | --- | --- |
-| `Storage` | directories, files, streams, and native filesystem operations |
-| `uploads` | immutable public files addressed by opaque keys |
-| `program.store` | small structured values addressed by keys, optionally expiring |
-| `program.database` | relational Program data queried with SQLite |
-| `program.logs` | durable captured Endpoint output; see [Logs](/system/logs) |
+| `program.data`, `program.cache` | Your Program's own files |
+| `system.storage` | Files anywhere on the machine, with permission |
+| `program.store` | Small values by key, optionally expiring |
+| `program.database` | Structured data in SQLite |
+| `system.uploads` | Files shared by key, such as wallpapers |
 
-Choosing between them is part of the data contract. An upload key, for
-example, is stable public content; it is not a general writable file path.
-
-## Selecting a location
-
-A `Storage` value is a directory location. A `StorageFile` is a file
-location. `navigate()` and `file()` only derive new handles; they perform no
-filesystem access and preserve the boundary of the Storage from which they
-came.
+Captured output of your Endpoints is in `program.logs`; see
+[Logs](/system/logs).
 
 ```ts
-const reports = system.storage.navigate("Documents", "reports")
-const today = reports.file("today.json")
-
-await reports.create()
-await today.write({ complete: true })
+await program.data.file("settings.json").write({ theme: "dark" })
+await program.store.set("draft", { title: "Untitled" })
+const rows = await program.database.query("SELECT * FROM notes")
 ```
 
-`name()` and `path()` return the selected location. `stat()` returns metadata
-or `null` when the entry does not exist.
+## Your Program's files
 
-## Directories and files
+Every Program has two folders of its own, shared by all of its Processes:
 
-A directory can be created, listed, copied, moved, deleted, or cleared.
-`space()` reports filesystem capacity, available bytes, and used bytes.
-`watch()` yields ordered `change` and `rename` events until its signal is
-aborted or iteration ends.
-
-`list()` returns immediate children by default. `recursive: true` includes
-descendants, and `depth` can cap that recursive traversal.
-`clear()` removes the contents while preserving the selected directory;
-`delete()` removes the selected entry itself.
-
-```ts
-for await (const change of reports.watch({ recursive: true })) {
-  console.log(change.event, change.path)
-}
-```
-
-A file can be read as a stream, bytes, UTF-8 text, or parsed JSON. Byte reads
-accept an offset and length. `write()` replaces the file atomically and
-permits overwrite by default; `append()` extends it. `copy()` and `move()`
-reject an existing destination unless `overwrite: true` is supplied.
-
-Writable content may be JSON data, a `Blob`, an `ArrayBuffer`, an
-`ArrayBufferView`, or a `ReadableStream<Uint8Array>`.
-
-## Native and Program boundaries
-
-`system.storage` begins at the operating-system user's home directory. It is
-an entry point, not a containment boundary: an absolute path may select
-another native location.
-
-A Program needs a `storage` scope covering every native operation and path it
-uses. An owner-local Node connection runs native storage in the Node process.
-
-Every Program exposes `data` and `cache` through the same Storage contract.
-Their implementations are contained within Program-owned roots. `data` is
-durable; `cache` is disposable. All Processes belonging to the Program share
-both.
+- `program.data` for files to keep;
+- `program.cache` for files that can be recreated and may be deleted.
 
 ```ts
 const settings = program.data.file("settings.json")
-const cachedIndex = program.cache.file("search", "index.bin")
+
+await settings.write({ theme: "dark" })
+const value = await settings.json()
 ```
 
-Program `data` and `cache` follow Program visibility. Returning any native
-absolute path to a Program through `path()` requires a matching `storage`
-scope.
-
-A storage permission value is a path, optionally prefixed with
-`read,write,delete` operations. A bare path grants all three. A recursive
-suffix `/**` must be the final segment.
-
-## Uploads
-
-`system.uploads` stores public files under opaque generated keys. It is flat:
-there is no directory navigation, listing, deletion, or clearing contract.
+Inside an Endpoint, reach them through your Program:
 
 ```ts
-const upload = await system.uploads.write(imageBlob)
-const bytes = await system.uploads.bytes(upload.file)
+const program = await context.program()
+const index = program.cache.file("search", "index.bin")
 ```
 
-A Program needs the `uploads` permission to create an upload. Keys have the
-form `uuid.ext`. `write()` returns the key together with the stored file's
-size and modification time. `stat(file)` returns that metadata later, or `null` when
-the key is absent. `stream()`, `bytes()`, `text()`, and `json()` read the same
-file in the representation the caller needs.
+Your own `data` and `cache` need no permission.
 
-`path()` returns the native upload directory. Exposing that host path to a
-Program requires a covering `storage` permission; creating uploads and reading
-their contents continue to use the separate upload contract. In the Desktop,
-public upload responses are served from `/uploads/<encoded-key>` with immutable
-caching because an existing key never changes. Wallpapers in Appearance are
-upload keys; see [Appearance](/system/appearance) for their supported formats.
+## Work with folders and files
 
-## Store and SQL
+A folder is a `Storage` and a file is a `StorageFile`. Selecting one only
+builds a handle; nothing touches the disk until you call an operation.
 
-`program.store` is key-value state with optional expiry. `program.database`
-is writable SQLite. Each database `query` runs one statement.
+```ts
+const reports = program.data.navigate("reports", "2026")
+const today = reports.file("today.json")
+```
+
+### Files
+
+```ts
+await today.write({ done: true })          // replace the file, atomically
+await today.append("\nmore")               // add to the end
+await today.json()                         // parse as JSON
+await today.text()                         // read as text
+await today.bytes({ offset: 0, length: 64 }) // read some bytes
+await today.stream()                       // read as a stream
+await today.stat()                         // { size, modifiedAt }, or null
+await today.delete()
+```
+
+`write()` and `append()` accept JSON data, a `Blob`, an `ArrayBuffer`, a typed
+array, or a `ReadableStream<Uint8Array>`.
+
+### Folders
+
+```ts
+await reports.create()                        // with missing parents
+await reports.list()                          // direct children
+await reports.list({ recursive: true, depth: 2 })
+await reports.clear()                         // empty it, keep the folder
+await reports.delete()                        // remove it
+await reports.space()                         // { capacity, available, used }
+```
+
+### Copy and move
+
+```ts
+await today.copy(reports.file("backup.json"))
+await reports.move(program.data.navigate("archive"))
+await today.copy(target, { overwrite: true })
+```
+
+Copying and moving never replace an existing destination unless you pass
+`overwrite: true`. Deleting something that does not exist succeeds.
+
+### Watch for changes
+
+```ts
+for await (const change of reports.watch({ recursive: true })) {
+  console.log(change.event, change.path)   // "change" or "rename"
+}
+```
+
+Pass a `signal` to stop watching.
+
+## Files on the machine
+
+`system.storage` starts at the home folder of the user running PhreshOS, and
+can reach any path:
+
+```ts
+const documents = system.storage.navigate("Documents")
+const absolute = system.storage.navigate("/var/data")
+```
+
+It works exactly like your Program's folders, but every operation requires
+the `storage` permission for that path. A permission value is a path,
+optionally limited to some operations:
+
+| Value | Allows |
+| --- | --- |
+| `Documents/**` | Read, write, and delete anything under `Documents` in the home folder |
+| `read:Documents/**` | Only read under `Documents` |
+| `read,write:/var/data/report.txt` | Read and write one file |
+
+A relative path starts at the home folder; `~` is not expanded. `/**` covers
+everything below a folder and must come last. See
+[Permissions](/system/security/permissions).
+
+A Node script connected as the owner accesses these files directly, without
+permissions.
+
+## Key-value store
+
+`program.store` keeps small values by key, shared by all of the Program's
+Processes:
 
 ```ts
 await program.store.set("draft", { title: "Untitled" })
-const rows = await program.database.query("SELECT title FROM drafts WHERE complete = ?", [false])
+await program.store.set("session", token, 60_000)   // expires after 60 seconds
+await program.store.get("draft")                    // the value, or undefined
+await program.store.has("draft")
+await program.store.delete(["draft", "session"])
+await program.store.clear()
 ```
 
-`store.get(key)` returns `undefined` when the key is absent. `set()` accepts an
-optional time-to-live in milliseconds and reports whether the value was
-written. `has()`, `delete()`, and `clear()` provide the corresponding
-existence and removal operations; `delete()` accepts one key or an array of
-keys.
+## SQLite database
 
-The writable database uses parameterized SQL through
-`query(statement, values?)`. Use bound values rather than interpolating
-untrusted data into a statement. The separate read-only SQL and live event
-contract for System and Program records is described under [Logs](/system/logs).
+`program.database` is a SQLite database owned by the Program. Each `query`
+runs one statement:
+
+```ts
+await program.database.query("CREATE TABLE IF NOT EXISTS notes (id TEXT, title TEXT)")
+await program.database.query("INSERT INTO notes VALUES (?, ?)", ["1", "Hello"])
+
+const notes = await program.database.query<{ id: string, title: string }>(
+  "SELECT * FROM notes WHERE title = ?",
+  ["Hello"],
+)
+```
+
+Pass values as parameters instead of building them into the statement. A
+template literal does this for you:
+
+```ts
+const title = "Hello"
+await program.database.query`SELECT * FROM notes WHERE title = ${title}`
+```
+
+## Uploads
+
+`system.uploads` stores files under generated keys, for things other parts of
+the System refer to, such as [wallpapers](/system/appearance#set-a-wallpaper).
+An upload never changes after it is written.
+
+```ts
+const upload = await system.uploads.write(imageBlob)
+// { file: "3f2a…c1.png", size, modifiedAt }
+
+await system.uploads.bytes(upload.file)
+await system.uploads.stat(upload.file)   // or null
+```
+
+Uploads have no folders, listing, or deletion. Writing an upload requires the
+`uploads` permission; reading one by its key does not.
+
+## What happens to the data
+
+| Data | Kept until |
+| --- | --- |
+| `data`, `cache`, `store`, `database`, `logs` | The Program is uninstalled with `purge` |
+| Uploads | The System is uninstalled or reinstalled with `purge` |
+
+See [Install and uninstall](/runtime/programs#install-and-uninstall).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `storage.navigate(...path)`, `file(...path)` | Folder and file handles |
+| `storage.create()`, `list()`, `clear()`, `delete()` | Folder operations |
+| `storage.copy()`, `move()`, `space()`, `watch()`, `stat()` | More folder operations |
+| `file.write()`, `append()`, `delete()`, `copy()`, `move()` | Change a file |
+| `file.bytes()`, `text()`, `json()`, `stream()`, `stat()` | Read a file |
+| `name()`, `path()` | The last path part, or the absolute path |
+| `program.store.get()`, `set()`, `has()`, `delete()`, `clear()` | Key-value state |
+| `program.database.query(statement, values?)` | Run one SQL statement |
+| `system.uploads.write()`, `bytes()`, `text()`, `json()`, `stream()`, `stat()` | Uploads |

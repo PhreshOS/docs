@@ -80,11 +80,12 @@ export function ControlSelect({
       label={label}
       size="small"
       value={value}
-      options={options}
       onChange={next => {
-        if (next) onChange(next);
+        if (next !== null) onChange(next);
       }}
-    />
+    >
+      {options.map(option => <Select.Item key={option.value} id={option.value}>{option.label}</Select.Item>)}
+    </Select>
   );
 }
 
@@ -100,16 +101,30 @@ export function ControlSwitch({
   return <Switch label={label} size="small" checked={checked} onChange={onChange} />;
 }
 
+/** The empty option leaves a property to the component's own default. */
+export const unset = '';
+
+/** Turns a control value into a prop value: the empty option means "omit it". */
+export function optional<Value>(value: string): Value | undefined {
+  return value === unset ? undefined : value as unknown as Value;
+}
+
+/** Writes ` name="value"` into example code only when the property is set. */
+export function attribute(name: string, value: string | boolean | undefined) {
+  if (value === undefined || value === unset || value === false) return '';
+  return value === true ? ` ${name}` : ` ${name}="${value}"`;
+}
+
 export const colorOptions = [
-  { value: 'background:base', label: 'Background' },
-  { value: 'foreground:base', label: 'Foreground' },
-  { value: 'default:base', label: 'Default' },
-  { value: 'primary:base', label: 'Primary' },
-  { value: 'secondary:base', label: 'Secondary' },
-  { value: 'success:base', label: 'Success' },
-  { value: 'warning:base', label: 'Warning' },
-  { value: 'danger:base', label: 'Danger' },
-  { value: 'info:base', label: 'Info' },
+  { value: unset, label: 'Default' },
+  { value: 'default', label: 'Default color' },
+  { value: 'background', label: 'Background' },
+  { value: 'primary', label: 'Primary' },
+  { value: 'secondary', label: 'Secondary' },
+  { value: 'success', label: 'Success' },
+  { value: 'warning', label: 'Warning' },
+  { value: 'danger', label: 'Danger' },
+  { value: 'info', label: 'Info' },
 ] as const;
 
 export const sizeOptions = [
@@ -121,6 +136,7 @@ export const sizeOptions = [
 ] as const;
 
 export const radiusOptions = [
+  { value: unset, label: 'Default' },
   ...sizeOptions,
   { value: 'full', label: 'Full' },
 ] as const;
@@ -130,4 +146,10 @@ export const materialOptions = [
   { value: 'basic', label: 'Basic' },
   { value: 'extended', label: 'Extended' },
   { value: 'full', label: 'Full' },
+] as const;
+
+export const depthOptions = [
+  { value: 'raised', label: 'Raised' },
+  { value: 'flat', label: 'Flat' },
+  { value: 'recessed', label: 'Recessed' },
 ] as const;

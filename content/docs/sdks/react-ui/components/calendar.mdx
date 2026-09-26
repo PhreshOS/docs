@@ -1,52 +1,26 @@
 ---
 title: Calendar
-description: Select one date from a locale-aware month grid.
+description: Choose a date from a month view.
 ---
 
 <CalendarShowcase />
 
-`Calendar` presents one month and returns a date-only `CalendarDate`. It owns
-month navigation, keyboard movement, focus, selection, locale-aware weekday
-labels, and the visible day grid.
+`Calendar` shows a month to choose a date from. Its value is a
+`CalendarDate`, or `null`.
 
 ```tsx
-import { Calendar } from "@phreshos/react-ui"
 import { parseDate } from "@internationalized/date"
 
-<Calendar
-  aria-label="Release date"
-  defaultValue={parseDate("2026-09-21")}
-/>
+<Calendar aria-label="Release date" value={date} onChange={setDate} />
 ```
 
-The component owns the calendar layout and interaction styling, but not a
-surrounding material boundary. Place it in `Surface`, `Panel`, or another
-container when the calendar needs its own background.
+It handles moving between months, the keyboard, and weekday names in the
+person's locale. The selected day is filled with `primary`.
 
-## Controlled selection
+The Calendar has no background of its own. Put it in a Surface or a Panel if
+it needs one.
 
-Use `value` and `onChange` when application state owns the selected date.
-`value` may be `null`; a user selection passed to `onChange` is a complete
-`CalendarDate`.
-
-```tsx
-const [releaseDate, setReleaseDate] = useState<CalendarDate | null>(null)
-
-<Calendar
-  aria-label="Release date"
-  value={releaseDate}
-  onChange={setReleaseDate}
-/>
-```
-
-`focusedValue` and `onFocusChange` independently control keyboard focus when
-selection and focus must be managed separately. Use `defaultFocusedValue` to
-choose the initially visible month without selecting a date.
-
-## Date availability
-
-Bounds disable dates outside an inclusive interval. `isDateUnavailable`
-marks application-specific dates as unavailable while leaving them visible.
+## Limit the dates
 
 ```tsx
 <Calendar
@@ -57,27 +31,22 @@ marks application-specific dates as unavailable while leaving them visible.
 />
 ```
 
-`firstDayOfWeek` may explicitly select the weekday at which each row begins;
-when omitted, the locale decides. `weeksInMonth` can stabilize the number of
-rows when surrounding layout must not change between months.
+Unavailable dates stay visible but cannot be chosen.
 
-## Selected props
+## Choose the visible month
 
-| Prop | Default | Use |
+`defaultFocusedValue` shows a month without selecting anything.
+`focusedValue` with `onFocusChange` controls which day has keyboard focus.
+`firstDayOfWeek` overrides the locale's first weekday.
+
+## Props
+
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `value` | uncontrolled | Supply a controlled `CalendarDate` or `null`. |
-| `defaultValue` | empty | Set the initial uncontrolled selection. |
-| `onChange` | — | Receive the selected `CalendarDate`. |
-| `focusedValue` | uncontrolled | Control the keyboard-focused date and visible month. |
-| `defaultFocusedValue` | current date | Choose the initial visible month without selecting it. |
-| `minValue` / `maxValue` | unbounded | Restrict selectable dates. |
-| `isDateUnavailable` | — | Mark application-specific dates unavailable. |
-| `firstDayOfWeek` | locale | Override the first weekday. |
-| `readOnly` | `false` | Permit navigation without changing selection. |
-| `disabled` | `false` | Disable calendar interaction. |
-| `color` | `default:base` | Select navigation and selected-day color. |
-| `size` | `medium` | Derive day, navigation, spacing, and typography dimensions. |
-| `radius` | `medium` | Select day-cell corner radius. |
-
-Provide `aria-label` or `aria-labelledby` when no visible label is associated
-with the calendar.
+| `value`, `defaultValue`, `onChange` | — | A `CalendarDate` or `null` |
+| `minValue`, `maxValue`, `isDateUnavailable` | — | Allowed dates |
+| `focusedValue`, `defaultFocusedValue`, `onFocusChange` | Today | The focused day and visible month |
+| `firstDayOfWeek` | The locale's | The first column |
+| `readOnly`, `disabled` | `false` | Its state |
+| `color` | `"primary"` | The selected day |
+| `size`, `radius` | — | Its look |

@@ -1,19 +1,18 @@
 ---
 title: Window
-description: A Surface with a ready header-and-content layout.
+description: A window frame with a title bar, window controls, and a content area.
 ---
 
 <WindowShowcase />
 
-`Window` provides the visual and structural composition of a window: a fixed
-header followed by a content area that fills the remaining space. It does not
-create or control a PhreshOS Window handle. The consumer connects its buttons
-to whichever state owner it uses.
+`Window` draws a window: a title bar with an icon, a title, and controls,
+above a content area that fills the rest. It only draws; you connect its
+controls to whatever manages your window.
 
 ```tsx
 <Window style={{ width: 640, height: 420 }}>
   <Window.Header maximized={maximized} onMaximize={toggleMaximize}>
-    <Window.Header.Identity icon="/icon.png" title="Notes" />
+    <Window.Header.Identity icon="/icon.svg" title="Notes" />
     <Window.Header.Center />
     <Window.Header.Actions>
       <Window.Header.Minimize onPress={minimize} />
@@ -21,38 +20,77 @@ to whichever state owner it uses.
       <Window.Header.Close onPress={close} />
     </Window.Header.Actions>
   </Window.Header>
-
   <Window.Content>
     <Editor />
   </Window.Content>
 </Window>
 ```
 
-## Add application actions
+In a PhreshOS Program, the Desktop already draws your Window. Use this
+component to draw windows yourself, such as in a custom shell or a preview.
 
-Use `Window.Header.Action` for an additional compact action that should match
-the standard controls.
+## The title bar
+
+| Part | Holds |
+| --- | --- |
+| `Window.Header.Identity` | The icon and a title that truncates |
+| `Window.Header.Center` | Optional flexible space, for tabs or a search field |
+| `Window.Header.Actions` | Controls, aligned to the end |
+
+The controls are Buttons:
+
+| Control | Default |
+| --- | --- |
+| `Window.Header.Minimize` | — |
+| `Window.Header.Maximize` | Uses the header's `maximized` and `onMaximize` |
+| `Window.Header.Close` | Colored `danger` |
+| `Window.Header.Action` | Your own compact action |
 
 ```tsx
 <Window.Header.Actions>
   <Window.Header.Action aria-label="Pin" onPress={pin}>
     <PinIcon />
   </Window.Header.Action>
-  <Window.Header.Minimize onPress={minimize} />
   <Window.Header.Close onPress={close} />
 </Window.Header.Actions>
 ```
 
-## Use the header independently
+With `maximized` and `onMaximize` on the header, double-clicking the title bar
+maximizes too.
 
-The header is available as `Window.Header` and can be placed in another
-Surface without rendering the `Window` root.
+`active={false}` dims the title of an inactive window; its controls keep
+working.
+
+## Drag the window
+
+To let people drag the window by its title bar, pass the function that starts
+a move in your window manager. In a PhreshOS Client, that is
+`context.presentation.beginMoveGesture`:
+
+```tsx
+import { context } from "@phreshos/client"
+
+<Window.Header beginMoveGesture={context.presentation.beginMoveGesture} onMoveError={report}>
+  …
+</Window.Header>
+```
+
+The header waits for an intentional drag, hands the pointer over, and cancels
+the drag if the component goes away. See
+[Draw your own title bar](/system/desktop#draw-your-own-title-bar).
+
+For a drag area that is not a `Window.Header`, use `useWindowMoveHandle()`. A
+window manager that receives the drag in another part of the page renders
+`Window.MoveCapture` there, so the drag cursor stays visible.
+
+## Use the title bar alone
+
+`Window.Header` works inside any Surface:
 
 ```tsx
 <Surface>
   <Window.Header>
     <Window.Header.Identity title="Inspector" />
-    <Window.Header.Center>{/* application content */}</Window.Header.Center>
     <Window.Header.Actions>
       <Window.Header.Close onPress={close} />
     </Window.Header.Actions>
@@ -60,49 +98,21 @@ Surface without rendering the `Window` root.
 </Surface>
 ```
 
-Header parts must remain inside `Window.Header`, because the Header provides
-their shared spacing, active state, control treatment, and optional maximize
-action. When `maximized` and `onMaximize` are supplied to the Header,
-`Window.Header.Maximize` reads them automatically, and a double-click on the
-Header's drag region invokes the same action.
+Header parts only work inside `Window.Header`.
 
-## Hand a drag to a window host
+## Content
 
-`Window.Header` can recognize an intentional pointer drag and hand it to an
-external window host. Pass only the host's move-start function; React UI owns
-the DOM pointer threshold and capture lifecycle without learning the host's
-other APIs.
+`Window.Content` fills the remaining space but does not scroll or clip on its
+own. Set `overflow`, or put a [`ScrollArea`](/sdks/react-ui/components/scroll-area)
+inside.
 
-```tsx
-<Window.Header
-  beginMoveGesture={beginMoveGesture}
-  onMoveError={reportError}
->
-  {/* header parts */}
-</Window.Header>
-```
+## Parts
 
-The same behavior is available through `useWindowMoveHandle()` when a custom
-drag region is not a `Window.Header`. The function receives an origin and the
-first intentional movement, then returns `{ ready, finished, cancel }`. React
-UI retains its pointer capture until `ready` confirms that the host can receive
-the pointer stream, then releases it. It cancels an unfinished handoff if the
-initiating component goes away. The Header uses one drag-intent cursor before
-and throughout the handoff. A host that receives the pointer in another DOM
-region renders `Window.MoveCapture` for the active capture surface so that the
-same interaction remains visible after ownership transfers.
-
-## State and behavior
-
-- `active={false}` attenuates the identity without disabling the controls.
-- `Window.Header.Maximize` uses the Header's `maximized` state and
-  `onMaximize` action by default. Explicit part props may replace either value.
-- Header pointer handlers can connect a drag region. Center and Actions stop
-  those interactions from leaking into their own controls.
-- `Window.Content` grows and can shrink correctly, but it does not choose
-  clipping or scrolling. Set overflow yourself or place a `ScrollArea` inside.
-
-The Window root accepts Surface props such as `color`, `material`, `shadow`,
-and `radius`. `Window.Header` accepts its own `color` for header-owned text and
-icons. Every Header action is still a Button and accepts its own `color`;
-`Window.Header.Close` uses `danger:base` by default.
+| Part | Props |
+| --- | --- |
+| `Window` | Surface props |
+| `Window.Header` | `active`, `maximized`, `onMaximize`, `beginMoveGesture`, `onMoveError`, `color` for its text and icons |
+| `Window.Header.Identity` | `icon`, `title` |
+| `Window.Header.Minimize`, `Maximize`, `Close`, `Action` | Button props; `Maximize` also takes `maximized` |
+| `Window.Content` | `div` props |
+| `Window.MoveCapture` | `div` props |

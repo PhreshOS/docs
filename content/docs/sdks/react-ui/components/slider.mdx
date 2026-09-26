@@ -1,12 +1,11 @@
 ---
 title: Slider
-description: Choose one numeric value with pointer, touch, keyboard, and form support.
+description: Choose a number from a range by dragging.
 ---
 
 <SliderShowcase />
 
-Use `Slider` when a person chooses a value from a bounded numeric range and the
-exact value can be understood in context, such as volume, scale, or intensity.
+`Slider` picks a number within a range, such as a volume or a scale.
 
 ```tsx
 const [volume, setVolume] = useState(40)
@@ -14,31 +13,27 @@ const [volume, setVolume] = useState(40)
 <Slider label="Volume" value={volume} onChange={setVolume} />
 ```
 
-## Commit expensive changes at the end
-
-`onChange` runs continuously while the thumb moves. `onChangeEnd` runs when the
-interaction is committed. Keep immediate visual feedback in `onChange`, and put
-expensive persistence or network work in `onChangeEnd`.
+## Range and steps
 
 ```tsx
-<Slider
-  label="Desktop scale"
-  minValue={0.5}
-  maxValue={2}
-  step={0.1}
-  value={scale}
-  onChange={setScale}
-  onChangeEnd={saveScale}
-/>
+<Slider label="Desktop scale" minValue={0.5} maxValue={2} step={0.1} value={scale} onChange={setScale} />
 ```
 
-## Vertical sliders and formatted values
+## Save when the drag ends
+
+`onChange` fires continuously while dragging; `onChangeEnd` fires once when
+released. Update the screen in `onChange`, and save in `onChangeEnd`:
+
+```tsx
+<Slider label="Scale" value={scale} onChange={setScale} onChangeEnd={saveScale} />
+```
+
+## Format and orientation
 
 ```tsx
 <Slider
-  aria-label="Output level"
+  aria-label="Level"
   orientation="vertical"
-  minValue={0}
   maxValue={1}
   step={0.01}
   formatOptions={{ style: "percent" }}
@@ -46,16 +41,18 @@ expensive persistence or network work in `onChangeEnd`.
 />
 ```
 
-## Selected props
+The track is recessed and fills with `primary` up to the thumb.
 
-| Prop | Default | Use |
+## Props
+
+| Prop | Default | Sets |
 | --- | --- | --- |
-| `minValue` | `0` | Set the lower bound. |
-| `maxValue` | `100` | Set the upper bound. |
-| `step` | `1` | Set the valid increment. |
-| `orientation` | `horizontal` | Choose horizontal or vertical interaction. |
-| `formatOptions` | — | Format the displayed value with `Intl.NumberFormat`. |
-| `name`, `form` | — | Include the value in native form submission. |
-
-Use either `value` with `onChange` or `defaultValue` for uncontrolled state.
-When no visible `label` is present, provide `aria-label` or `aria-labelledby`.
+| `value`, `defaultValue`, `onChange` | — | Its value |
+| `onChangeEnd` | — | Called when a drag ends |
+| `minValue`, `maxValue`, `step` | `0`, `100`, `1` | Its range |
+| `orientation` | `"horizontal"` | Its direction |
+| `formatOptions` | — | How the value is shown, as `Intl.NumberFormat` options |
+| `label`, `description` | — | Its text |
+| `name`, `form` | — | Form submission |
+| `color` | `"primary"` | Its fill |
+| `size`, `material`, `disabled` | — | Its size, material, and state |

@@ -4,8 +4,6 @@
   "icon": "Box",
   "pages": [
     "index",
-    "connection",
-    "system-access",
     "project"
   ]
 }

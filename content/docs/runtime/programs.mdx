@@ -1,143 +1,144 @@
 ---
 title: Programs
-description: The stable software identity at the root of the runtime.
+description: Software as the System knows it, with the identity, resources, and state shared by all of its Processes.
 icon: Package
 ---
 
-A Program is software as the System knows it. It is the stable ownership root
-around changing implementations and executions: installed files can be
-replaced, development source can be attached temporarily, and Processes can
-come and go without changing which software owns its storage, permissions, or
-public identity.
+A Program is a piece of software known to the System. It has a stable
+identity, owns the resources its runs share, such as files, storage, logs,
+and permissions, and is the only place from which its
+[Processes](/runtime/processes) are created.
 
-Use a Program when the question is about the software as a whole. Use a
-Process when the question is about one live run of it. This distinction lets a
-Program own durable resources once while creating as many independent live
-Processes as its work requires.
-
-## Identity
-
-Every Program has a kebab-case `identity`, a resolved human `name`, and a
-resolved `version`. An omitted version becomes `0.0.0`. It may also declare a
-description, icon, agent document, Server Endpoint, and Client Endpoint. The resolved `server` and `client` members describe what
-a default Process should start and whether each Endpoint should begin as a
-Service.
+The Program stays the same while its files are updated and its Processes come
+and go. That is why durable things belong to it, and live things belong to a
+Process.
 
 ```ts
 const program = await system.program.find("notes")
-
-if (program) {
-  console.log(program.identity, program.name, program.version)
-  console.log(program.server?.start, program.client?.start)
-}
+const process = await program?.createProcess({ client: true })
 ```
 
+## Find a Program
+
+```ts
+await system.program.list()        // every Program you can see
+await system.program.list(true)    // installed Programs only
+await system.program.find("notes") // one Program, or null
+```
+
+`find()` returns `null` both when a Program does not exist and when you are
+not allowed to see it, so a lookup never reveals hidden software. See
+[Permissions](/system/security/permissions).
+
 ```sh
+phresh program list
 phresh program inspect --program notes
 ```
 
-`system.program.list()` returns the Programs visible to the caller.
-Pass `true` to `list(true)` to include only installed Programs.
-`find(identity)` returns one visible Program or `null`. Absence and
-inaccessibility look the same: the handle does not exist. See
-[Permissions](/system/security/permissions).
-
-`system.program.create(source)` creates an uninstalled runtime Program from a
-definition or an absolute `program.json` path. `forceCreate()` claims the same
-identity for a new runtime Program while preserving installed files and
-storage.
-
-`assetId` identifies the current runtime incarnation used by Client asset
-URLs. It may change when the Program is replaced; the public identity does
-not.
-
-## Processes belong to the Program
-
-A Program is the only place from which one of its Processes is created. This
-keeps execution attached to the definition, authority, storage, and defaults
-that give it meaning; a Process identity alone is not enough to manufacture a
-new run.
+## Read its identity
 
 ```ts
-const process = await program.createProcess({
-  name: "editor",
-  client: true,
-  options: { document: "welcome.txt" },
-})
-
-const same = await program.findProcess("editor")
-console.log(same === process)
+program.identity     // "notes": lowercase words joined by hyphens
+program.name         // "Notes"
+program.version      // "1.2.0", or "0.0.0" when not declared
+program.description  // string or null
+program.server       // { start, service }, or null when not declared
+program.client       // { start, service, sandbox, title, size, … }, or null
 ```
 
-`processes()` returns all live Processes owned by the Program.
-`firstProcess()` and `lastProcess()` select them by creation time.
-`findProcess()` accepts either an identity or a Program-local name.
-`exitProcesses()` ends them all and returns their identities.
-`findOrCreateProcess()` and `runProcess()` are described with
+`server` and `client` describe what a new Process starts by default. A `null`
+Endpoint cannot be started by any Process of this Program.
+
+```ts
+await program.icon("large")   // PNG Blob: "small", "medium" (default), or "large"
+await program.agent()         // the Program's agent document, or null
+await program.definition()    // the complete definition the Program was created from
+```
+
+`definition()` describes what the author declared. It does not include state
+the System manages, such as permissions, pinning, or startup.
+
+## Create and manage its Processes
+
+Every Process is created from its Program, because the Program carries the
+definition, defaults, storage, and authority that the run needs.
+
+```ts
+const process = await program.createProcess({ name: "main", client: true })
+
+await program.processes()            // every live Process
+await program.findProcess("main")    // by name or identity
+await program.exitProcesses()        // end them all
+```
+
+Launch options, naming, and lifetimes are covered in
 [Processes](/runtime/processes).
 
-## System-managed state
+## Use its resources
 
-A Program owns runtime state managed by the System. This state describes how
-the System should treat the software, rather than what its authored definition
-requested. It is kept with the Program's storage, survives updates and
-ordinary uninstallation, and is removed when that storage is purged.
+Resources belong to the Program, so every Process of it sees the same ones,
+and they outlive any single run.
 
-`program.startup` controls whether the System creates one Process when it
-boots.
+| Resource | What it holds |
+| --- | --- |
+| `program.data` | Durable files |
+| `program.cache` | Files that may be deleted to reclaim space |
+| `program.store` | Persistent key-value state |
+| `program.database` | A writable SQLite database |
+| `program.logs` | Captured output of its Endpoints, read-only |
+| `program.permissions` | Its effective permissions |
 
 ```ts
-await program.startup.enable({ name: "background", server: true })
-await program.pin()
+await program.store.set("theme", "dark")
+const rows = await program.database.query("select * from notes")
 ```
-
-`startup.get()` returns its stored Launch or `null`. Calling `enable()` without
-a Launch stores `{}`, which uses the Endpoint declaration defaults.
-`startup.disable()` disables startup. `pinned()` returns a boolean; `pin()` and
-`unpin()` change it. Pinning tells Desktop interfaces that they may retain the
-Program as a favorite; it does not start a Process.
-
-Permissions are also part of System-managed state. Their effective values are
-described under [Permissions](/system/security/permissions). `definition()` remains the
-source for author-declared metadata and defaults; it does not include this
-mutable state.
-
-## Program-owned resources
-
-These resources survive independently from any one Process. All Processes of
-the Program see the same ones.
-
-| Resource | Meaning |
-| --- | --- |
-| `data` | Durable files |
-| `cache` | Disposable files |
-| `store` | Persistent key-value state |
-| `database` | Writable SQLite |
-| `logs` | Read-only captured Endpoint output with live records |
-| `permissions` | Effective permission state and stored assignments |
-
-`icon(size?)` returns a PNG at `small`, `medium`, or `large`; omission selects
-`medium`. Programs without an authored icon receive the System default.
-`agent()` returns the Program's agent document, or `null`. `hasAgent` reports
-whether one is declared. `definition()` returns the complete canonical
-`ProgramDefinition` accepted by `system.program.create()`; it describes the
-Program and does not include mutable runtime state.
 
 See [Storage](/system/storage), [Logs](/system/logs), and
 [Permissions](/system/security/permissions).
 
-## Installation and runtime form
+## Pin it and start it with the System
 
-An installed Program runs from files owned by the System and can be restored
-after a restart. An attached Program runs directly from a project and remains
-tied to the connection that introduced it. Both are the same Program domain;
-their file ownership and lifetime differ.
+The System keeps a small amount of state about each Program, separate from
+its definition. It survives updates and ordinary uninstallation, and is
+removed only when the Program's storage is purged.
 
 ```ts
-for await (const chunk of program.install({
-  launch: { name: "main", client: true },
-  purge: true,
-})) {
+await program.pin()          // keep it as a favorite in Desktop interfaces
+await program.unpin()
+await program.pinned()       // boolean
+
+await program.startup.enable({ name: "main", server: true })
+await program.startup.disable()
+```
+
+Pinning never starts a Process. `startup` stores one launch that the System
+runs each time it boots. See
+[Start a Process with the System](/runtime/processes#start-a-process-with-the-system).
+
+## Installed and attached Programs
+
+A Program runs in one of two forms:
+
+- **Installed**: its files are copied into the System, and it stays available
+  across System restarts.
+- **Attached**: it runs directly from a project folder during development, and
+  it exists only while the connection that attached it, such as `phresh dev`,
+  is open.
+
+Both forms are the same kind of Program. Only where its files live and how
+long it exists differ.
+
+```ts
+await program.installed()   // whether it has an installed form
+```
+
+## Install and uninstall
+
+`install()` and `uninstall()` stream the output of the Program's own install
+and uninstall commands:
+
+```ts
+for await (const chunk of program.install()) {
   console.log(chunk.stream, chunk.text)
 }
 ```
@@ -147,33 +148,84 @@ phresh install
 phresh install notes --run
 ```
 
-`install()` and `uninstall()` are async generators because their commands can
-produce ordered `stdout` and `stderr` chunks.
+Installing replaces the Program's files. Its live Processes keep running while
+the install command runs, and end just before the new files take effect.
 
-Installation keeps existing Processes alive while the installation command
-runs. Immediately before the Program switches to its installed definition,
-those Processes end. After installation succeeds, at most one Process is
-created: `install({ launch })` overrides the definition's `installLaunch`.
-`false` disables it, `true` uses Endpoint defaults, and a Launch supplies its
-settings. Omission uses `installLaunch`; when both are absent, nothing starts.
-Startup is independent and runs only when the System boots.
+After a successful install, the System can start one Process. By default it
+uses the `installLaunch` from the definition, and you can override it:
 
-For installation, `purge: true` removes previous installed storage before the
-new definition is applied. Uninstallation removes the installed form. With
-`purge: true`, it also ends Processes, removes storage, and forgets the
-runtime Program. Ordinary uninstallation of a Program that already has no
-installed form completes without output. An explicit purge still removes the
-remaining runtime Program and storage.
+```ts
+program.install({ launch: { name: "main", client: true } })  // this launch
+program.install({ launch: true })                            // Endpoint defaults
+program.install({ launch: false })                           // start nothing
+```
 
-`forget()` ends live Processes and removes the runtime Program without
-uninstalling its files.
+`purge` removes data as well:
 
-## Lifecycle
+| Call | Effect |
+| --- | --- |
+| `install({ purge: true })` | Deletes the previous installed storage before installing |
+| `uninstall()` | Removes the installed files; storage and the Program remain |
+| `uninstall({ purge: true })` | Also ends its Processes, deletes its storage, and removes the Program |
+| `forget()` | Ends its Processes and removes the Program, leaving installed files in place |
 
-A Program emits `processCreate` and `processExit` for its own Processes,
-`pinned` when its pinned state changes, `uninstall` with `{ purge }` when its
-installed form is removed, `permissions` with the complete effective permission
-snapshot after it changes, and `forget` when the runtime Program leaves the
-registry. The System-level Program collection publishes `create`, `install`,
-`uninstall`, `forget`, `{ program, pinned }`, and `{ program, permissions }`
-changes for visible Programs.
+Uninstalling a Program that is not installed completes without output.
+
+## Create a Program from a definition
+
+`system.program.create()` registers a new, uninstalled Program from a
+definition object or an absolute path to a `program.json`:
+
+```ts
+const program = await system.program.create("/path/to/notes/program.json")
+```
+
+`forceCreate()` does the same, replacing any Program that already uses that
+identity. It keeps that Program's installed files and storage.
+
+Most Programs are created for you by `phresh dev` and `phresh install`. See
+[Program configuration](/sdks/core/program-configuration) for what a
+definition contains.
+
+## Observe changes
+
+A Program emits events about itself:
+
+```ts
+program.subscribe("processCreate", process => {})
+program.subscribe("processExit", ({ process, status }) => {})
+program.subscribe("pinned", pinned => {})
+program.subscribe("permissions", permissions => {})
+program.subscribe("uninstall", ({ purge }) => {})
+program.subscribe("forget", () => {})
+```
+
+`system.program` emits the same kinds of changes for every Program you can
+see: `create`, `install`, `uninstall`, `forget`, `pinned`, and `permissions`.
+
+```ts
+system.program.subscribe("install", program => {})
+```
+
+## Permissions
+
+An Endpoint can always see and manage its own Program. Seeing or managing
+another Program requires the `programs` permission for it. See
+[Permissions](/system/security/permissions).
+
+## Reference
+
+| Member | Result |
+| --- | --- |
+| `system.program.list(onlyInstalled?)` | Visible Programs |
+| `system.program.find(identity)` | A Program, or `null` |
+| `system.program.create(source)` / `forceCreate(source)` | A new uninstalled Program |
+| `identity`, `name`, `version`, `description` | Declared identity |
+| `server`, `client` | Endpoint declarations, or `null` |
+| `icon(size?)`, `agent()`, `definition()` | Declared assets and definition |
+| `createProcess()`, `findOrCreateProcess()`, `runProcess()` | Start Processes |
+| `processes()`, `findProcess()`, `firstProcess()`, `lastProcess()` | Find live Processes |
+| `exitProcesses()` | End every live Process |
+| `data`, `cache`, `store`, `database`, `logs`, `permissions` | Program resources |
+| `pin()`, `unpin()`, `pinned()`, `startup` | System-managed state |
+| `installed()`, `install()`, `uninstall()`, `forget()` | Installation and removal |
